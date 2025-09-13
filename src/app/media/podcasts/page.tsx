@@ -99,17 +99,17 @@ export default function PodcastsPage() {
                   Son Bölüm
                 </h2>
                 <AudioPlayer
-                  url={latestEpisode.url}
-                  title={latestEpisode.title}
-                  description={latestEpisode.description}
-                  thumbnail={latestEpisode.thumbnail_url}
+                  url={latestEpisode.url || ''}
+                  title={latestEpisode.title || ''}
+                  description={latestEpisode.description || undefined}
+                  thumbnail={latestEpisode.thumbnail_url || undefined}
                   uploader={{
                     name: latestEpisode.uploader?.full_name || 'Airen Global',
-                    avatar: latestEpisode.uploader?.avatar_url
+                    avatar: latestEpisode.uploader?.avatar_url || undefined
                   }}
-                  duration={latestEpisode.duration}
-                  episode={latestEpisode.metadata?.episode}
-                  season={latestEpisode.metadata?.season}
+                  duration={latestEpisode.duration ?? undefined}
+                  episode={latestEpisode.metadata?.episode ?? undefined}
+                  season={latestEpisode.metadata?.season ?? undefined}
                 />
               </section>
             )}
