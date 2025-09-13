@@ -21,7 +21,7 @@ export default async function Home() {
     travelers: usersRes.count || 0,
     stories: storiesRes.count || 0,
   }
-  const [newsRes, storiesRes] = await Promise.all([
+  const [newsRes, storiesListRes] = await Promise.all([
     supabaseAdmin
       .from('articles')
       .select('id,title,slug,excerpt,featured_image,image_alt,category_id,view_count,reading_time,published_at,featured,type, article_tags:article_tags(tags(id,name,slug,color)), article_likes(count), article_comments(count)')
@@ -37,7 +37,7 @@ export default async function Home() {
       .limit(4)
   ])
   const latestNews = newsRes.data ?? []
-  const latestStories = storiesRes.data ?? []
+  const latestStories = storiesListRes.data ?? []
   return (
     <div className="space-y-20 py-12">
       {/* Hero Section - Light minimal style with large orb */}
