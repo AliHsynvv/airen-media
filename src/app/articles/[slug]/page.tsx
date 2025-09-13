@@ -16,20 +16,21 @@ import ArticleViews from '@/components/articles/ArticleViews'
 import ArticleBookmarkButton from '@/components/articles/ArticleBookmarkButton'
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+export async function generateMetadata(context: ArticlePageProps): Promise<Metadata> {
   // Try live article first
+  const { slug } = await context.params
   const { data: liveArticle } = await supabaseAdmin
     .from('articles')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
-  const article = liveArticle || mockArticles.find(a => a.slug === params.slug)
+  const article = liveArticle || mockArticles.find(a => a.slug === slug)
   
   if (!article) {
     return {
@@ -58,16 +59,17 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage(context: ArticlePageProps) {
   // Fetch live article
+  const { slug } = await context.params
   let articleRes = await supabaseAdmin
     .from('articles')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
   let article: any = articleRes.data || null
   if (!article) {
-    article = mockArticles.find(a => a.slug === params.slug) || null
+    article = mockArticles.find(a => a.slug === slug) || null
   }
 
   if (!article) {

@@ -13,17 +13,18 @@ import CountryCardReview from '@/components/countries/CountryCardReview'
 import CountryReviewKPI from '@/components/countries/CountryReviewKPI'
 
 interface CountryPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
-export default async function CountryDetailPage({ params }: CountryPageProps) {
+export default async function CountryDetailPage(context: CountryPageProps) {
   // Try Supabase first
+  const { slug } = await context.params
   const { data: live } = await supabaseAdmin
     .from('countries')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
-  const country: any = live || mockCountries.find(c => c.slug === params.slug) || null
+  const country: any = live || mockCountries.find(c => c.slug === slug) || null
   if (!country) return notFound()
 
   const rating = 4.7
