@@ -23,13 +23,14 @@ export default async function PublicUserProfilePage(context: Props) {
     )
   }
 
-  const { data: stories = [] } = await supabaseAdmin
+  const storiesRes = await supabaseAdmin
     .from('user_stories')
     .select('id,title,slug,image_url,image_alt,category,tags,created_at, users_profiles:users_profiles!user_stories_user_id_fkey(id,full_name,username,avatar_url)')
     .eq('user_id', profile.id)
     .in('status', ['approved','featured'])
     .order('created_at', { ascending: false })
     .limit(200)
+  const stories = storiesRes.data ?? []
 
   // counts
   const [{ count: followers = 0 }, { count: following = 0 }] = await Promise.all([
