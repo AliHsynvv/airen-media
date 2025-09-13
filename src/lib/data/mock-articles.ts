@@ -1,0 +1,233 @@
+import type { Article, Category } from '@/types'
+
+// Mock categories
+export const mockCategories: Category[] = [
+  {
+    id: '1',
+    name: 'Seyahat Rehberi',
+    slug: 'seyahat-rehberi',
+    description: 'Şehir ve ülke rehberleri',
+    color: '#00d4ff',
+    icon: 'map-pin',
+    parent_id: null,
+    sort_order: 1,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Kültür & Tarih',
+    slug: 'kultur-tarih',
+    description: 'Kültürel keşifler ve tarihi yerler',
+    color: '#b855ff',
+    icon: 'landmark',
+    parent_id: null,
+    sort_order: 2,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '3',
+    name: 'Gastronomi',
+    slug: 'gastronomi',
+    description: 'Yerel lezzetler ve mutfak kültürü',
+    color: '#00ff88',
+    icon: 'utensils',
+    parent_id: null,
+    sort_order: 3,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '4',
+    name: 'Turizm Haberleri',
+    slug: 'turizm-haberleri',
+    description: 'Sektörden son haberler',
+    color: '#ff6b6b',
+    icon: 'newspaper',
+    parent_id: null,
+    sort_order: 4,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+]
+
+// Mock author
+const mockAuthor = {
+  id: 'author-1',
+  username: 'airen_global',
+  full_name: 'Airen Global',
+  avatar_url: null,
+  bio: 'AI-powered travel expert',
+  location: 'Global',
+  website: 'https://airen.app',
+  social_links: {
+    instagram: '@airen_app',
+    twitter: '@airen_app',
+  },
+  role: 'admin' as const,
+  status: 'active' as const,
+  preferences: {},
+  email_verified: true,
+  last_seen: new Date().toISOString(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}
+
+// Mock articles
+export const mockArticles: Article[] = [
+  {
+    id: '1',
+    title: 'İstanbul\'un Gizli Hazineleri: Yerel Rehberle Keşif',
+    slug: 'istanbul-gizli-hazineler-rehber',
+    excerpt: 'İstanbul\'un turistik yerlerinin ötesinde, sadece yerel halkın bildiği gizli köşeleri Airen ile keşfedin. Boğaz\'dan tarihi mahallelere uzanan eşsiz rotalar.',
+    content: `# İstanbul'un Gizli Hazineleri
+
+İstanbul, milyonlarca turistin her yıl ziyaret ettiği eşsiz bir şehir. Ancak bu büyülü şehrin gerçek hazineleri, ana turistik rotalardan uzakta, sadece yerel halkın bildiği köşelerde saklı.
+
+## Boğaziçi'nin Saklı Koyları
+
+Büyükada'nın kuzey kıyılarında, sadece yürüyüş yoluyla ulaşılabilen küçük koylar bulunuyor...
+
+## Tarihi Mahallelerdeki Gizli Bahçeler
+
+Fatih semtindeki eski ahşap evlerin arasında gizlenen unutulmuş bahçeler...`,
+    featured_image: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=600&fit=crop',
+    image_alt: 'İstanbul Boğaziçi manzarası',
+    category_id: '1',
+    category: mockCategories[0],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'article',
+    featured: true,
+    view_count: 1547,
+    reading_time: 8,
+    meta_title: 'İstanbul Gizli Yerler Rehberi | Airen.app',
+    meta_description: 'İstanbul\'un turistik yerlerinin ötesinde gizli hazineleri keşfedin. Yerel rehberle unutulmaz deneyimler.',
+    published_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '2',
+    title: 'Bakü\'de 48 Saat: Ateş Şehri Macerası',
+    slug: 'baku-48-saat-ates-sehri-macerasi',
+    excerpt: 'Hazar Denizi kıyısındaki Bakü\'nün modern mimarisi ve tarihi dokusunu harmanlayan 2 günlük mükemmel rehber. Azerbaycan mutfağından Ateşgah\'a kadar.',
+    content: `# Bakü'de 48 Saat
+
+Azerbaycan'ın başkenti Bakü, modern mimarisi ve zengin tarihiyle ziyaretçilerini büyüleyen bir şehir...`,
+    featured_image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
+    image_alt: 'Bakü Flame Towers',
+    category_id: '1',
+    category: mockCategories[0],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'article',
+    featured: false,
+    view_count: 892,
+    reading_time: 12,
+    meta_title: 'Bakü Seyahat Rehberi | 48 Saat',
+    meta_description: 'Bakü\'de 48 saat geçirmek için en iyi rehber. Ateş şehri macerası.',
+    published_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '3',
+    title: 'Paris\'te Saklı Kalmış Sanat Galerileri',
+    slug: 'paris-sakli-sanat-galerileri',
+    excerpt: 'Louvre ve Orsay\'ın ötesinde Paris\'te keşfedilmeyi bekleyen boutique sanat galerileri. Montmartre\'den Marais\'e sanat rotası.',
+    content: `# Paris'in Saklı Sanat Hazineleri
+
+Paris'te sanat denince akla ilk gelen müzeler Louvre, Orsay ve Pompidou olsa da...`,
+    featured_image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=800&h=600&fit=crop',
+    image_alt: 'Paris sanat galerisi',
+    category_id: '2',
+    category: mockCategories[1],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'article',
+    featured: false,
+    view_count: 634,
+    reading_time: 6,
+    published_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '4',
+    title: 'Tokyo Ramen Rehberi: En İyi 10 Mekan',
+    slug: 'tokyo-ramen-rehberi-en-iyi-10-mekan',
+    excerpt: 'Tokyo\'nun labirent sokaklarında gizlenen en otantik ramen dükkanları. Yerel damak zevkinden Michelin yıldızlı mekanlara.',
+    content: `# Tokyo'nun En İyi Ramen Mekanları
+
+Tokyo'da ramen yemek sadece bir öğün değil, kültürel bir deneyim...`,
+    featured_image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&h=600&fit=crop',
+    image_alt: 'Tokyo ramen',
+    category_id: '3',
+    category: mockCategories[2],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'article',
+    featured: false,
+    view_count: 1243,
+    reading_time: 10,
+    published_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '5',
+    title: 'Türkiye Turizm Sektörü 2024 Rakamları Açıklandı',
+    slug: 'turkiye-turizm-2024-rakamlari',
+    excerpt: 'Kültür ve Turizm Bakanlığı\'nın açıkladığı 2024 yılı ilk yarı turizm verilerine göre, yabancı ziyaretçi sayısı %15 artış gösterdi.',
+    content: `# Türkiye Turizm Rakamları 2024
+
+Kültür ve Turizm Bakanlığı tarafından açıklanan 2024 yılı ilk altı aylık turizm verileri...`,
+    featured_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+    image_alt: 'Türkiye turizm',
+    category_id: '4',
+    category: mockCategories[3],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'news',
+    featured: false,
+    view_count: 2156,
+    reading_time: 4,
+    published_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '6',
+    title: 'Yeni Vize Kuralları: AB Ülkeleri İçin ETIAS Sistemi',
+    slug: 'ab-etias-sistemi-yeni-vize-kurallari',
+    excerpt: 'Avrupa Birliği\'nin yeni seyahat sistemi ETIAS, 2024 sonunda devreye giriyor. Türk vatandaşları için neler değişiyor?',
+    content: `# ETIAS: Avrupa Seyahatinde Yeni Dönem
+
+Avrupa Birliği'nin uzun süredir planladığı ETIAS sistemi...`,
+    featured_image: 'https://images.unsplash.com/photo-1564951434112-64d74cc2a2d7?w=800&h=600&fit=crop',
+    image_alt: 'Pasaport ve vize',
+    category_id: '4',
+    category: mockCategories[3],
+    author_id: 'author-1',
+    author: mockAuthor,
+    status: 'published',
+    type: 'news',
+    featured: true,
+    view_count: 3247,
+    reading_time: 7,
+    published_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+]
