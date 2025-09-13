@@ -66,44 +66,44 @@ export function DialogDescription({ className, ...props }: React.HTMLAttributes<
   return <p className={cn('text-sm text-gray-600', className)} {...props} />
 }
 
-export function DialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement }) {
+export function DialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement<any> }) {
   const ctx = React.useContext(DialogContext)
   if (!ctx) return children
 
   if (asChild) {
-    return React.cloneElement(children, {
+    return React.cloneElement(children as React.ReactElement<any>, {
       onClick: (e: any) => {
         children.props.onClick?.(e)
         ctx.setOpen(true)
       },
-    })
+    } as any)
   }
 
-  return React.cloneElement(children, {
+  return React.cloneElement(children as React.ReactElement<any>, {
     onClick: (e: any) => {
       children.props.onClick?.(e)
       ctx.setOpen(true)
     },
-  })
+  } as any)
 }
 
-export function DialogClose({ asChild, children }: { asChild?: boolean; children: React.ReactElement }) {
+export function DialogClose({ asChild, children }: { asChild?: boolean; children: React.ReactElement<any> }) {
   const ctx = React.useContext(DialogContext)
   if (!ctx) return children
 
   if (asChild) {
-    return React.cloneElement(children, {
+    return React.cloneElement(children as React.ReactElement<any>, {
       onClick: (e: any) => {
         children.props.onClick?.(e)
         ctx.setOpen(false)
       },
-    })
+    } as any)
   }
 
-  return React.cloneElement(children, {
+  return React.cloneElement(children as React.ReactElement<any>, {
     onClick: (e: any) => {
       children.props.onClick?.(e)
       ctx.setOpen(false)
     },
-  })
+  } as any)
 }
