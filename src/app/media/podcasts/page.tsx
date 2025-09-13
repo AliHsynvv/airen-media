@@ -108,8 +108,8 @@ export default function PodcastsPage() {
                     avatar: latestEpisode.uploader?.avatar_url || undefined
                   }}
                   duration={latestEpisode.duration ?? undefined}
-                  episode={latestEpisode.metadata?.episode ?? undefined}
-                  season={latestEpisode.metadata?.season ?? undefined}
+                  episode={typeof (latestEpisode.metadata as any)?.episode === 'number' ? (latestEpisode.metadata as any).episode : undefined}
+                  season={typeof (latestEpisode.metadata as any)?.season === 'number' ? (latestEpisode.metadata as any).season : undefined}
                 />
               </section>
             )}
