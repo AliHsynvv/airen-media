@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import slugify from 'slugify'
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { data, error } = await supabaseAdmin.from('countries').select('*').eq('id', params.id).single()
+    const { id } = await context.params
+    const { data, error } = await supabaseAdmin.from('countries').select('*').eq('id', id).single()
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (err: any) {
@@ -12,8 +13,9 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params
     const body = await req.json()
     const update: any = {
       name: body.name,
@@ -30,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       airen_advice: body.airen_advice ?? null,
       top_places: body.top_places ?? [],
     }
-    const { data, error } = await supabaseAdmin.from('countries').update(update).eq('id', params.id).select('*').single()
+    const { data, error } = await supabaseAdmin.from('countries').update(update).eq('id', id).select('*').single()
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (err: any) {
@@ -38,14 +40,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { error } = await supabaseAdmin.from('countries').delete().eq('id', params.id)
+    const { id } = await context.params
+    const { error } = await supabaseAdmin.from('countries').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Unexpected error' }, { status: 500 })
   }
 }
-
-
