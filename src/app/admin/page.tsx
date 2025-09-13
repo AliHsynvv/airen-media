@@ -5,20 +5,27 @@ import { getServerSupabase } from '@/lib/supabase/server-ssr'
 
 export default async function AdminDashboardPage() {
   // Simple dynamic KPIs (use `count` from Supabase response)
-  const { count: totalArticles = 0 } = await supabaseAdmin
+  const { count: totalArticlesRaw } = await supabaseAdmin
     .from('articles')
     .select('id', { count: 'exact', head: true })
-  const { count: publishedArticles = 0 } = await supabaseAdmin
+  const totalArticles = totalArticlesRaw ?? 0
+
+  const { count: publishedArticlesRaw } = await supabaseAdmin
     .from('articles')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'published')
-  const { count: pendingStoryCount = 0 } = await supabaseAdmin
+  const publishedArticles = publishedArticlesRaw ?? 0
+
+  const { count: pendingStoryCountRaw } = await supabaseAdmin
     .from('user_stories')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pending')
-  const { count: totalUsers = 0 } = await supabaseAdmin
+  const pendingStoryCount = pendingStoryCountRaw ?? 0
+
+  const { count: totalUsersRaw } = await supabaseAdmin
     .from('users_profiles')
     .select('id', { count: 'exact', head: true })
+  const totalUsers = totalUsersRaw ?? 0
 
   // Fetch timestamps for charts (last 90 days window, limit for performance)
   const [articlesList, pvList, usersList] = await Promise.all([

@@ -47,17 +47,22 @@ function LineChart({ data, color = '#111827' }: { data: { value: number }[]; col
 }
 
 export default async function AdminUsersPage() {
-  const { count: totalUsers = 0 } = await supabaseAdmin
+  const { count: totalUsersRaw } = await supabaseAdmin
     .from('users_profiles')
     .select('id', { count: 'exact', head: true })
-  const { count: adminCount = 0 } = await supabaseAdmin
+  const totalUsers = totalUsersRaw ?? 0
+
+  const { count: adminCountRaw } = await supabaseAdmin
     .from('users_profiles')
     .select('id', { count: 'exact', head: true })
     .eq('role', 'admin')
-  const { count: activeCount = 0 } = await supabaseAdmin
+  const adminCount = adminCountRaw ?? 0
+
+  const { count: activeCountRaw } = await supabaseAdmin
     .from('users_profiles')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'active')
+  const activeCount = activeCountRaw ?? 0
 
   const { data: recentUsers } = await supabaseAdmin
     .from('users_profiles')
