@@ -86,9 +86,10 @@ export async function POST(req: NextRequest) {
       if (tagsSelErr) throw tagsSelErr
       const pairs = (tagsData || []).map(t => ({ article_id: createdArticle.id, tag_id: t.id }))
       if (pairs.length) {
+        // Use upsert with composite conflict target to avoid duplicates
         const { error: atErr } = await supabaseAdmin
           .from('article_tags')
-          .insert(pairs, { ignoreDuplicates: true })
+          .upsert(pairs, { onConflict: 'article_id,tag_id' })
         if (atErr) throw atErr
       }
     }
