@@ -69,12 +69,17 @@ export default function MeetAirenButton() {
                   </div>
                 ) : isHome ? (
                   <div className="absolute inset-0 p-2 flex items-center justify-center">
-                    {/* eslint-disable-next-line react/no-unknown-property */}
-                    <elevenlabs-convai
-                      agent-id="agent_9101k504ahreen2ssvsbmjs3fh3a"
-                      mode="embedded"
-                      style={{ display: 'block', width: '100%', height: '100%' }}
-                    ></elevenlabs-convai>
+                    {/* Render custom element via alias to satisfy TS in CI */}
+                    {(() => {
+                      const ConvaiTag = 'elevenlabs-convai' as any
+                      return (
+                        <ConvaiTag
+                          agent-id="agent_9101k504ahreen2ssvsbmjs3fh3a"
+                          mode="embedded"
+                          style={{ display: 'block', width: '100%', height: '100%' }}
+                        />
+                      )
+                    })()}
                   </div>
                 ) : (
                   <div className="absolute inset-0 p-2 overflow-hidden">
