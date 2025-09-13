@@ -116,7 +116,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
               <Card className="bg-white border border-gray-200 rounded-xl p-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4">Top Highlights</h3>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {country.top_places?.map(place => (
+                  {country.top_places?.map((place: { name: string }) => (
                     <div key={place.name} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2">
                       <span className="h-2 w-2 rounded-full bg-gray-400" />
                       <span className="text-sm text-gray-800">{place.name}</span>

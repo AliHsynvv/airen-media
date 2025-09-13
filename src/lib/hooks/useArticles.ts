@@ -40,7 +40,7 @@ export function useArticles(options: UseArticlesOptions = {}): UseArticlesResult
         if (!res.ok || !json.success) throw new Error(json.error || 'fetch failed')
         if (mounted) {
           const data = json.data as any[]
-          const normalized = data?.map(a => ({
+          const normalized = data?.map((a: any) => ({
             ...a,
             tags: Array.isArray(a.article_tags)
               ? a.article_tags.map((at: any) => at?.tags).filter(Boolean)
