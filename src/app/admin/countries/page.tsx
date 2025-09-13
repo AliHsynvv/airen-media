@@ -64,8 +64,7 @@ export default function AdminCountriesListPage() {
                 <td className="p-3 font-medium text-gray-900">{r.name}</td>
                 <td className="p-3 text-gray-600">{r.slug}</td>
                 <td className="p-3 text-gray-700">{r.capital || '-'}</td>
-                <td className="p-3"><span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs border "
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs border ${r.status==='active'?'bg-green-50 text-green-700 border-green-200':'bg-gray-100 text-gray-700 border-gray-200'}`}>{r.status}</span></td>
+                <td className="p-3"><span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs border ${r.status==='active'?'bg-green-50 text-green-700 border-green-200':'bg-gray-100 text-gray-700 border-gray-200'}`}>{r.status}</span></td>
                 <td className="p-3 text-right space-x-2">
                   <Button asChild size="sm" className="h-8 px-2 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"><Link href={`/countries/${r.slug}`}>Görüntüle</Link></Button>
                   <Button asChild size="sm" className="h-8 px-2 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"><Link href={`/admin/countries/${r.id}/edit`}>Düzenle</Link></Button>
