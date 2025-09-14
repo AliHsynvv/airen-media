@@ -21,7 +21,7 @@ export default function NewsPage() {
   const [sortBy, setSortBy] = useState<SortKey>('latest')
   const [view, setView] = useState<ViewKey>('grid')
 
-  const { data: liveArticles, loading } = useArticles({ type: 'news', status: 'published', limit: 100, fallbackToMock: false })
+  const { data: liveArticles, loading } = useArticles({ type: 'news', status: 'published', limit: 100 })
   const news = (liveArticles || []).filter(a => a.type === 'news')
 
   useEffect(() => {
