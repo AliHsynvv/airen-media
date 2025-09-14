@@ -39,7 +39,7 @@ export default async function Home() {
   const latestNews = newsRes.data ?? []
   const latestStories = storiesListRes.data ?? []
   return (
-    <div className="space-y-20 py-12">
+    <div className="space-y-8 py-12">
       {/* Hero Section - Light minimal style with large orb */}
       <section className="relative overflow-hidden">
         {/* light backdrop gradient */}
@@ -124,13 +124,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Inline ElevenLabs embed on Home */}
-      <section className="container mx-auto px-4">
-        <ElevenLabsInlineEmbed />
-      </section>
-
-      {/* Features Grid - moved below News & Community */}
-
       {/* Latest News */}
       <section className="w-full px-0 sm:px-4">
         <div className="flex items-end justify-between mb-4">
@@ -171,6 +164,11 @@ export default async function Home() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Inline ElevenLabs embed on Home (moved below Community) */}
+      <section className="container mx-auto px-4">
+        <ElevenLabsInlineEmbed />
       </section>
 
       {/* Why Airen - now placed here */}
