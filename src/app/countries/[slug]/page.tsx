@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { mockCountries } from '@/lib/data/mock-countries'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { supabaseAdmin } from '@/lib/supabase/server'
@@ -17,14 +16,13 @@ interface CountryPageProps {
 }
 
 export default async function CountryDetailPage(context: CountryPageProps) {
-  // Try Supabase first
   const { slug } = await context.params
   const { data: live } = await supabaseAdmin
     .from('countries')
     .select('*')
     .eq('slug', slug)
     .single()
-  const country: any = live || mockCountries.find(c => c.slug === slug) || null
+  const country: any = live || null
   if (!country) return notFound()
 
   const rating = 4.7

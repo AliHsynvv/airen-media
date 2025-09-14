@@ -7,7 +7,6 @@ import LikeShareBar from '@/components/articles/LikeShareBar'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArticleCard } from '@/components/articles/ArticleCard'
-import { mockArticles } from '@/lib/data/mock-articles'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { formatDate, formatRelativeTime } from '@/lib/utils/formatters'
 import type { Metadata } from 'next'
@@ -23,14 +22,13 @@ interface ArticlePageProps {
 
 // Generate metadata for SEO
 export async function generateMetadata(context: ArticlePageProps): Promise<Metadata> {
-  // Try live article first
   const { slug } = await context.params
   const { data: liveArticle } = await supabaseAdmin
     .from('articles')
     .select('*')
     .eq('slug', slug)
     .single()
-  const article = liveArticle || mockArticles.find(a => a.slug === slug)
+  const article = liveArticle || null
   
   if (!article) {
     return {
@@ -47,7 +45,6 @@ export async function generateMetadata(context: ArticlePageProps): Promise<Metad
       description: article.excerpt || '',
       images: article.featured_image ? [article.featured_image] : [],
       type: 'article',
-      // author info optionally added later
       publishedTime: article.published_at || undefined,
     },
     twitter: {
@@ -60,23 +57,19 @@ export async function generateMetadata(context: ArticlePageProps): Promise<Metad
 }
 
 export default async function ArticlePage(context: ArticlePageProps) {
-  // Fetch live article
   const { slug } = await context.params
-  let articleRes = await supabaseAdmin
+  const articleRes = await supabaseAdmin
     .from('articles')
     .select('*')
     .eq('slug', slug)
     .single()
-  let article: any = articleRes.data || null
-  if (!article) {
-    article = mockArticles.find(a => a.slug === slug) || null
-  }
+  const article: any = articleRes.data || null
 
   if (!article) {
     notFound()
   }
 
-  // Related articles (try live, fallback mock)
+  // Related articles (live only)
   let relatedArticles: any[] = []
   if (article.category_id) {
     const relRes = await supabaseAdmin
@@ -88,11 +81,6 @@ export default async function ArticlePage(context: ArticlePageProps) {
       .order('published_at', { ascending: false })
       .limit(3)
     relatedArticles = relRes.data || []
-  }
-  if (!relatedArticles.length) {
-    relatedArticles = mockArticles
-      .filter(a => a.id !== article.id && a.category_id === article.category_id && a.status === 'published')
-      .slice(0, 3)
   }
 
   return (

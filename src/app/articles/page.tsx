@@ -6,15 +6,31 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ArticleCard } from '@/components/articles/ArticleCard'
-import { mockArticles, mockCategories } from '@/lib/data/mock-articles'
+import { useArticles } from '@/lib/hooks/useArticles'
 
 export default function ArticlesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Filter articles (only articles, not news)
-  const articles = mockArticles.filter(article => article.type === 'article')
+  const { data: liveArticles } = useArticles({ type: 'article', status: 'published', limit: 100 })
+  const articles = liveArticles.filter(article => article.type === 'article')
+  
+  const categories = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; count: number }>()
+    for (const a of articles) {
+      const id = (a as any).category_id
+      const name = (a as any).category?.name || 'Diğer'
+      if (!id) continue
+      const cur = map.get(id)
+      if (cur) {
+        cur.count += 1
+      } else {
+        map.set(id, { id, name, count: 1 })
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count)
+  }, [articles])
   
   const filteredArticles = useMemo(() => {
     return articles.filter(article => {
@@ -23,7 +39,7 @@ export default function ArticlesPage() {
         article.excerpt?.toLowerCase().includes(searchQuery.toLowerCase())
       
       const matchesCategory = selectedCategory === null || 
-        article.category_id === selectedCategory
+        (article as any).category_id === selectedCategory
 
       return matchesSearch && matchesCategory
     })
@@ -106,21 +122,16 @@ export default function ArticlesPage() {
             >
               Tümü ({articles.length})
             </Button>
-            {mockCategories.map((category) => {
-              const count = articles.filter(a => a.category_id === category.id).length
-              if (count === 0) return null
-              
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? 'neon' : 'glass'}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  {category.name} ({count})
-                </Button>
-              )
-            })}
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? 'neon' : 'glass'}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.name} ({category.count})
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -130,7 +141,7 @@ export default function ArticlesPage() {
             {filteredArticles.length} makale bulundu
             {selectedCategory && (
               <span className="ml-2">
-                • Kategori: {mockCategories.find(c => c.id === selectedCategory)?.name}
+                • Kategori: {categories.find(c => c.id === selectedCategory)?.name}
               </span>
             )}
           </p>

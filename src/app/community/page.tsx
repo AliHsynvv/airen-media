@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { mockStories } from '@/lib/data/mock-stories'
 import { StoryCard } from '@/components/community/StoryCard'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +22,7 @@ export default function CommunityPage() {
   const { data, loading } = useStories()
 
   const filtered = useMemo(() => {
-    const list = data && data.length ? data : mockStories
+    const list = data || []
     const q = query.toLowerCase()
     return list.filter(s => {
       const matchesQuery = s.title.toLowerCase().includes(q) || s.content.toLowerCase().includes(q) || s.tags.some(t => t.toLowerCase().includes(q))
@@ -33,7 +32,7 @@ export default function CommunityPage() {
   }, [query, category, data])
 
   const featuredStories = useMemo(() => {
-    const list = data && data.length ? data : []
+    const list = data || []
     return list.filter(s => s.status === 'featured').slice(0, 6)
   }, [data])
 
@@ -49,9 +48,9 @@ export default function CommunityPage() {
             placeholder="Hikaye ara..."
             value={query}
             onChange={e => setQuery(e.target.value)}
-            className="w-64 border border-gray-200 bg-white text-gray-900"
+            className="w-64 border border-gray-200 bg_WHITE text-gray-900"
           />
-          <Link href="/community/stories/submit" className="px-4 py-2 rounded-md text-sm border border-gray-200 bg-white text-black hover:bg-gray-50">
+          <Link href="/community/stories/submit" className="px-4 py-2 rounded-md text-sm border border-gray-200 bg_WHITE text-black hover:bg-gray-50">
             Hikayeni Paylaş
           </Link>
         </div>
@@ -60,11 +59,11 @@ export default function CommunityPage() {
       {/* Featured Stories */}
       {(loading || featuredStories.length > 0) && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Öne Çıkanlar</h2>
+          <h2 className="text-lg font-semibold text_GRAY-900 mb-3">Öne Çıkanlar</h2>
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-40 rounded-xl animate-pulse border border-gray-200 bg-white" />
+                <div key={i} className="h-40 rounded-xl animate-pulse border border-gray-200 bg_WHITE" />
               ))}
             </div>
           ) : (
@@ -83,19 +82,19 @@ export default function CommunityPage() {
             key={c.key}
             onClick={() => setCategory(c.key)}
             className={`px-3 py-1 rounded-full text-sm transition-colors border ${
-              category === c.key ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+              category === c.key ? 'border-black bg_BLACK text_WHITE' : 'border-gray-200 bg_WHITE text-gray-700 hover:bg-gray-50'
             }`}
           >
             {c.label}
           </button>
         ))}
-        <Badge className="ml-auto border border-gray-200 bg-white text-gray-700">{loading ? 'Yükleniyor...' : `${filtered.length} hikaye`}</Badge>
+        <Badge className="ml-auto border border-gray-200 bg_WHITE text-gray-700">{loading ? 'Yükleniyor...' : `${filtered.length} hikaye`}</Badge>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 rounded-xl animate-pulse border border-gray-200 bg-white" />
+            <div key={i} className="h-48 rounded-xl animate-pulse border border-gray-200 bg_WHITE" />
           ))}
         </div>
       ) : (

@@ -1,37 +1,68 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Video, Headphones, TrendingUp, Clock, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MediaCard } from '@/components/media/MediaCard'
-import { mockVideos, mockPodcasts, mockAllMedia, mediaCategories } from '@/lib/data/mock-media'
+import { supabase } from '@/lib/supabase/client'
+import type { Media } from '@/types/media'
 
 export default function MediaPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'videos' | 'podcasts'>('all')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [allMedia, setAllMedia] = useState<Media[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('media')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1000)
+        if (error) throw error
+        if (mounted) setAllMedia((data as any) || [])
+      } catch {
+        if (mounted) setAllMedia([])
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
+  const videos = useMemo(() => allMedia.filter(m => m.type === 'video'), [allMedia])
+  const podcasts = useMemo(() => allMedia.filter(m => m.type === 'audio'), [allMedia])
 
   const getFilteredMedia = () => {
-    let media = mockAllMedia
-    
-    if (activeTab === 'videos') {
-      media = mockVideos
-    } else if (activeTab === 'podcasts') {
-      media = mockPodcasts
-    }
-
-    if (selectedCategory) {
-      media = media.filter(m => m.category === selectedCategory)
-    }
-
+    let media = allMedia
+    if (activeTab === 'videos') media = videos
+    else if (activeTab === 'podcasts') media = podcasts
+    if (selectedCategory) media = media.filter(m => m.category === selectedCategory)
     return media
   }
 
   const filteredMedia = getFilteredMedia()
-  const featuredVideo = mockVideos.find(v => v.view_count > 15000) // Most viewed
-  const latestPodcast = mockPodcasts[0] // Most recent
+  const featuredVideo = useMemo(() => videos.slice().sort((a, b) => (b.view_count || 0) - (a.view_count || 0))[0], [videos])
+  const latestPodcast = podcasts[0]
+
+  const mediaCategories = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>()
+    for (const m of allMedia) {
+      if (!m.category) continue
+      if (!map.has(m.category)) map.set(m.category, { id: m.category, name: m.category })
+    }
+    return Array.from(map.values())
+  }, [allMedia])
+
+  const totalViews = useMemo(() => allMedia.reduce((acc, m) => acc + (m.view_count || 0), 0), [allMedia])
 
   return (
     <div className="min-h-screen py-12">
@@ -53,7 +84,7 @@ export default function MediaPage() {
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-airen-neon-blue to-airen-neon-purple rounded-lg mx-auto mb-3">
                 <Video className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{mockVideos.length}</h3>
+              <h3 className="text-2xl font-bold text-white mb-1">{videos.length}</h3>
               <p className="text-gray-300 text-sm">Video İçerik</p>
             </CardContent>
           </Card>
@@ -63,7 +94,7 @@ export default function MediaPage() {
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-airen-neon-green to-airen-neon-blue rounded-lg mx-auto mb-3">
                 <Headphones className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{mockPodcasts.length}</h3>
+              <h3 className="text-2xl font-bold text-white mb-1">{podcasts.length}</h3>
               <p className="text-gray-300 text-sm">Podcast Bölümü</p>
             </CardContent>
           </Card>
@@ -74,7 +105,7 @@ export default function MediaPage() {
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-1">
-                {mockAllMedia.reduce((acc, m) => acc + m.view_count, 0).toLocaleString()}
+                {totalViews.toLocaleString()}
               </h3>
               <p className="text-gray-300 text-sm">Toplam İzlenme</p>
             </CardContent>
@@ -131,7 +162,7 @@ export default function MediaPage() {
                 size="sm"
                 onClick={() => setActiveTab('all')}
               >
-                Tümü ({mockAllMedia.length})
+                Tümü ({allMedia.length})
               </Button>
               <Button
                 variant={activeTab === 'videos' ? 'neon' : 'glass'}
@@ -139,7 +170,7 @@ export default function MediaPage() {
                 onClick={() => setActiveTab('videos')}
               >
                 <Video className="h-4 w-4 mr-1" />
-                Videolar ({mockVideos.length})
+                Videolar ({videos.length})
               </Button>
               <Button
                 variant={activeTab === 'podcasts' ? 'neon' : 'glass'}
@@ -147,7 +178,7 @@ export default function MediaPage() {
                 onClick={() => setActiveTab('podcasts')}
               >
                 <Headphones className="h-4 w-4 mr-1" />
-                Podcast&apos;ler ({mockPodcasts.length})
+                Podcast&apos;ler ({podcasts.length})
               </Button>
             </div>
 
@@ -172,7 +203,6 @@ export default function MediaPage() {
                     size="sm"
                     onClick={() => setSelectedCategory(category.id)}
                   >
-                    <span className="mr-1">{category.icon}</span>
                     {category.name} ({count})
                   </Button>
                 )
@@ -190,14 +220,9 @@ export default function MediaPage() {
                 • {activeTab === 'videos' ? 'Videolar' : 'Podcast\'ler'}
               </span>
             )}
-            {selectedCategory && (
-              <span className="ml-2">
-                • {mediaCategories.find(c => c.id === selectedCategory)?.name}
-              </span>
-            )}
           </p>
           
-          {(selectedCategory) && (
+          {selectedCategory && (
             <Button
               variant="ghost"
               size="sm"
@@ -212,7 +237,13 @@ export default function MediaPage() {
         </div>
 
         {/* Media Grid */}
-        {filteredMedia.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/10 bg-white/5 h-40 animate-pulse" />
+            ))}
+          </div>
+        ) : filteredMedia.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredMedia.map((media) => (
               <MediaCard

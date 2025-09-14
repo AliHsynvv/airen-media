@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, Play, Headphones, TrendingUp, Clock, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,36 +8,61 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MediaCard } from '@/components/media/MediaCard'
 import { AudioPlayer } from '@/components/media/AudioPlayer'
-import { mockPodcasts } from '@/lib/data/mock-media'
+import { supabase } from '@/lib/supabase/client'
+import type { Media } from '@/types/media'
 import { formatDuration } from '@/lib/utils/formatters'
 
 export default function PodcastsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'duration'>('newest')
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
+  const [podcasts, setPodcasts] = useState<Media[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('media')
+          .select('*')
+          .eq('type', 'audio')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(500)
+        if (error) throw error
+        if (mounted) setPodcasts((data as any) || [])
+      } catch {
+        if (mounted) setPodcasts([])
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   const filteredPodcasts = useMemo(() => {
-    const podcasts = mockPodcasts.filter(podcast => {
+    const arr = podcasts.filter(podcast => {
       return searchQuery === '' || 
         podcast.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        podcast.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        (podcast.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     })
 
-    // Sort podcasts
     if (sortBy === 'newest') {
-      podcasts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     } else if (sortBy === 'popular') {
-      podcasts.sort((a, b) => b.view_count - a.view_count)
+      arr.sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
     } else if (sortBy === 'duration') {
-      podcasts.sort((a, b) => (b.duration || 0) - (a.duration || 0))
+      arr.sort((a, b) => (b.duration || 0) - (a.duration || 0))
     }
 
-    return podcasts
-  }, [searchQuery, sortBy])
+    return arr
+  }, [podcasts, searchQuery, sortBy])
 
-  const latestEpisode = mockPodcasts[0]
-  const totalDuration = mockPodcasts.reduce((acc, p) => acc + (p.duration || 0), 0)
-  const totalListens = mockPodcasts.reduce((acc, p) => acc + p.view_count, 0)
+  const latestEpisode = podcasts[0]
+  const totalDuration = podcasts.reduce((acc, p) => acc + (p.duration || 0), 0)
+  const totalListens = podcasts.reduce((acc, p) => acc + (p.view_count || 0), 0)
 
   return (
     <div className="min-h-screen py-12">
@@ -59,7 +84,7 @@ export default function PodcastsPage() {
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-orange-500 to-airen-neon-purple rounded-lg mx-auto mb-3">
                 <Headphones className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{mockPodcasts.length}</h3>
+              <h3 className="text-2xl font-bold text-white mb-1">{podcasts.length}</h3>
               <p className="text-gray-300 text-sm">Podcast Bölümü</p>
             </div>
             <div>
@@ -71,7 +96,7 @@ export default function PodcastsPage() {
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-airen-neon-green to-airen-neon-purple rounded-lg mx-auto mb-3">
-                <Clock className="h-6 w-6 text-white" />
+                <Clock className="h-6 w-6 text_WHITE" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-1">
                 {Math.round(totalDuration / 3600)}
@@ -80,9 +105,9 @@ export default function PodcastsPage() {
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-airen-neon-purple to-orange-500 rounded-lg mx-auto mb-3">
-                <TrendingUp className="h-6 w-6 text-white" />
+                <TrendingUp className="h-6 w-6 text_WHITE" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Haftalık</h3>
+              <h3 className="text-2xl font-bold text_WHITE mb-1">Haftalık</h3>
               <p className="text-gray-300 text-sm">Yayın Programı</p>
             </div>
           </div>
@@ -94,7 +119,7 @@ export default function PodcastsPage() {
             {/* Latest Episode Player */}
             {latestEpisode && (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <h2 className="text-2xl font-bold text_WHITE mb-6 flex items-center">
                   <span className="w-1 h-6 bg-orange-500 mr-3 rounded-full"></span>
                   Son Bölüm
                 </h2>
@@ -104,8 +129,8 @@ export default function PodcastsPage() {
                   description={latestEpisode.description || undefined}
                   thumbnail={latestEpisode.thumbnail_url || undefined}
                   uploader={{
-                    name: latestEpisode.uploader?.full_name || 'Airen Global',
-                    avatar: latestEpisode.uploader?.avatar_url || undefined
+                    name: (latestEpisode as any).uploader?.full_name || 'Airen Global',
+                    avatar: (latestEpisode as any).uploader?.avatar_url || undefined
                   }}
                   duration={latestEpisode.duration ?? undefined}
                   episode={typeof (latestEpisode.metadata as any)?.episode === 'number' ? (latestEpisode.metadata as any).episode : undefined}
@@ -169,7 +194,7 @@ export default function PodcastsPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSearchQuery('')}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text_WHITE"
                 >
                   Aramayı Temizle
                 </Button>
@@ -177,7 +202,13 @@ export default function PodcastsPage() {
             </div>
 
             {/* Episodes List */}
-            {filteredPodcasts.length > 0 ? (
+            {loading ? (
+              <div className="space-y-6">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="rounded-xl border border_WHITE/10 bg-white/5 h-28 animate-pulse" />
+                ))}
+              </div>
+            ) : filteredPodcasts.length > 0 ? (
               <div className="space-y-6">
                 {filteredPodcasts.slice(1).map((podcast) => (
                   <MediaCard
@@ -195,7 +226,7 @@ export default function PodcastsPage() {
                 <div className="w-24 h-24 mx-auto mb-6 rounded-full glass-card flex items-center justify-center">
                   <Search className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <h3 className="text-xl font-semibold text_WHITE mb-2">
                   Podcast Bulunamadı
                 </h3>
                 <p className="text-gray-400 mb-6">
@@ -216,7 +247,7 @@ export default function PodcastsPage() {
             {/* About Airen Talks */}
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-white flex items-center">
+                <CardTitle className="text_WHITE flex items-center">
                   <Headphones className="h-5 w-5 text-orange-500 mr-2" />
                   Airen Talks Hakkında
                 </CardTitle>
@@ -229,15 +260,15 @@ export default function PodcastsPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Yayın Günü:</span>
-                    <span className="text-white">Her Salı</span>
+                    <span className="text_WHITE">Her Salı</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Ortalama Süre:</span>
-                    <span className="text-white">45 dakika</span>
+                    <span className="text_WHITE">45 dakika</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify_between">
                     <span className="text-gray-400">Format:</span>
-                    <span className="text-white">MP3, 192kbps</span>
+                    <span className="text_WHITE">MP3, 192kbps</span>
                   </div>
                 </div>
               </CardContent>
@@ -246,23 +277,23 @@ export default function PodcastsPage() {
             {/* Recent Episodes */}
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-white">Son Bölümler</CardTitle>
+                <CardTitle className="text_WHITE">Son Bölümler</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockPodcasts.slice(0, 3).map((podcast, index) => (
+                  {podcasts.slice(0, 3).map((podcast, index) => (
                     <div key={podcast.id} className="group">
                       <div className="flex items-start space-x-3">
                         <Badge variant="glass" className="text-xs flex-shrink-0">
-                          #{mockPodcasts.length - index}
+                          #{podcasts.length - index}
                         </Badge>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-white group-hover:text-airen-neon-blue transition-colors line-clamp-2 mb-1">
+                          <h4 className="text-sm font-medium text_WHITE group-hover:text-airen-neon-blue transition-colors line-clamp-2 mb-1">
                             {podcast.title}
                           </h4>
                           <div className="flex items-center justify-between text-xs text-gray-400">
                             <span>{formatDuration(podcast.duration || 0)}</span>
-                            <span>{podcast.view_count.toLocaleString()} dinlenme</span>
+                            <span>{(podcast.view_count || 0).toLocaleString()} dinlenme</span>
                           </div>
                         </div>
                       </div>
@@ -275,7 +306,7 @@ export default function PodcastsPage() {
             {/* Subscribe */}
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-white">Abone Ol</CardTitle>
+                <CardTitle className="text_WHITE">Abone Ol</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300 text-sm mb-4">
@@ -284,7 +315,7 @@ export default function PodcastsPage() {
                 <div className="space-y-3">
                   <Input
                     placeholder="E-posta adresiniz"
-                    className="bg-airen-dark-2 border-white/20 text-white"
+                    className="bg-airen-dark-2 border-white/20 text_WHITE"
                   />
                   <Button variant="neon" size="sm" className="w-full">
                     Abone Ol

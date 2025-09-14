@@ -3,13 +3,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Article } from '@/types/article'
-import { mockArticles } from '@/lib/data/mock-articles'
 
 interface UseArticlesOptions {
   type?: 'article' | 'news' | 'guide'
   status?: 'draft' | 'published' | 'archived'
   limit?: number
-  fallbackToMock?: boolean
 }
 
 interface UseArticlesResult {
@@ -19,7 +17,7 @@ interface UseArticlesResult {
 }
 
 export function useArticles(options: UseArticlesOptions = {}): UseArticlesResult {
-  const { type, status = 'published', limit = 100, fallbackToMock = true } = options
+  const { type, status = 'published', limit = 100 } = options
   const [data, setData] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +28,6 @@ export function useArticles(options: UseArticlesOptions = {}): UseArticlesResult
       try {
         setLoading(true)
         setError(null)
-        // Prefer server API for caching and reduced client latency
         const params = new URLSearchParams()
         if (type) params.set('type', type)
         if (status) params.set('status', status)
@@ -39,26 +36,19 @@ export function useArticles(options: UseArticlesOptions = {}): UseArticlesResult
         const json = await res.json()
         if (!res.ok || !json.success) throw new Error(json.error || 'fetch failed')
         if (mounted) {
-          const data = json.data as any[]
-          const normalized = data?.map((a: any) => ({
+          const arr = Array.isArray(json.data) ? json.data : []
+          const normalized = arr.map((a: any) => ({
             ...a,
             tags: Array.isArray(a.article_tags)
               ? a.article_tags.map((at: any) => at?.tags).filter(Boolean)
               : [],
-          })) as Article[] | undefined
-          setData(normalized || [])
+          })) as Article[]
+          setData(normalized)
         }
       } catch (err: any) {
-        console.warn('Supabase articles fetch failed:', err?.message)
         if (mounted) {
-          if (fallbackToMock) {
-            const fallback = type ? mockArticles.filter(a => a.type === type) : mockArticles
-            setData(fallback)
-            setError(null)
-          } else {
-            setData([])
-            setError(err?.message || 'fetch_failed')
-          }
+          setData([])
+          setError(err?.message || 'fetch_failed')
         }
       } finally {
         if (mounted) setLoading(false)

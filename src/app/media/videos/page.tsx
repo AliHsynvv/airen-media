@@ -1,51 +1,79 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, Filter, Grid, List, TrendingUp, Clock, Eye } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Search, Filter, Grid, List, TrendingUp, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { MediaCard } from '@/components/media/MediaCard'
-import { mockVideos, mediaCategories } from '@/lib/data/mock-media'
+import { supabase } from '@/lib/supabase/client'
+import type { Media } from '@/types/media'
 
 export default function VideosPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'duration'>('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [videos, setVideos] = useState<Media[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('media')
+          .select('*')
+          .eq('type', 'video')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(500)
+        if (error) throw error
+        if (mounted) setVideos((data as any) || [])
+      } catch {
+        if (mounted) setVideos([])
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   const filteredVideos = useMemo(() => {
-    const videos = mockVideos.filter(video => {
+    const arr = videos.filter(video => {
       const matchesSearch = searchQuery === '' || 
         video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        video.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      
+        (video.description || '').toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === null || 
         video.category === selectedCategory
-
       return matchesSearch && matchesCategory
     })
 
-    // Sort videos
     if (sortBy === 'newest') {
-      videos.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     } else if (sortBy === 'popular') {
-      videos.sort((a, b) => b.view_count - a.view_count)
+      arr.sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
     } else if (sortBy === 'duration') {
-      videos.sort((a, b) => (b.duration || 0) - (a.duration || 0))
+      arr.sort((a, b) => (b.duration || 0) - (a.duration || 0))
     }
 
-    return videos
-  }, [searchQuery, selectedCategory, sortBy])
+    return arr
+  }, [videos, searchQuery, selectedCategory, sortBy])
 
-  const videoCategories = mediaCategories.filter(cat => 
-    ['vlog', 'cinematic', 'food', 'culture'].includes(cat.id)
-  )
+  const videoCategories = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; count: number }>()
+    for (const v of videos) {
+      if (!v.category) continue
+      const cur = map.get(v.category)
+      if (cur) cur.count += 1
+      else map.set(v.category, { id: v.category, name: v.category, count: 1 })
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count)
+  }, [videos])
 
-  const mostViewed = mockVideos.reduce((prev, current) => 
-    prev.view_count > current.view_count ? prev : current
-  )
+  const mostViewed = useMemo(() => videos.slice().sort((a, b) => (b.view_count || 0) - (a.view_count || 0))[0], [videos])
 
   return (
     <div className="min-h-screen py-12">
@@ -65,25 +93,25 @@ export default function VideosPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
             <div>
               <h3 className="text-2xl font-bold text-airen-neon-blue mb-1">
-                {mockVideos.length}
+                {videos.length}
               </h3>
               <p className="text-gray-300 text-sm">Video</p>
             </div>
             <div>
               <h3 className="text-2xl font-bold text-airen-neon-green mb-1">
-                {mockVideos.reduce((acc, v) => acc + v.view_count, 0).toLocaleString()}
+                {videos.reduce((acc, v) => acc + (v.view_count || 0), 0).toLocaleString()}
               </h3>
               <p className="text-gray-300 text-sm">Toplam İzlenme</p>
             </div>
             <div>
               <h3 className="text-2xl font-bold text-airen-neon-purple mb-1">
-                {Math.round(mockVideos.reduce((acc, v) => acc + (v.duration || 0), 0) / 60)}
+                {Math.round(videos.reduce((acc, v) => acc + (v.duration || 0), 0) / 60)}
               </h3>
               <p className="text-gray-300 text-sm">Dakika İçerik</p>
             </div>
             <div>
               <h3 className="text-2xl font-bold text-orange-400 mb-1">
-                {mockVideos.reduce((acc, v) => acc + v.like_count, 0).toLocaleString()}
+                {videos.reduce((acc, v) => acc + (v.like_count || 0), 0).toLocaleString()}
               </h3>
               <p className="text-gray-300 text-sm">Beğeni</p>
             </div>
@@ -96,7 +124,7 @@ export default function VideosPage() {
             <TrendingUp className="h-6 w-6 text-airen-neon-blue mr-2" />
             En Popüler Video
           </h2>
-          <MediaCard media={mostViewed} variant="featured" />
+          {mostViewed && <MediaCard media={mostViewed} variant="featured" />}
         </section>
 
         {/* Filters and Search */}
@@ -168,24 +196,18 @@ export default function VideosPage() {
               onClick={() => setSelectedCategory(null)}
             >
               <Filter className="h-4 w-4 mr-1" />
-              Tümü ({mockVideos.length})
+              Tümü ({videos.length})
             </Button>
-            {videoCategories.map((category) => {
-              const count = mockVideos.filter(v => v.category === category.id).length
-              if (count === 0) return null
-              
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? 'neon' : 'glass'}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <span className="mr-1">{category.icon}</span>
-                  {category.name} ({count})
-                </Button>
-              )
-            })}
+            {videoCategories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? 'neon' : 'glass'}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.name} ({category.count})
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -216,7 +238,17 @@ export default function VideosPage() {
         </div>
 
         {/* Videos Grid/List */}
-        {filteredVideos.length > 0 ? (
+        {loading ? (
+          <div className={
+            viewMode === 'grid' 
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' 
+              : 'space-y-6'
+          }>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/10 bg-white/5 h-40 animate-pulse" />
+            ))}
+          </div>
+        ) : filteredVideos.length > 0 ? (
           <div className={
             viewMode === 'grid' 
               ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' 
@@ -253,43 +285,28 @@ export default function VideosPage() {
           </div>
         )}
 
-        {/* Load More */}
-        {filteredVideos.length > 0 && (
-          <div className="text-center mt-12">
-            <Button variant="glass" size="lg" className="animate-glow">
-              Daha Fazla Video Yükle
-            </Button>
-          </div>
-        )}
-
         {/* Categories Sidebar */}
         <aside className="mt-16">
           <Card className="glass-card">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+              <h3 className="text-lg font-semibold text_WHITE mb-4">
                 Video Kategorileri
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {videoCategories.map((category) => {
-                  const count = mockVideos.filter(v => v.category === category.id).length
-                  if (count === 0) return null
-                  
-                  return (
-                    <Button
-                      key={category.id}
-                      variant="glass"
-                      size="sm"
-                      onClick={() => setSelectedCategory(category.id)}
-                      className="flex flex-col items-center p-4 h-auto space-y-2 hover:airen-glow transition-all"
-                    >
-                      <span className="text-2xl">{category.icon}</span>
-                      <span className="text-xs">{category.name}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {count}
-                      </Badge>
-                    </Button>
-                  )
-                })}
+                {videoCategories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant="glass"
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className="flex flex-col items-center p-4 h-auto space-y-2 hover:airen-glow transition-all"
+                  >
+                    <span className="text-xs">{category.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {category.count}
+                    </Badge>
+                  </Button>
+                ))}
               </div>
             </CardContent>
           </Card>

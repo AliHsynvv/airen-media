@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { UserStory } from '@/types/story'
-import { mockStories } from '@/lib/data/mock-stories'
 
 interface UseStoriesResult {
   data: UserStory[]
@@ -27,9 +26,8 @@ export function useStories(): UseStoriesResult {
         if (!res.ok || !json.success) throw new Error(json.error || 'fetch failed')
         if (mounted) setData((json.data as UserStory[]) || [])
       } catch (err: any) {
-        console.warn('Supabase stories fetch failed, falling back to mocks:', err?.message)
-        if (mounted) setData(mockStories)
-        if (mounted) setError(null)
+        if (mounted) setData([])
+        if (mounted) setError(err?.message || 'fetch_failed')
       } finally {
         if (mounted) setLoading(false)
       }
