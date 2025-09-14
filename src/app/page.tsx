@@ -6,7 +6,6 @@ import Link from "next/link"
 import { ArticleCard } from "@/components/articles/ArticleCard"
 import MeetAirenButton from "@/components/home/MeetAirenButton"
 import StoryCard from "@/components/community/StoryCard"
-import ElevenLabsInlineEmbed from "@/components/home/ElevenLabsInlineEmbed"
 
 export const dynamic = 'force-dynamic'
 
@@ -164,11 +163,6 @@ export default async function Home() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Inline ElevenLabs embed on Home (moved below Community) */}
-      <section className="container mx-auto px-4">
-        <ElevenLabsInlineEmbed />
       </section>
 
       {/* Why Airen - now placed here */}
