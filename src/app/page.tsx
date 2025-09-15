@@ -36,7 +36,7 @@ export default async function Home() {
       .limit(4),
     supabaseAdmin
       .from('user_stories')
-      .select('id,title,slug,image_url,image_alt,category,tags,created_at, users_profiles:users_profiles!user_stories_user_id_fkey(id,full_name,username,avatar_url)')
+      .select('id,title,content,slug,image_url,image_alt,category,tags,created_at, users_profiles:users_profiles!user_stories_user_id_fkey(id,full_name,username,avatar_url)')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(4)

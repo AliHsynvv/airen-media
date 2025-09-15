@@ -10,13 +10,16 @@ type Props = {
   initialComments?: number
   storySlug?: string | null
   storyTitle?: string
+  className?: string
+  initialShares?: number
 }
 
-export default function StoryCardActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle }: Props) {
+export default function StoryCardActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className, initialShares = 0 }: Props) {
   const [liked, setLiked] = useState(false)
   const [likes, setLikes] = useState(initialLikes)
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [shares, setShares] = useState<number>(initialShares)
 
   useEffect(() => {
     let mounted = true
@@ -79,6 +82,8 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         await navigator.clipboard.writeText(url)
         alert('Link panoya kopyalandı')
       }
+      // optimistic UI update for share count
+      setShares(v => v + 1)
     } catch {}
   }
 
@@ -106,38 +111,39 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
   }
 
   return (
-    <div className="px-3 py-2">
+    <div className={["px-3 py-2", className || ''].join(' ').trim()}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             type="button"
             aria-label={liked ? 'Beğenmekten vazgeç' : 'Beğen'}
             onClick={toggleLike}
-            className={`group min-h-11 text-gray-600 ${liked ? 'text-red-600' : ''}`}
+            className={`group min-h-11 text-black`}
           >
             <span className="inline-flex items-center gap-2">
-              <Heart className={`h-6 w-6 ${liked ? 'fill-red-600' : 'fill-transparent'} transition-transform group-active:scale-95`} />
+              <Heart className={`h-6 w-6 ${liked ? 'fill-black' : 'fill-transparent'} transition-transform group-active:scale-95`} />
               <span className="hidden sm:inline text-sm">Beğen</span>
               <span className="text-sm tabular-nums">{likes.toLocaleString()}</span>
             </span>
           </button>
-          <button type="button" aria-label="Yorumlar" onClick={goComments} className="group min-h-11 text-gray-600 hover:text-gray-900">
+          <button type="button" aria-label="Yorumlar" onClick={goComments} className="group min-h-11 text-black">
             <span className="inline-flex items-center gap-2">
               <MessageSquare className="h-6 w-6" />
               <span className="hidden sm:inline text-sm">Yorum</span>
               <span className="text-sm tabular-nums">{initialComments?.toLocaleString?.() ?? 0}</span>
             </span>
           </button>
-          <button type="button" aria-label="Paylaş" onClick={share} className="group min-h-11 text-gray-600 hover:text-gray-900">
+          <button type="button" aria-label="Paylaş" onClick={share} className="group min-h-11 text-black">
             <span className="inline-flex items-center gap-2">
               <Share2 className="h-6 w-6" />
               <span className="hidden sm:inline text-sm">Paylaş</span>
+              <span className="text-sm tabular-nums">{shares.toLocaleString()}</span>
             </span>
           </button>
         </div>
-        <button type="button" aria-label={saved ? 'Kaydedildi' : 'Kaydet'} onClick={save} className={`group min-h-11 ${saved ? 'text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}>
+        <button type="button" aria-label={saved ? 'Kaydedildi' : 'Kaydet'} onClick={save} className={`group min-h-11 text-black`}>
           <span className="inline-flex items-center gap-2">
-            <Bookmark className={`h-6 w-6 ${saved ? 'fill-blue-700' : 'fill-transparent'}`} />
+            <Bookmark className={`h-6 w-6 ${saved ? 'fill-black' : 'fill-transparent'}`} />
             <span className="hidden sm:inline text-sm">Kaydet</span>
           </span>
         </button>

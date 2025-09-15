@@ -41,21 +41,21 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
         variant === 'fixed' ? 'w-[220px] border border-gray-200' : 'w-full sm:max-w-none rounded-xl sm:rounded-2xl border-0 sm:border border-gray-200'
       )}>
         {/* Header: compact, minimal */}
-        <div className="px-3 py-2 flex items-center gap-3">
+        <div className="px-0 sm:px-3 py-2 flex items-center gap-3">
           {/* Avatar */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <Link href={`/u/${(story as any).users_profiles?.id || ''}`} className="shrink-0">
             {(story as any).users_profiles?.avatar_url ? (
-              <img src={(story as any).users_profiles.avatar_url} alt="avatar" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
+              <img src={(story as any).users_profiles.avatar_url} alt="avatar" className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover" />
             ) : (
-              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-200" />
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gray-200" />
             )}
           </Link>
 
           {/* Username + Follow on the same line */}
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
             <Link href={`/u/${(story as any).users_profiles?.id || ''}`} className="min-w-0">
-              <div className="text-[13px] font-semibold text-gray-900 truncate">
+              <div className="text-[14px] sm:text-base font-semibold text-gray-900 truncate">
                 {(story as any).users_profiles?.full_name || (story as any).users_profiles?.username || 'Kullanıcı'}
               </div>
             </Link>
@@ -65,13 +65,14 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           </div>
         </div>
 
-        {/* Media: full card width on mobile with rounded corners preserved */}
+        {/* Media: full-bleed on mobile (edge-to-edge), contained on desktop */}
         <Link href={href} className="block">
           <div
             className={cn(
-              'relative w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl',
-              // compact aspect for mobile and desktop
-              'aspect-[16/10] sm:aspect-[4/3]'
+              'relative overflow-hidden',
+              variant === 'fixed'
+                ? 'w-full rounded-t-xl aspect-[4/5] sm:aspect-[3/4]'
+                : 'w-screen sm:w-full left-1/2 -ml-[50vw] sm:ml-0 sm:left-0 rounded-none sm:rounded-t-2xl aspect-[3/4] sm:aspect-[3/4]'
             )}
           >
             <Image
@@ -79,25 +80,39 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
               alt={story.image_alt || story.title}
               fill
               priority={false}
-              className="object-cover"
+              className={cn(
+                'object-cover',
+                variant === 'fixed' ? '' : 'transform scale-[1.08] sm:scale-100'
+              )}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         </Link>
 
-        {/* Content: tighter spacing and line-clamp */}
+        {/* Content block */}
         <div className="py-2 px-3 sm:px-4 flex-1 flex flex-col gap-2">
-          <Link href={href} className="block">
-            <h3 className="text-gray-900 font-semibold text-[14px] sm:text-[15px] leading-5 line-clamp-2">
-              {story.title}
-            </h3>
-            <p className="text-gray-600 text-[14px] sm:text-[14px] mt-1 leading-6 line-clamp-2">
-              {story.content}
-            </p>
+          {/* Actions directly under the image, minimal spacing */}
+          <StoryCardActions
+            storyId={story.id}
+            initialLikes={story.likes_count || 0}
+            initialComments={(story as any).comments_count || 0}
+            storySlug={story.slug}
+            storyTitle={story.title}
+            className="px-0 -ml-4 sm:ml-0 pr-4 pt-2 pb-0"
+          />
+
+          {/* Post description line: bold username + real content; align to page-left on mobile */}
+          <Link href={href} className="block -ml-4 sm:ml-0 pr-4 -mt-1">
+            <div className="text-[15px] sm:text-[16px] text-black leading-6 flex items-baseline gap-2">
+              <span className="font-semibold shrink-0 text-black">{(story as any).users_profiles?.full_name || (story as any).users_profiles?.username || 'Kullanıcı'}</span>
+              <span className="font-normal truncate flex-1 min-w-0 whitespace-nowrap text-black">
+                {story.content}
+              </span>
+            </div>
           </Link>
 
-          {/* Timestamp below post info */}
-          <div className="text-[12px] text-gray-500">
+          {/* Timestamp under description; align to page left using negative margin on mobile */}
+          <div className="text-[12px] font-normal text-gray-500 text-left -ml-4 sm:ml-0 -mt-1">
             {formatRelativeTime(story.created_at)}
           </div>
 
@@ -109,19 +124,10 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
             </div>
           )}
 
-          {/* Meta: hidden on mobile for minimalism */}
+          {/* Meta link (desktop) */}
           <div className="hidden sm:block text-xs text-gray-500">
             <Link href={href + '#comments'} className="hover:underline">Tüm yorumları görüntüle</Link>
           </div>
-
-          {/* Actions */}
-          <StoryCardActions
-            storyId={story.id}
-            initialLikes={story.likes_count || 0}
-            initialComments={(story as any).comments_count || 0}
-            storySlug={story.slug}
-            storyTitle={story.title}
-          />
         </div>
       </Card>
     </div>
