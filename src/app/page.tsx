@@ -1,24 +1,30 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Globe, MapPin, Users, Video, BookOpen, MessageCircle, Play, ArrowRight } from "lucide-react"
+import { Globe, MapPin, Users, Video, BookOpen, MessageCircle, Play, ArrowRight, Newspaper } from "lucide-react"
 import { supabaseAdmin } from "@/lib/supabase/server"
 import Link from "next/link"
 import { ArticleCard } from "@/components/articles/ArticleCard"
 import MeetAirenButton from "@/components/home/MeetAirenButton"
+import HeroSearch from "@/components/home/HeroSearch"
+import HeroLiveStats from "@/components/home/HeroLiveStats"
+import HeroTitle from "@/components/home/HeroTitle"
 import StoryCard from "@/components/community/StoryCard"
+import AnimatedNumber from "@/components/common/AnimatedNumber"
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
-  const [countriesRes, usersRes, storiesRes] = await Promise.all([
+  const [countriesRes, usersRes, storiesRes, newsCountRes] = await Promise.all([
     supabaseAdmin.from('countries').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('users_profiles').select('id', { count: 'exact', head: true }),
-    supabaseAdmin.from('user_stories').select('id', { count: 'exact', head: true }).eq('status', 'approved')
+    supabaseAdmin.from('user_stories').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+    supabaseAdmin.from('articles').select('id', { count: 'exact', head: true }).eq('type', 'news').eq('status', 'published')
   ])
   const stats = {
     countries: countriesRes.count || 0,
     travelers: usersRes.count || 0,
     stories: storiesRes.count || 0,
+    news: newsCountRes.count || 0,
   }
   const [newsRes, storiesListRes] = await Promise.all([
     supabaseAdmin
@@ -38,58 +44,87 @@ export default async function Home() {
   const latestNews = newsRes.data ?? []
   const latestStories = storiesListRes.data ?? []
   return (
-    <div className="space-y-8 py-12">
+    <div className="space-y-8 py-6 sm:py-12">
       {/* Hero Section - Light minimal style with large orb */}
       <section className="relative overflow-hidden">
         {/* light backdrop gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50" />
         <div className="relative container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-16 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-4 md:py-10 lg:py-16">
             {/* Left: Heading & CTAs */}
             <div className="space-y-8 text-left">
+              {/* Live Stats above heading */}
+              <HeroLiveStats />
               <div className="space-y-6">
-                <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900">
-                  Discover the World with AI
-                </h1>
+                <HeroTitle />
                 <p className="text-lg lg:text-xl text-gray-600 max-w-xl">
                   Meet Airen, your AI travel companion who helps you explore amazing
                   destinations through personalized recommendations and immersive content.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <Button size="lg" className="h-11 px-5 rounded-md bg-black text-white hover:bg-black/90">
+              {/* Hero Search */}
+              <HeroSearch />
+
+              <div className="flex flex-row gap-2 items-center w-full">
+                <div className="w-1/2 min-w-0">
+                  <Button size="lg" className="h-11 w-full px-6 rounded-full bg-black text-white hover:bg-black/90 text-xs sm:text-sm">
                   Start Exploring
                   <span className="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-white/10">
                     <ArrowRight className="h-4 w-4" />
                   </span>
-                </Button>
-                <MeetAirenButton />
+                  </Button>
+                </div>
+                <div className="w-1/2 min-w-0">
+                  <MeetAirenButton fullWidth className="text-xs sm:text-sm" />
+                </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-8">
-                <div>
-                  <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                    <Globe className="h-4 w-4 text-gray-500" />
-                    <span>{stats.countries.toLocaleString()}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 pt-6">
+                {/* 1. News */}
+                <Link href="/news" aria-label="View news" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 text-gray-600">
+                      <Newspaper className="h-5 w-5" />
+                    </span>
+                    <AnimatedNumber value={stats.news} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="text-sm text-gray-500">Countries</div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <span>{stats.travelers.toLocaleString()}</span>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">News</div>
+                </Link>
+
+                {/* 2. Stories */}
+                <Link href="/community" aria-label="View stories" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 text-gray-600">
+                      <BookOpen className="h-5 w-5" />
+                    </span>
+                    <AnimatedNumber value={stats.stories} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="text-sm text-gray-500">Travelers</div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                    <BookOpen className="h-4 w-4 text-gray-500" />
-                    <span>{stats.stories.toLocaleString()}</span>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Stories</div>
+                </Link>
+
+                {/* 3. Countries */}
+                <Link href="/countries" aria-label="View countries" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 text-gray-600">
+                      <Globe className="h-5 w-5" />
+                    </span>
+                    <AnimatedNumber value={stats.countries} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="text-sm text-gray-500">Stories</div>
-                </div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Countries</div>
+                </Link>
+
+                {/* 4. Travelers */}
+                <Link href="/community" aria-label="View travelers" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 text-gray-600">
+                      <Users className="h-5 w-5" />
+                    </span>
+                    <AnimatedNumber value={stats.travelers} className="text-2xl sm:text-3xl font-bold text-gray-900" />
+                  </div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Travelers</div>
+                </Link>
               </div>
             </div>
 
@@ -135,10 +170,10 @@ export default async function Home() {
         <div className="sm:hidden mb-4">
           <Link href="/news" className="inline-block text-sm px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900">Daha fazla</Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {latestNews.map((a: any, i: number) => (
             <div key={a.id} className="opacity-0 translate-y-4 animate-[fadein_0.6s_ease_forwards]" style={{ animationDelay: `${i * 80}ms` }}>
-              <ArticleCard article={a} theme="light" />
+              <ArticleCard article={a} theme="light" className="h-[360px] sm:h-[380px] lg:h-[420px]" />
             </div>
           ))}
         </div>

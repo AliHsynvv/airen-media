@@ -7,7 +7,7 @@ const schema = z.object({
   username: z.string().min(3),
   full_name: z.string().optional(),
 })
-
+  
 export async function POST(req: NextRequest) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {

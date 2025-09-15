@@ -143,7 +143,7 @@ export default function StoryComments({ storyId }: StoryCommentsProps) {
   )
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div id="comments" className="rounded-xl border border-gray-200 bg-white p-4">
       <h3 className="text-black font-semibold mb-3">Yorumlar</h3>
       <div>
         {(tree['root'] || []).map(c => <Item key={c.id} c={c} />)}

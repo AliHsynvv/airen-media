@@ -38,19 +38,22 @@ export default function CommunityPage() {
 
   return (
     <div className="container mx-auto px-0 sm:px-4 py-8">
-      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+      {/* Header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Topluluk</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">Topluluk</h1>
           <p className="text-gray-600 mt-1">Kullanıcı hikayeleri ve deneyimler</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Input
-            placeholder="Hikaye ara..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="w-64 border border-gray-200 bg_WHITE text-gray-900"
-          />
-          <Link href="/community/stories/submit" className="px-4 py-2 rounded-md text-sm border border-gray-200 bg_WHITE text-black hover:bg-gray-50">
+        <div className="w-full sm:w-auto flex items-center gap-2">
+          <div className="flex-1 sm:flex-none">
+            <Input
+              placeholder="Hikaye ara..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="w-full sm:w-72 rounded-full border border-gray-200 bg-white text-gray-900"
+            />
+          </div>
+          <Link href="/community/stories/submit" className="px-4 py-2 rounded-full text-sm border border-gray-200 bg-white text-gray-900 hover:bg-gray-50">
             Hikayeni Paylaş
           </Link>
         </div>
@@ -59,48 +62,50 @@ export default function CommunityPage() {
       {/* Featured Stories */}
       {(loading || featuredStories.length > 0) && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text_GRAY-900 mb-3">Öne Çıkanlar</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Öne Çıkanlar</h2>
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-40 rounded-xl animate-pulse border border-gray-200 bg_WHITE" />
+            <div className="grid grid-cols-3 gap-1">
+              {[...Array(9)].map((_, i) => (
+                <div key={i} className="aspect-square rounded-md animate-pulse border border-gray-200 bg-white" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
-              {featuredStories.map(story => (
-                <StoryCard key={story.id} story={story} variant="responsive" />
+            <div className="grid grid-cols-3 gap-1">
+              {featuredStories.slice(0, 12).map(story => (
+                <StoryCard key={story.id} story={story} variant="grid" />
               ))}
             </div>
           )}
         </div>
       )}
 
-      <div className="mb-6 flex gap-2 flex-wrap">
+      <div className="mb-6 flex gap-2 flex-wrap items-center">
         {categories.map(c => (
           <button
             key={c.key}
             onClick={() => setCategory(c.key)}
-            className={`px-3 py-1 rounded-full text-sm transition-colors border ${
-              category === c.key ? 'border-black bg_BLACK text_WHITE' : 'border-gray-200 bg_WHITE text-gray-700 hover:bg-gray-50'
+            className={`px-3 py-1.5 rounded-full text-sm transition-colors border ${
+              category === c.key ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
             {c.label}
           </button>
         ))}
-        <Badge className="ml-auto border border-gray-200 bg_WHITE text-gray-700">{loading ? 'Yükleniyor...' : `${filtered.length} hikaye`}</Badge>
+        <span className="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs border border-gray-200 bg-white text-gray-700">
+          {loading ? 'Yükleniyor…' : `${filtered.length} hikaye`}
+        </span>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 rounded-xl animate-pulse border border-gray-200 bg_WHITE" />
+        <div className="grid grid-cols-3 gap-1">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-md animate-pulse border border-gray-200 bg-white" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
+        <div className="grid grid-cols-3 gap-1">
           {filtered.map(story => (
-            <StoryCard key={story.id} story={story} variant="responsive" />
+            <StoryCard key={story.id} story={story} variant="grid" />
           ))}
         </div>
       )}

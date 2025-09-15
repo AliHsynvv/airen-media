@@ -149,6 +149,19 @@ export default function ProfilePage() {
       setLoading(false)
     }
     load()
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        // signed out – reset state quickly
+        setEmail(null)
+        setUserId(null)
+        setFullName(null)
+        setAvatarUrl(null)
+        setStories([])
+      }
+      // re-fetch to be safe
+      load()
+    })
+    return () => { sub.subscription.unsubscribe() }
   }, [])
 
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])

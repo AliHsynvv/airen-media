@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Menu, X, User, Search, Globe, Bell } from 'lucide-react'
+import { Menu, X, User, Search, Globe, Bell, LogIn, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabase/client'
@@ -116,7 +116,13 @@ export function Header() {
                     </Link>
                     <button
                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
-                      onClick={async () => { await supabase.auth.signOut(); window.location.href = '/' }}
+                      onClick={async () => {
+                        try {
+                          await fetch('/api/auth/signout', { method: 'POST', cache: 'no-store' })
+                        } catch {}
+                        await supabase.auth.signOut()
+                        window.location.assign('/')
+                      }}
                     >
                       Çıkış Yap
                     </button>
@@ -124,10 +130,38 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
-                <Link href={ROUTES.AUTH.LOGIN} className="text-gray-600 hover:text-gray-900 text-sm">Giriş</Link>
-                <Link href={ROUTES.AUTH.REGISTER} className="px-3 py-1 rounded-md text-sm bg-black text-white hover:bg-black/90">Kayıt Ol</Link>
-              </div>
+              <>
+                {/* Desktop auth links */}
+                <div className="hidden md:flex items-center gap-2">
+                  <Button asChild variant="outline" size="sm" className="rounded-full border-gray-300 text-gray-700 hover:bg-gray-100">
+                    <Link href={ROUTES.AUTH.LOGIN}>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Giriş
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" className="rounded-full bg-gray-900 text-white hover:bg-black">
+                    <Link href={ROUTES.AUTH.REGISTER}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Kayıt Ol
+                    </Link>
+                  </Button>
+                </div>
+                {/* Mobile auth buttons visible in header */}
+                <div className="flex md:hidden items-center gap-2">
+                  <Button asChild variant="outline" size="sm" className="rounded-full border-gray-300 text-gray-700 hover:bg-gray-100">
+                    <Link href={ROUTES.AUTH.LOGIN}>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Giriş
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" className="rounded-full bg-gray-900 text-white hover:bg-black">
+                    <Link href={ROUTES.AUTH.REGISTER}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Kayıt Ol
+                    </Link>
+                  </Button>
+                </div>
+              </>
             )}
 
             {/* Mobile menu button */}

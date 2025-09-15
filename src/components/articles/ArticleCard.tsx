@@ -7,6 +7,7 @@ import { Clock, Eye, Calendar, Heart, MessageSquare } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 import type { Article } from '@/types'
 import ArticleCardActions from '@/components/articles/ArticleCardActions'
+import CardActions from '@/components/common/CardActions'
 
 interface ArticleCardProps {
   article: Article
@@ -312,6 +313,8 @@ export function ArticleCard({
           </div>
         </div>
       </CardContent>
+      {/* Unified actions bar at bottom - consistent across cards */}
+      <CardActions views={view_count} comments={commentCount} />
     </Card>
   )
 }

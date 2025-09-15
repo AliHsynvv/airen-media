@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Play } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import ChatInterface from '@/components/interaction/ChatInterface'
 
-export default function MeetAirenButton() {
+export default function MeetAirenButton({ className, fullWidth = false }: { className?: string; fullWidth?: boolean }) {
   const [open, setOpen] = useState(false)
   const [started, setStarted] = useState(false)
   const pathname = usePathname()
@@ -38,7 +39,17 @@ export default function MeetAirenButton() {
 
   return (
     <>
-      <Button size="lg" variant="outline" className="h-11 rounded-md border-gray-200 bg-white text-gray-900 hover:bg-gray-50" onClick={() => setOpen(true)}>
+      <Button
+        size="lg"
+        variant="outline"
+        className={cn(
+          'h-11 rounded-full border-gray-300 bg-white text-gray-900 hover:bg-gray-50',
+          fullWidth ? 'w-full' : '',
+          'whitespace-nowrap text-xs sm:text-sm px-4',
+          className
+        )}
+        onClick={() => setOpen(true)}
+      >
         <Play className="mr-2 h-4 w-4" />
         Meet Airen AI
       </Button>
