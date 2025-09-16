@@ -46,16 +46,16 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <Link href={`/u/${(story as any).users_profiles?.id || ''}`} className="shrink-0">
             {(story as any).users_profiles?.avatar_url ? (
-              <img src={(story as any).users_profiles.avatar_url} alt="avatar" className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover" />
+              <img src={(story as any).users_profiles.avatar_url} alt="avatar" className="h-12 w-12 min-[430px]:h-[52px] min-[430px]:w-[52px] sm:h-14 sm:w-14 rounded-full object-cover" />
             ) : (
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gray-200" />
+              <div className="h-12 w-12 min-[430px]:h-[52px] min-[430px]:w-[52px] sm:h-14 sm:w-14 rounded-full bg-gray-200" />
             )}
           </Link>
 
           {/* Username + Follow on the same line */}
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
             <Link href={`/u/${(story as any).users_profiles?.id || ''}`} className="min-w-0">
-              <div className="text-[14px] sm:text-base font-semibold text-gray-900 truncate">
+              <div className="text-[15px] min-[430px]:text-[16px] sm:text-lg font-semibold text-gray-900 truncate">
                 {(story as any).users_profiles?.full_name || (story as any).users_profiles?.username || 'Kullanıcı'}
               </div>
             </Link>
@@ -103,7 +103,7 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
 
           {/* Post description line: bold username + real content; align to page-left on mobile */}
           <Link href={href} className="block -ml-4 sm:ml-0 pr-4 -mt-1">
-            <div className="text-[15px] sm:text-[16px] text-black leading-6 flex items-baseline gap-2">
+            <div className="text-[16px] min-[430px]:text-[17px] sm:text-[17px] text-black leading-6 flex items-baseline gap-2">
               <span className="font-semibold shrink-0 text-black">{(story as any).users_profiles?.full_name || (story as any).users_profiles?.username || 'Kullanıcı'}</span>
               <span className="font-normal truncate flex-1 min-w-0 whitespace-nowrap text-black">
                 {story.content}
