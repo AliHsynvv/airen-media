@@ -28,6 +28,7 @@ export const ROUTES = {
   COUNTRIES: '/countries',
   COMMUNITY: '/community',
   INTERACTION: '/interaction',
+  NOTIFICATIONS: '/notifications',
   ABOUT: '/about',
   CONTACT: '/contact',
   AUTH: {

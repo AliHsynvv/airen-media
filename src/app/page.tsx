@@ -36,7 +36,7 @@ export default async function Home() {
       .limit(4),
     supabaseAdmin
       .from('user_stories')
-      .select('id,title,content,slug,image_url,image_alt,category,tags,created_at, users_profiles:users_profiles!user_stories_user_id_fkey(id,full_name,username,avatar_url)')
+      .select('id,title,content,slug,image_url,image_alt,location,category,tags,created_at, community_story_comments(count), users_profiles:users_profiles!user_stories_user_id_fkey(id,full_name,username,avatar_url)')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(4)
@@ -68,11 +68,15 @@ export default async function Home() {
 
               <div className="flex flex-row gap-2 items-center w-full">
                 <div className="w-1/2 min-w-0">
-                  <Button size="lg" className="h-11 w-full px-6 rounded-full bg-black text-white hover:bg-black/90 text-xs sm:text-sm">
-                  Start Exploring
-                  <span className="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-white/10">
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
+                  <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
+                    <Link href="/profile">
+                      <span className="inline-flex items-center justify-center">
+                        Airen Social Media
+                        <span className="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-white/10">
+                          <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </span>
+                    </Link>
                   </Button>
                 </div>
                 <div className="w-1/2 min-w-0">
@@ -131,7 +135,7 @@ export default async function Home() {
             {/* Right: Large orb with embedded video */}
             <div className="relative mx-auto lg:mx-0">
               {/* floating globe badge */}
-              <div className="absolute -top-2 right-12 hidden lg:flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 shadow-sm">
+              <div className="absolute -top-2 right-12 hidden lg:flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 shadow-sm animate-gentle-bounce">
                 <Globe className="h-5 w-5" />
               </div>
               <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] lg:h-[520px] lg:w-[520px] max-w-full rounded-full mx-auto">
@@ -160,15 +164,21 @@ export default async function Home() {
 
       {/* Latest News */}
       <section className="w-full px-0 sm:px-4">
-        <div className="flex items-end justify-between mb-4">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Son Haberler</h2>
-            <p className="text-gray-600 text-sm">Gündemdeki 4 içerik</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Son Haberler</h2>
+            <p className="mt-1">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] sm:text-xs text-gray-700 shadow-sm">
+                <Newspaper className="h-3.5 w-3.5" />
+                Gündemdeki 4 içerik
+              </span>
+            </p>
           </div>
-          <Link href="/news" className="text-sm text-gray-700 hover:underline hidden sm:inline">Daha fazla</Link>
-        </div>
-        <div className="sm:hidden mb-4">
-          <Link href="/news" className="inline-block text-sm px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900">Daha fazla</Link>
+          <Link href="/news" className="sm:hidden inline-flex items-center gap-2 h-9 px-3 rounded-full border border-gray-200 bg-white text-gray-900 shadow-sm">
+            Daha fazla
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href="/news" className="hidden sm:inline text-sm text-gray-700 hover:underline">Daha fazla</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {latestNews.map((a: any, i: number) => (

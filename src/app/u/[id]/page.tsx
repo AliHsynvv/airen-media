@@ -11,7 +11,7 @@ export default async function PublicUserProfilePage(context: Props) {
   const { id } = await context.params
   const { data: profile } = await supabaseAdmin
     .from('users_profiles')
-    .select('id,full_name,username,avatar_url,created_at')
+    .select('id,full_name,username,avatar_url,bio,created_at')
     .eq('id', id)
     .single()
 
@@ -41,31 +41,35 @@ export default async function PublicUserProfilePage(context: Props) {
   return (
     <div className="container mx-auto px-0 sm:px-4 py-0">
       <div className="max-w-4xl mx-auto">
-        <div className="rounded-none sm:rounded-xl border border-gray-200 bg-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover" />
-          ) : (
-            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gray-200" />
-          )}
-          <div className="flex-1 min-w-0 w-full">
-            <div className="flex items-center gap-2 w-full">
-              <div className="min-w-0">
-                <div className="text-black font-semibold text-base sm:text-lg truncate">{profile.full_name || profile.username || 'Kullanıcı'}</div>
-                <div className="text-gray-600 text-xs sm:text-sm truncate">@{profile.username || profile.id.slice(0,6)}</div>
+        <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover" />
+            ) : (
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gray-200" />
+            )}
+            <div className="flex-1 min-w-0 w-full">
+              <div className="flex items-baseline gap-2 w-full min-w-0">
+                <div className="text-gray-900 font-semibold text-base sm:text-lg truncate">{profile.full_name || profile.username || 'Kullanıcı'}</div>
+                <div className="text-gray-500 text-xs sm:text-sm truncate">@{profile.username || profile.id.slice(0,6)}</div>
+                <FollowButton profileId={profile.id} className="ml-auto" />
               </div>
-              <FollowButton profileId={profile.id} className="ml-auto" />
-            </div>
-            <div className="mt-3 flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
-              <div><span className="font-semibold">{stories.length}</span> Gönderi</div>
-              <div><span className="font-semibold">{followers}</span> Takipçi</div>
-              <div><span className="font-semibold">{following}</span> Takip</div>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:text-left sm:flex sm:items-center sm:gap-6">
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{stories.length}</span> Gönderi</div>
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followers}</span> Takipçi</div>
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{following}</span> Takip</div>
+              </div>
+              {profile.bio?.trim() ? (
+                <div className="mt-3 text-sm text-gray-800 whitespace-pre-wrap">
+                  {profile.bio}
+                </div>
+              ) : null}
             </div>
           </div>
-          <Link href="/community" className="hidden sm:inline text-sm text-gray-700 hover:underline">Topluluğa Dön</Link>
         </div>
 
-        <div className="mt-1 sm:mt-2 grid grid-cols-3 gap-[2px] sm:gap-1">
+        <div className="grid grid-cols-3 gap-[1px] sm:gap-[2px] bg-white mt-[1px]">
           {stories.map((s: any) => (
             <Link key={s.id} href={s.slug ? `/community/stories/${s.slug}` : '#'} className="block">
               <div className="relative aspect-square overflow-hidden">

@@ -14,8 +14,10 @@ export default function StorySubmitPage() {
   const [category, setCategory] = useState('culture')
   const [imageUrl, setImageUrl] = useState('')
   const [tags, setTags] = useState('')
+  const [location, setLocation] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [locating, setLocating] = useState(false)
 
   const upload = async (file: File) => {
     const form = new FormData()
@@ -51,6 +53,7 @@ export default function StorySubmitPage() {
           category,
           tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
           user_id: user.id,
+          location: location || null,
           status: 'pending',
         })
         if (!error) break
@@ -64,6 +67,7 @@ export default function StorySubmitPage() {
       setCategory('culture')
       setImageUrl('')
       setTags('')
+      setLocation('')
     } catch (err: any) {
       setMessage(`Hata: ${err.message}`)
     } finally {
@@ -82,6 +86,55 @@ export default function StorySubmitPage() {
         <div>
           <label className="block text-sm text-gray-300 mb-1">Başlık</label>
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Örn: Paris’te 48 saat" required />
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Konum (opsiyonel)</label>
+          <div className="flex items-center gap-2">
+            <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Örn: İstanbul, Türkiye veya 41.0082,28.9784" className="flex-1" />
+            <Button
+              type="button"
+              variant="secondary"
+              className="border border-gray-200 bg-white text-black hover:bg-gray-50"
+              onClick={async () => {
+                if (!('geolocation' in navigator)) { setMessage('Konum desteklenmiyor'); return }
+                setLocating(true); setMessage(null)
+                try {
+                  await new Promise<void>((resolve) => {
+                    navigator.geolocation.getCurrentPosition(async (pos) => {
+                      const { latitude, longitude } = pos.coords
+                      try {
+                        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+                        const res = await fetch(url, { headers: { 'Accept': 'application/json' } })
+                        if (res.ok) {
+                          const j = await res.json()
+                          const city = j?.address?.city || j?.address?.town || j?.address?.village || ''
+                          const country = j?.address?.country || ''
+                          const label = [city, country].filter(Boolean).join(', ')
+                          setLocation(label || `${latitude.toFixed(6)},${longitude.toFixed(6)}`)
+                        } else {
+                          setLocation(`${latitude.toFixed(6)},${longitude.toFixed(6)}`)
+                        }
+                      } catch {
+                        setLocation(`${latitude.toFixed(6)},${longitude.toFixed(6)}`)
+                      }
+                      resolve()
+                    }, () => {
+                      setMessage('Konum alınamadı: İzin verilmedi veya hata oluştu')
+                      resolve()
+                    }, { enableHighAccuracy: true, timeout: 10000 })
+                  })
+                } finally {
+                  setLocating(false)
+                }
+              }}
+              disabled={locating}
+            >
+              {locating ? 'Alınıyor…' : 'Konumumu kullan'}
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-gray-400">Konum, hikayenle birlikte herkese açık görünebilir.</p>
         </div>
 
         <div>

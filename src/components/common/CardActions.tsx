@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Eye, MessageSquare, Share2, Bookmark, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase/client'
 
 type CardActionsProps = {
   views?: number
@@ -10,6 +12,8 @@ type CardActionsProps = {
   showViews?: boolean
   likes?: number
   liked?: boolean
+  articleId?: string
+  articleSlug?: string
   onLike?: () => void
   onComment?: () => void
   onShare?: () => void
@@ -25,6 +29,8 @@ export default function CardActions({
   showViews = true,
   likes = 0,
   liked = false,
+  articleId,
+  articleSlug,
   onLike,
   onComment,
   onShare,
@@ -33,15 +39,121 @@ export default function CardActions({
   hideLabels = true,
   className,
 }: CardActionsProps) {
-  const firstItem = showViews
-    ? { key: 'views' as const, label: 'Görüntülenme', aria: 'Görüntülenme', Icon: Eye, onClick: undefined }
-    : { key: 'like' as const, label: liked ? 'Beğenmekten vazgeç' : 'Beğen', aria: liked ? 'Beğenmekten vazgeç' : 'Beğen', Icon: Heart, onClick: onLike }
+  const [likeCount, setLikeCount] = useState<number>(likes)
+  const [isLiked, setIsLiked] = useState<boolean>(liked)
+  const [busy, setBusy] = useState(false)
+  const [isSaved, setIsSaved] = useState<boolean>(saved)
+  const [busySave, setBusySave] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      if (!articleId) return
+      const userRes = await supabase.auth.getUser()
+      const uid = userRes.data.user?.id ?? null
+
+      const { count } = await supabase
+        .from('article_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('article_id', articleId)
+
+      if (mounted) setLikeCount(count || 0)
+
+      if (uid) {
+        const { data } = await supabase
+          .from('article_likes')
+          .select('id')
+          .eq('article_id', articleId)
+          .eq('user_id', uid)
+          .maybeSingle()
+        if (mounted) setIsLiked(!!data)
+        // load saved state
+        const { data: b } = await supabase
+          .from('article_bookmarks')
+          .select('id')
+          .eq('article_id', articleId)
+          .eq('user_id', uid)
+          .maybeSingle()
+        if (mounted) setIsSaved(!!b)
+      } else {
+        if (mounted) { setIsLiked(false); setIsSaved(false) }
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [articleId])
+
+  const handleLike = async () => {
+    if (onLike) return onLike()
+    if (!articleId || busy) return
+    setBusy(true)
+    try {
+      const userRes = await supabase.auth.getUser()
+      const uid = userRes.data.user?.id
+      if (!uid) { window.location.href = '/auth/login'; return }
+      if (isLiked) {
+        setIsLiked(false); setLikeCount(v => Math.max(0, v - 1))
+        const { error } = await supabase.from('article_likes').delete().eq('article_id', articleId).eq('user_id', uid)
+        if (error) { setIsLiked(true); setLikeCount(v => v + 1) }
+      } else {
+        setIsLiked(true); setLikeCount(v => v + 1)
+        const { error } = await supabase.from('article_likes').insert({ article_id: articleId, user_id: uid })
+        if (error) { setIsLiked(false); setLikeCount(v => Math.max(0, v - 1)) }
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleShare = async () => {
+    if (onShare) return onShare()
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = articleSlug ? `${origin}/articles/${articleSlug}` : (typeof window !== 'undefined' ? window.location.href : '')
+    try {
+      // Prefer native share sheet when available
+      if (navigator.share) {
+        await navigator.share({ title: 'Airen', url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        alert('Bağlantı kopyalandı!')
+      }
+    } catch {}
+  }
+
+  const handleSave = async () => {
+    if (onSave) return onSave()
+    if (!articleId || busySave) return
+    setBusySave(true)
+    try {
+      const userRes = await supabase.auth.getUser()
+      const uid = userRes.data.user?.id
+      if (!uid) { window.location.href = '/auth/login'; return }
+      if (isSaved) {
+        setIsSaved(false)
+        const { error } = await supabase
+          .from('article_bookmarks')
+          .delete()
+          .eq('article_id', articleId)
+          .eq('user_id', uid)
+        if (error) setIsSaved(true)
+      } else {
+        setIsSaved(true)
+        const { error } = await supabase
+          .from('article_bookmarks')
+          .insert({ article_id: articleId, user_id: uid })
+        if (error) setIsSaved(false)
+      }
+    } finally {
+      setBusySave(false)
+    }
+  }
 
   const items = [
-    firstItem,
-    { key: 'comment' as const, label: 'Comment', aria: 'Yorum yap', Icon: MessageSquare, onClick: onComment },
-    { key: 'share' as const, label: 'Paylaş', aria: 'Paylaş', Icon: Share2, onClick: onShare },
-    { key: 'save' as const, label: saved ? 'Kaydedildi' : 'Kaydet', aria: saved ? 'Kaydedildi' : 'Kaydet', Icon: Bookmark, onClick: onSave },
+    ...(showViews ? [{ key: 'views' as const, label: 'Görüntülenme', aria: 'Görüntülenme', Icon: Eye, onClick: undefined }] : []),
+    { key: 'like' as const, label: isLiked ? 'Beğenmekten vazgeç' : 'Beğen', aria: isLiked ? 'Beğenmekten vazgeç' : 'Beğen', Icon: Heart, onClick: handleLike },
+    { key: 'comment' as const, label: 'Comment', aria: 'Yorum yap', Icon: MessageSquare, onClick: onComment || (() => { if (articleSlug) { window.location.href = `/articles/${articleSlug}#comments` } }) },
+    { key: 'share' as const, label: 'Paylaş', aria: 'Paylaş', Icon: Share2, onClick: handleShare },
+    { key: 'save' as const, label: isSaved ? 'Kaydedildi' : 'Kaydet', aria: isSaved ? 'Kaydedildi' : 'Kaydet', Icon: Bookmark, onClick: handleSave },
   ]
 
   return (
@@ -51,7 +163,7 @@ export default function CardActions({
         className
       )}
     >
-      <div className="grid grid-cols-4">
+      <div className={cn('grid', items.length === 5 ? 'grid-cols-5' : 'grid-cols-4')}>
         {items.map(({ key, label, aria, Icon, onClick }) => (
           <button
             key={key}
@@ -61,7 +173,7 @@ export default function CardActions({
             onClick={onClick}
             className={cn(
               'group flex items-center justify-center gap-2 py-3 min-h-11 rounded-md',
-              key === 'like' && liked
+              key === 'like' && isLiked
                 ? 'text-red-600 bg-red-50'
                 : key === 'like'
                 ? 'text-gray-600 hover:text-red-600'
@@ -76,17 +188,17 @@ export default function CardActions({
             <Icon
               className={cn(
                 'h-5 w-5 transition-transform duration-150 ease-in-out group-hover:scale-110',
-                key === 'like' && liked ? 'fill-red-600' : key === 'save' && saved ? 'fill-blue-700' : 'fill-transparent'
+                key === 'like' && isLiked ? 'fill-red-600' : key === 'save' && isSaved ? 'fill-blue-700' : 'fill-transparent'
               )}
             />
-            {!hideLabels && (
-              <span className="text-sm font-medium max-[480px]:hidden">
+            {!hideLabels && key !== 'share' && key !== 'save' && (
+              <span className="text-sm font-medium">
                 {key === 'views'
                   ? views.toLocaleString()
                   : key === 'comment'
                   ? comments.toLocaleString()
                   : key === 'like'
-                  ? likes.toLocaleString()
+                  ? likeCount.toLocaleString()
                   : label}
               </span>
             )}

@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, Clock, Eye, ArrowLeft, Share2, Heart } from 'lucide-react'
+import { Calendar, Clock, Eye, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import LikeShareBar from '@/components/articles/LikeShareBar'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArticleCard } from '@/components/articles/ArticleCard'
 import { supabaseAdmin } from '@/lib/supabase/server'
-import { formatDate, formatRelativeTime } from '@/lib/utils/formatters'
+import { formatDate } from '@/lib/utils/formatters'
 import type { Metadata } from 'next'
 import ArticleComments from '@/components/articles/ArticleComments'
 import ArticleViews from '@/components/articles/ArticleViews'
@@ -102,9 +102,16 @@ export default async function ArticlePage(context: ArticlePageProps) {
       />
       {/* Back Button */}
       <div className="container mx-auto px-4 mb-8">
-        <Button variant="secondary" size="sm" asChild className="border border-gray-200 bg-white text-black hover:bg-gray-50">
+        <Button
+          variant="secondary"
+          size="sm"
+          asChild
+          className="rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50 shadow-sm focus-visible:ring-2 focus-visible:ring-black/10 px-3"
+        >
           <Link href={article.type === 'news' ? '/news' : '/articles'} className="flex items-center text-black">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+              <ArrowLeft className="h-4 w-4" />
+            </span>
             {article.type === 'news' ? 'Haberlere Dön' : 'Makalelere Dön'}
           </Link>
         </Button>
@@ -222,25 +229,7 @@ export default async function ArticlePage(context: ArticlePageProps) {
             />
           </div>
 
-          {/* Article Footer */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="text-sm text-black">
-                Son güncelleme: {formatRelativeTime(article.updated_at)}
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <Button variant="glass" size="sm">
-                  <Heart className="h-4 w-4 mr-2" />
-                  Beğen
-                </Button>
-                <Button variant="glass" size="sm">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Paylaş
-                </Button>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Author Bio */}
           {article.author && (
@@ -288,6 +277,11 @@ export default async function ArticlePage(context: ArticlePageProps) {
             </div>
           )}
 
+          {/* Comments */}
+          <div id="comments" className="mt-12 mb-12 sm:mb-16">
+            <ArticleComments articleId={article.id} />
+          </div>
+
           {/* Related Articles */}
           {relatedArticles.length > 0 && (
             <section>
@@ -308,11 +302,6 @@ export default async function ArticlePage(context: ArticlePageProps) {
               </div>
             </section>
           )}
-
-          {/* Comments */}
-          <div className="mt-12">
-            <ArticleComments articleId={article.id} />
-          </div>
         </div>
       </article>
     </div>

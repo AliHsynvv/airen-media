@@ -1,9 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { StoryCard } from '@/components/community/StoryCard'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { PlusCircle, Users, User } from 'lucide-react'
+import MeetAirenButton from '@/components/home/MeetAirenButton'
 import Link from 'next/link'
 import { useStories } from '@/lib/hooks/useStories'
 
@@ -20,6 +23,7 @@ export default function CommunityPage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const { data, loading } = useStories()
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
 
   const filtered = useMemo(() => {
     const list = data || []
@@ -50,12 +54,11 @@ export default function CommunityPage() {
               placeholder="Hikaye ara..."
               value={query}
               onChange={e => setQuery(e.target.value)}
+              ref={searchInputRef}
               className="w-full sm:w-72 rounded-full border border-gray-200 bg-white text-gray-900"
             />
           </div>
-          <Link href="/community/stories/submit" className="px-4 py-2 rounded-full text-sm border border-gray-200 bg-white text-gray-900 hover:bg-gray-50">
-            Hikayeni Paylaş
-          </Link>
+          <MeetAirenButton className="text-xs sm:text-sm" />
         </div>
       </div>
 
@@ -94,6 +97,25 @@ export default function CommunityPage() {
         <span className="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs border border-gray-200 bg-white text-gray-700">
           {loading ? 'Yükleniyor…' : `${filtered.length} hikaye`}
         </span>
+      </div>
+
+      {/* Actions under categories (mirrors profile icons) */}
+      <div className="mb-6 flex items-center justify-center gap-3">
+        <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+          <Link href="/community/stories/submit" aria-label="Hikaye Paylaş">
+            <PlusCircle className="h-6 w-6" />
+          </Link>
+        </Button>
+        <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+          <Link href="/community" aria-label="Topluluğa Dön">
+            <Users className="h-6 w-6" />
+          </Link>
+        </Button>
+        <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+          <Link href="/profile" aria-label="Profil">
+            <User className="h-6 w-6" />
+          </Link>
+        </Button>
       </div>
 
       {loading ? (

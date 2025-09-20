@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 
 interface StoryCommentsProps {
   storyId: string
+  variant?: 'default' | 'minimal'
+  onSubmitted?: () => void
 }
 
 interface CommentRow {
@@ -21,7 +23,7 @@ interface CommentRow {
   liked_by_me?: boolean
 }
 
-export default function StoryComments({ storyId }: StoryCommentsProps) {
+export default function StoryComments({ storyId, variant = 'default', onSubmitted }: StoryCommentsProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
   const [content, setContent] = useState('')
@@ -89,6 +91,7 @@ export default function StoryComments({ storyId }: StoryCommentsProps) {
           for (const p of (profs || [])) users[(p as any).id] = p
         }
         setComments(((data || []) as any[]).map(r => ({ ...r, user: users[r.user_id] })))
+        onSubmitted?.()
       }
     } finally {
       setBusy(false)
@@ -142,19 +145,29 @@ export default function StoryComments({ storyId }: StoryCommentsProps) {
     </div>
   )
 
+  const isMinimal = variant === 'minimal'
+
   return (
-    <div id="comments" className="rounded-xl border border-gray-200 bg-white p-4">
-      <h3 className="text-black font-semibold mb-3">Yorumlar</h3>
+    <div id="comments" className={isMinimal ? 'p-0' : 'rounded-xl border border-gray-200 bg-white p-4'}>
+      {!isMinimal && <h3 className="text-black font-semibold mb-3">Yorumlar</h3>}
       <div>
         {(tree['root'] || []).map(c => <Item key={c.id} c={c} />)}
       </div>
-      <div className="mt-4">
-        <textarea ref={textareaRef} value={content} onChange={e => setContent(e.target.value)} placeholder={replyTo ? 'Yanıt yaz...' : 'Yorum yaz...'} className="w-full h-24 rounded-md border border-gray-200 bg-white text-gray-900 p-2" />
+      <div className={isMinimal ? 'mt-3 sticky bottom-0 bg-white pt-2 pb-3' : 'mt-4'}>
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder={replyTo ? 'Yanıt yaz…' : 'Yorum yaz…'}
+          className={isMinimal ? 'w-full h-24 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 p-3 focus:outline-none focus:ring-2 focus:ring-black/10' : 'w-full h-24 rounded-md border border-gray-200 bg-white text-gray-900 p-2'}
+        />
         {replyTo && (
           <div className="text-xs text-gray-500 mt-1">Yanıtlanan: #{replyTo.slice(0,6)} <button className="ml-2 underline" onClick={() => setReplyTo(null)}>iptal</button></div>
         )}
         <div className="mt-2 flex justify-end">
-          <Button onClick={submit} disabled={busy || !content.trim()} className="bg-black text-white hover:bg-black/90">Gönder</Button>
+          <Button onClick={submit} disabled={busy || !content.trim()} className={isMinimal ? 'rounded-full bg-black text-white hover:bg-black/90 px-5' : 'bg-black text-white hover:bg-black/90'}>
+            Gönder
+          </Button>
         </div>
       </div>
     </div>

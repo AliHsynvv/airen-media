@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Bookmark, Heart, MessageSquare, Share2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
 
-type Props = {
+export type StoryCardActionsProps = {
   storyId: string
   initialLikes: number
   initialComments?: number
@@ -12,9 +13,10 @@ type Props = {
   storyTitle?: string
   className?: string
   initialShares?: number
+  onComment?: () => void
 }
 
-export default function StoryCardActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className, initialShares = 0 }: Props) {
+export default function StoryCardActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className, initialShares = 0, onComment }: StoryCardActionsProps) {
   const [liked, setLiked] = useState(false)
   const [likes, setLikes] = useState(initialLikes)
   const [saved, setSaved] = useState(false)
@@ -26,6 +28,10 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
     const check = async () => {
       const { data: u } = await supabase.auth.getUser()
       const userId = u.user?.id
+      // load count via API to avoid RLS/head flakiness
+      const res = await fetch(`/api/community/stories/like?storyId=${encodeURIComponent(storyId)}`)
+      const json = await res.json().catch(() => ({}))
+      if (mounted && json?.success) setLikes(json.data?.count || 0)
       if (!userId) { if (mounted) setLiked(false); return }
       const { data } = await supabase
         .from('story_likes')
@@ -60,12 +66,28 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
       }
       if (!liked) {
         setLiked(true); setLikes(v => v + 1)
-        const { error } = await supabase.from('story_likes').insert({ story_id: storyId, user_id: userId })
-        if (error) { setLiked(false); setLikes(v => Math.max(0, v - 1)) }
+        const res = await fetch('/api/community/stories/like', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storyId }),
+        })
+        if (!res.ok) { setLiked(false); setLikes(v => Math.max(0, v - 1)) }
+        // refresh count from server to be exact
+        const countRes = await fetch(`/api/community/stories/like?storyId=${encodeURIComponent(storyId)}`)
+        const j = await countRes.json().catch(() => ({}))
+        if (j?.success) setLikes(j.data?.count || 0)
       } else {
         setLiked(false); setLikes(v => Math.max(0, v - 1))
-        const { error } = await supabase.from('story_likes').delete().eq('story_id', storyId).eq('user_id', userId)
-        if (error) { setLiked(true); setLikes(v => v + 1) }
+        const res = await fetch('/api/community/stories/like', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storyId }),
+        })
+        if (!res.ok) { setLiked(true); setLikes(v => v + 1) }
+        // refresh count from server
+        const countRes = await fetch(`/api/community/stories/like?storyId=${encodeURIComponent(storyId)}`)
+        const j = await countRes.json().catch(() => ({}))
+        if (j?.success) setLikes(j.data?.count || 0)
       }
     } finally {
       setLoading(false)
@@ -110,45 +132,51 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
     }
   }
 
+  const items = [
+    { key: 'like' as const, onClick: toggleLike, Icon: Heart },
+    { key: 'comment' as const, onClick: onComment || goComments, Icon: MessageSquare },
+    { key: 'share' as const, onClick: share, Icon: Share2 },
+    { key: 'save' as const, onClick: save, Icon: Bookmark },
+  ]
+
   return (
-    <div className={["px-3 py-2", className || ''].join(' ').trim()}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div
+      className={cn(
+        'mt-auto border-t border-gray-200/70 bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/60',
+        className
+      )}
+    >
+      <div className="grid grid-cols-4">
+        {items.map(({ key, onClick, Icon }) => (
           <button
+            key={key}
             type="button"
-            aria-label={liked ? 'Beğenmekten vazgeç' : 'Beğen'}
-            onClick={toggleLike}
-            className={`group min-h-11 text-black`}
+            onClick={onClick}
+            className={cn(
+              'group flex items-center justify-center gap-2 py-3 min-h-11 rounded-md text-gray-600 hover:text-gray-900 transition-colors duration-150 ease-in-out',
+              key === 'like' && liked ? 'text-red-600 bg-red-50 hover:text-red-700' : '',
+              key === 'save' && saved ? 'text-blue-700 bg-blue-50 hover:text-blue-800' : '',
+              key === 'like' ? 'hover:bg-red-50' : key === 'save' ? 'hover:bg-blue-50' : 'hover:bg-gray-50'
+            )}
           >
-            <span className="inline-flex items-center gap-2">
-              <Heart className={`h-6 w-6 ${liked ? 'fill-black' : 'fill-transparent'} transition-transform group-active:scale-95`} />
-              <span className="hidden sm:inline text-sm">Beğen</span>
-              <span className="text-sm tabular-nums">{likes.toLocaleString()}</span>
+            <Icon
+              className={cn(
+                'h-5 w-5 transition-transform duration-150 ease-in-out group-hover:scale-110',
+                key === 'like' && liked ? 'fill-red-600' : key === 'save' && saved ? 'fill-blue-700' : 'fill-transparent'
+              )}
+            />
+            <span className="text-sm font-medium">
+              {key === 'like'
+                ? likes.toLocaleString()
+                : key === 'comment'
+                ? initialComments?.toLocaleString?.() ?? 0
+                : key === 'share'
+                ? shares.toLocaleString()
+                : ''}
             </span>
           </button>
-          <button type="button" aria-label="Yorumlar" onClick={goComments} className="group min-h-11 text-black">
-            <span className="inline-flex items-center gap-2">
-              <MessageSquare className="h-6 w-6" />
-              <span className="hidden sm:inline text-sm">Yorum</span>
-              <span className="text-sm tabular-nums">{initialComments?.toLocaleString?.() ?? 0}</span>
-            </span>
-          </button>
-          <button type="button" aria-label="Paylaş" onClick={share} className="group min-h-11 text-black">
-            <span className="inline-flex items-center gap-2">
-              <Share2 className="h-6 w-6" />
-              <span className="hidden sm:inline text-sm">Paylaş</span>
-              <span className="text-sm tabular-nums">{shares.toLocaleString()}</span>
-            </span>
-          </button>
-        </div>
-        <button type="button" aria-label={saved ? 'Kaydedildi' : 'Kaydet'} onClick={save} className={`group min-h-11 text-black`}>
-          <span className="inline-flex items-center gap-2">
-            <Bookmark className={`h-6 w-6 ${saved ? 'fill-black' : 'fill-transparent'}`} />
-            <span className="hidden sm:inline text-sm">Kaydet</span>
-          </span>
-        </button>
+        ))}
       </div>
-      {/* Remove duplicate likes line; counts shown inline */}
     </div>
   )
 }

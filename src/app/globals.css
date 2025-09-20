@@ -337,6 +337,14 @@ h6 {
   }
 }
 
+/* Sheet slide-up animation for mobile comment panel */
+@keyframes sheet-up {
+  from { transform: translateY(100%); opacity: 0.7; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-sheet-up { animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -380,4 +388,15 @@ h6 {
 @keyframes fadein {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Interactive bouncing ball effect for globe badge */
+@keyframes gentle-bounce {
+  0% { transform: translateY(0) scale(0.98); }
+  100% { transform: translateY(-28px) scale(1.12); }
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 1.0s cubic-bezier(0.5, 0, 0.5, 1) infinite alternate;
+  will-change: transform;
 }

@@ -3,6 +3,9 @@
 import { useMemo, useState } from 'react'
 import { CountryCard } from '@/components/countries/CountryCard'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import MeetAirenButton from '@/components/home/MeetAirenButton'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { useCountries } from '@/lib/hooks/useCountries'
 import { Search, TrendingUp, LayoutGrid, List, Star, ChevronDown } from 'lucide-react'
@@ -100,6 +103,18 @@ export default function CountriesPage() {
           <div>
             <div className="text-xl font-semibold text-gray-900">{trendingCount}</div>
             <div className="text-xs text-gray-500">trending now</div>
+          </div>
+        </div>
+
+        {/* CTAs */}
+        <div className="mt-6 flex flex-row gap-2 items-center w-full">
+          <div className="w-1/2 min-w-0">
+            <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
+              <Link href="/profile">Airen Social Media</Link>
+            </Button>
+          </div>
+          <div className="w-1/2 min-w-0">
+            <MeetAirenButton fullWidth className="text-xs sm:text-sm" />
           </div>
         </div>
       </div>

@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { ArticleCard } from '@/components/articles/ArticleCard'
 import { useArticles } from '@/lib/hooks/useArticles'
 import { supabase } from '@/lib/supabase/client'
+import MeetAirenButton from '@/components/home/MeetAirenButton'
+import Link from 'next/link'
 
 type SortKey = 'latest' | 'popular'
 type ViewKey = 'grid' | 'list'
@@ -66,6 +68,16 @@ export default function NewsPage() {
       <div className="text-center max-w-3xl mx-auto mb-10">
         <h1 className="text-4xl font-bold text-gray-900">Travel News & Articles</h1>
         <p className="text-gray-600 mt-3">Stay updated with the latest travel insights, destination guides, and cultural discoveries</p>
+        <div className="mt-6 flex flex-row gap-2 items-center w-full">
+          <div className="w-1/2 min-w-0">
+            <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
+              <Link href="/profile">Airen Social Media</Link>
+            </Button>
+          </div>
+          <div className="w-1/2 min-w-0">
+            <MeetAirenButton fullWidth className="text-xs sm:text-sm" />
+          </div>
+        </div>
       </div>
 
       {/* Search */}

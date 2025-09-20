@@ -214,9 +214,9 @@ export function ArticleCard({
 
   // Default variant
   return (
-    <Card className={`${theme === 'light' ? 'bg-white border border-gray-200' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group overflow-hidden ${className}`}>
+    <Card className={`${theme === 'light' ? 'bg-white border border-gray-200' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group ${className} flex flex-col`}>
       {featured_image && (
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-72 sm:h-48 overflow-hidden">
           <Image
             src={featured_image}
             alt={title}
@@ -295,26 +295,12 @@ export function ArticleCard({
                 <span>{reading_time} dk</span>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center space-x-1">
-                <Eye className="h-3 w-3" />
-                <span>{view_count}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Heart className="h-3 w-3" />
-                <span>{likeCount}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MessageSquare className="h-3 w-3" />
-                <span>{commentCount}</span>
-              </div>
-            </div>
-            <ArticleCardActions articleId={article.id} articleTitle={title} initialViews={view_count} theme={theme} />
+            {/* Internal action icons removed to avoid duplication with bottom bar */}
           </div>
         </div>
       </CardContent>
       {/* Unified actions bar at bottom - consistent across cards */}
-      <CardActions views={view_count} comments={commentCount} />
+      <CardActions articleId={article.id} articleSlug={slug} views={view_count} comments={commentCount} hideLabels={false} />
     </Card>
   )
 }

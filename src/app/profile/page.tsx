@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Heart, Bell } from 'lucide-react'
+import { Heart, Bell, PlusCircle, Search, Users } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 
 interface MyStoryRow {
@@ -19,12 +20,16 @@ export default function ProfilePage() {
   const [email, setEmail] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [fullName, setFullName] = useState<string | null>(null)
+  const [username, setUsername] = useState<string | null>(null)
   const [bio, setBio] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [loading, setLoading] = useState(true)
   const [stories, setStories] = useState<MyStoryRow[]>([])
   const [msg, setMsg] = useState<string | null>(null)
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string }>>([])
   // New data buckets
   const [savedArticles, setSavedArticles] = useState<Array<{ id: string; title: string; slug: string; featured_image?: string | null; image_alt?: string | null }>>([])
   const [savedCountries, setSavedCountries] = useState<Array<{ id: string; name: string; slug: string }>>([])
@@ -34,7 +39,11 @@ export default function ProfilePage() {
   const [countryReviews, setCountryReviews] = useState<Array<{ id: string; country_id: string; comment: string | null; rating: number; country?: { id: string; name: string; slug: string } }>>([])
   const [notifications, setNotifications] = useState<Array<{ id: string; type: string; payload: any; created_at: string; is_read: boolean; liker?: { id: string; full_name?: string|null; username?: string|null; avatar_url?: string|null }; story?: { id: string; slug?: string|null; title?: string|null }; comment?: { id: string; content?: string|null } }>>([])
   const savedSectionRef = useRef<HTMLDivElement | null>(null)
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'comments' | 'notifications' | 'about'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'comments'>('posts')
+  const [showNotifs, setShowNotifs] = useState(false)
+  const notifRef = useRef<HTMLDivElement | null>(null)
+  const notifBtnRefDesktop = useRef<HTMLButtonElement | null>(null)
+  const notifBtnRefMobile = useRef<HTMLButtonElement | null>(null)
   const [followersCount, setFollowersCount] = useState<number>(0)
   const [followingCount, setFollowingCount] = useState<number>(0)
 
@@ -47,10 +56,11 @@ export default function ProfilePage() {
       if (u?.id) {
         const { data: p } = await supabase
           .from('users_profiles')
-          .select('full_name, avatar_url, bio')
+          .select('full_name, username, avatar_url, bio')
           .eq('id', u.id)
           .single()
         setFullName(p?.full_name ?? null)
+        setUsername(p?.username ?? null)
         setAvatarUrl(p?.avatar_url ?? null)
         setBio(p?.bio || '')
         const { data: s } = await supabase
@@ -164,9 +174,29 @@ export default function ProfilePage() {
     return () => { sub.subscription.unsubscribe() }
   }, [])
 
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (notifRef.current && notifRef.current.contains(target)) return
+      if (notifBtnRefDesktop.current && notifBtnRefDesktop.current.contains(target)) return
+      if (notifBtnRefMobile.current && notifBtnRefMobile.current.contains(target)) return
+      setShowNotifs(false)
+    }
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowNotifs(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [])
+
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])
   const approvedCount = useMemo(() => stories.filter(s => s.status === 'approved' || s.status === 'featured').length, [stories])
   const savedTotal = useMemo(() => savedArticles.length + savedCountries.length, [savedArticles.length, savedCountries.length])
+  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -184,8 +214,41 @@ export default function ProfilePage() {
     }
   }
 
+  const runCommunitySearch = async (q: string) => {
+    const term = q.trim()
+    if (!term) { setSearchResults([]); return }
+    // Simple combined search: users by username/full_name, stories by title, hashtags by tag
+    const usersP = supabase.from('users_profiles').select('id,username,full_name').ilike('username', `%${term}%`).limit(5)
+    const usersP2 = supabase.from('users_profiles').select('id,username,full_name').ilike('full_name', `%${term}%`).limit(5)
+    const storiesP = supabase.from('user_stories').select('id,slug,title').ilike('title', `%${term}%`).limit(5)
+    const tagsP = supabase.from('user_stories').select('id,slug,title,tags').contains('tags', [term]).limit(5)
+    const [users, users2, stories, tags] = await Promise.all([usersP, usersP2, storiesP, tagsP])
+    const uMap = new Map<string, any>()
+    ;(users.data || []).concat(users2.data || []).forEach((u: any) => { uMap.set(u.id, u) })
+    const results: Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string }> = []
+    for (const u of Array.from(uMap.values())) results.push({ type: 'user', id: u.id, username: u.username || u.full_name })
+    for (const s of (stories.data || [])) results.push({ type: 'story', id: s.id, title: s.title, slug: s.slug || undefined })
+    for (const t of (tags.data || [])) results.push({ type: 'hashtag', id: t.id, title: `#${term}`, slug: t.slug || undefined })
+    setSearchResults(results.slice(0, 12))
+  }
+
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const onPickAvatar = () => fileInputRef.current?.click()
+  const onShareProfile = async () => {
+    const url = typeof window !== 'undefined' ? window.location.origin + '/u/' + (userId || '') : ''
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Profilim', url })
+        return
+      }
+    } catch {}
+    try {
+      await navigator.clipboard.writeText(url)
+      setMsg('Profil bağlantısı kopyalandı')
+    } catch {
+      setMsg('Bağlantı kopyalanamadı')
+    }
+  }
   const onAvatarSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !userId) return
@@ -231,14 +294,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-0 sm:px-4 py-6 sm:py-10 bg-white">
+    <div className="container mx-auto px-0 sm:px-4 py-0 bg-white">
       {!userId ? (
         <div className="text-black">Oturum bulunamadı. Lütfen giriş yapın.</div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-0">
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
-          {/* Header - Instagram-like */}
-          <div className="rounded-none sm:rounded-xl border border-gray-200 bg-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+          {/* Header */}
+          <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-6 relative">
             <button onClick={onPickAvatar} className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {avatarUrl ? (
@@ -249,103 +312,220 @@ export default function ProfilePage() {
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center text-[10px] text-white">Değiştir</div>
             </button>
             <div className="flex-1 min-w-0 w-full space-y-2 sm:space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-center sm:text-left">
-                <div className="text-black font-semibold text-base sm:text-lg truncate">{fullName || 'Kullanıcı'}</div>
+              <div className="flex items-baseline gap-2 min-w-0">
+                <div className="text-black font-semibold text-base sm:text-lg truncate">{fullName || username || 'Kullanıcı'}</div>
+                <div className="text-gray-600 text-xs sm:text-sm truncate">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
+                <Button
+                  ref={notifBtnRefMobile}
+                  variant="ghost"
+                  aria-label="Bildirimler"
+                  className="ml-auto h-9 w-9 p-0 text-gray-700 hover:text-black sm:hidden relative"
+                  onClick={() => setShowNotifs(v => !v)}
+                >
+                  <Bell className="h-5 w-5" />
+                  {!!unreadCount && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500" />}
+                </Button>
+              </div>
                 <div className="text-gray-600 text-xs sm:text-sm truncate">{email}</div>
-              </div>
-              {/* Desktop actions (Instagram-like) */}
-              <div className="hidden sm:flex items-center gap-2 sm:self-start sm:ml-auto">
-                <Button variant="ghost" className="h-9 px-3 text-sm text-gray-700 hover:text-black" asChild>
-                  <Link href="/profile/edit">Profili Düzenle</Link>
-                </Button>
-                <Button variant="ghost" className="h-9 px-3 text-sm text-gray-700 hover:text-black" disabled={uploadingAvatar} onClick={onPickAvatar}>Fotoğrafı Değiştir</Button>
-                <Button variant="ghost" className="h-9 px-3 text-sm text-gray-700 hover:text-black" asChild>
-                  <Link href="/community/stories/submit">Hikaye Paylaş</Link>
-                </Button>
-              </div>
-              {/* Inline minimal stats */}
-              <div className="mt-2">
-                <div className="flex items-center gap-6 text-xs sm:text-sm text-gray-600">
-                  <div><span className="text-black font-semibold">{approvedCount}</span> Gönderi</div>
-                  <div><span className="text-black font-semibold">{followersCount}</span> Takipçi</div>
-                  <div><span className="text-black font-semibold">{followingCount}</span> Takip</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-stretch sm:justify-end sm:hidden">
-            <Button variant="secondary" className="w-full sm:w-auto h-9 text-sm border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-              <Link href="/profile/edit">Profili Düzenle</Link>
-            </Button>
-            <Button variant="secondary" className="w-full sm:w-auto h-9 text-sm border border-gray-200 bg-white text-black hover:bg-gray-50" disabled={uploadingAvatar} onClick={onPickAvatar}>
-              {uploadingAvatar ? 'Yükleniyor...' : 'Fotoğrafı Değiştir'}
-            </Button>
-            <Button variant="secondary" className="w-full sm:w-auto h-9 text-sm border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-              <Link href="/community/stories/submit">Hikaye Paylaş</Link>
-            </Button>
-          </div>
-          {/* Inline Bio under header */}
-          <div className="w-full">
-            <div className="mt-3 text-left">
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-xs sm:text-sm text-gray-600">Hakkımda</div>
-              </div>
+              {/* Visible bio just under username */}
               <div className="text-sm text-gray-800 whitespace-pre-wrap">
                 {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
               </div>
+              {/* Desktop actions */}
+              <div className="hidden sm:flex items-center gap-3 sm:self-start sm:ml-auto">
+                <Button
+                  ref={notifBtnRefDesktop}
+                  variant="ghost"
+                  aria-label="Bildirimler"
+                  className="h-9 w-9 p-0 text-gray-700 hover:text-black relative"
+                  onClick={() => setShowNotifs(v => !v)}
+                >
+                  <Bell className="h-5 w-5" />
+                  {!!unreadCount && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500" />}
+                </Button>
+                <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                  <Link href="/profile/edit">Profili Düzenle</Link>
+                </Button>
+                <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
+                  Profili Paylaş
+                </Button>
+              </div>
+              {/* Stats */}
+              <div className="mt-2 grid grid-cols-3 gap-2 text-center sm:text-left sm:flex sm:items-center sm:gap-6">
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{approvedCount}</span> Gönderi</div>
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followersCount}</span> Takipçi</div>
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followingCount}</span> Takip</div>
+              </div>
             </div>
           </div>
+            {showNotifs && (
+              <div ref={notifRef} className="absolute right-4 sm:right-6 top-full mt-2 w-[92vw] max-w-sm rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                  <div className="text-sm text-gray-600">Bildirimler</div>
+                  {!!notifications.filter(n => !n.is_read).length && (
+                    <Button
+                      variant="secondary"
+                      className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
+                      onClick={async () => {
+                        if (!userId) return
+                        await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
+                        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+                      }}
+                    >
+                      Tümünü okundu yap
+                    </Button>
+                  )}
+            {showSearch && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[92vw] max-w-2xl rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+                <div className="flex items-center gap-2 p-3 border-b border-gray-200">
+                  <Search className="h-5 w-5 text-gray-600" />
+                  <input
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') runCommunitySearch(searchQuery) }}
+                    placeholder="Kullanıcı, gönderi veya #etiket ara"
+                    className="flex-1 outline-none text-sm bg-transparent"
+                  />
+                  <Button className="h-8 px-3" onClick={() => runCommunitySearch(searchQuery)}>Ara</Button>
+                </div>
+                <div className="max-h-[70vh] overflow-auto p-2">
+                  {searchResults.length ? (
+                    <ul className="divide-y divide-gray-100">
+                      {searchResults.map(r => (
+                        <li key={`${r.type}-${r.id}`} className="py-2">
+                          {r.type === 'user' ? (
+                            <Link href={`/u/${r.id}`} className="text-sm text-gray-900 hover:underline">@{r.username}</Link>
+                          ) : r.type === 'story' ? (
+                            <Link href={r.slug ? `/community/stories/${r.slug}` : '#'} className="text-sm text-gray-900 hover:underline">{r.title}</Link>
+                          ) : (
+                            <Link href={`/community?tag=${encodeURIComponent((r.title||'').replace('#',''))}`} className="text-sm text-gray-900 hover:underline">{r.title}</Link>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="text-sm text-gray-600">Sonuç yok.</div>
+                  )}
+                </div>
+              </div>
+            )}
+                </div>
+                <div className="max-h-[70vh] overflow-auto">
+                  {notifications.length ? (
+                    <ul className="divide-y divide-gray-200">
+                      {notifications.map(n => (
+                        <li key={n.id} className="py-3 px-3">
+                          <div className="flex items-start gap-3">
+                            {n.type === 'comment_like' && n.liker?.avatar_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={n.liker.avatar_url} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
+                            ) : (
+                              <div className={`h-8 w-8 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                                {n.type === 'comment_like' ? <Heart className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              {n.type === 'comment_like' ? (
+                                <div className="text-sm text-gray-900">
+                                  <span className="font-medium">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
+                                  {n.story?.slug && (
+                                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-gray-900">Bildirim</div>
+                              )}
+                              {n.type === 'comment_like' && n.comment?.content && (
+                                <div className="mt-2 text-xs text-gray-700 border border-gray-200 bg-gray-50 rounded-md p-2 line-clamp-3">{n.comment.content}</div>
+                              )}
+                              <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
+                            </div>
+                            {!n.is_read && (
+                              <Button
+                                variant="secondary"
+                                className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
+                                onClick={async () => {
+                                  await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
+                                  setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
+                                }}
+                              >
+                                Okundu
+                              </Button>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="px-3 py-4 text-gray-600 text-sm">Bildirim yok.</div>
+                  )}
+                </div>
+              </div>
+            )}
+          <div className="flex items-center gap-2 flex-nowrap w-full justify-center px-4 py-3 sm:hidden">
+            <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+              <Link href="/profile/edit">Profili Düzenle</Link>
+            </Button>
+            <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
+              Profili Paylaş
+            </Button>
+          </div>
+          {/* Removed duplicate Bio under header */}
           {/* Tabs */}
-          <div className="rounded-xl border border-gray-200 bg-white">
-            <div className="flex items-center justify-center gap-4 sm:gap-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap px-2">
-              {(['posts','saved','comments','notifications','about'] as const).map(tab => (
+          <div className="border-t border-gray-200 bg-white">
+            <div className="flex items-center justify-center gap-6 sm:gap-10 border-b border-gray-200 overflow-x-auto whitespace-nowrap px-2">
+              {(['posts','saved','comments'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-3 text-sm font-medium shrink-0 ${activeTab === tab ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
                 >
-                  {tab === 'posts' ? 'Gönderiler' : tab === 'saved' ? 'Kaydedilenler' : tab === 'comments' ? 'Yorumlar' : tab === 'notifications' ? 'Bildirimler' : 'Hakkımda'}
+                  {tab === 'posts' ? 'Gönderiler' : tab === 'saved' ? 'Kaydedilenler' : 'Yorumlar'}
                 </button>
               ))}
             </div>
 
             <div className="p-4" ref={savedSectionRef}>
-              {/* About (Bio) */}
-              {activeTab === 'about' && (
-                <div className="p-1 sm:p-2">
-                  <div className="text-sm text-gray-600 mb-2">Biyografi</div>
-                  <textarea
-                    value={bio}
-                    onChange={e => setBio(e.target.value)}
-                    placeholder="Kendini tanıt..."
-                    className="w-full h-28 rounded-md border border-gray-200 bg-white text-gray-900 p-2"
-                  />
-                  <div className="flex justify-end mt-2">
-                    <Button
-                      className="h-9 px-4 bg-black text-white hover:bg-black/90"
-                      onClick={async () => {
-                        if (!userId) return
-                        const { error } = await supabase.from('users_profiles').update({ bio }).eq('id', userId)
-                        setMsg(error ? error.message : 'Biyografi güncellendi')
-                      }}
-                    >
-                      Kaydet
-                    </Button>
-                  </div>
-                </div>
-              )}
               {activeTab === 'posts' && (
                 loading ? (
                   <>
-                    <h3 className="mb-2 text-sm font-medium text-gray-900">Gönderilerim</h3>
-                    <div className="grid grid-cols-3 gap-[2px] sm:gap-1">
+                    <div className="mb-3 flex items-center justify-center gap-3">
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community/stories/submit" aria-label="Hikaye Paylaş">
+                          <PlusCircle className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community" aria-label="Topluluğa Dön">
+                          <Users className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => setShowSearch(true)} aria-label="Toplulukta Ara">
+                        <Search className="h-6 w-6" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-[1px] sm:gap-[2px]">
                     {Array.from({ length: 9 }).map((_, i) => (<div key={i} className="aspect-square bg-gray-100 animate-pulse" />))}
                     </div>
                   </>
                 ) : approvedCount ? (
                   <>
-                    <h3 className="mb-2 text-sm font-medium text-gray-900">Gönderilerim</h3>
-                    <div className="grid grid-cols-3 gap-[2px] sm:gap-1">
+                    <div className="mb-3 flex items-center justify-center gap-3">
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community/stories/submit" aria-label="Hikaye Paylaş">
+                          <PlusCircle className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community" aria-label="Topluluğa Dön">
+                          <Users className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => setShowSearch(true)} aria-label="Toplulukta Ara">
+                        <Search className="h-6 w-6" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-[1px] sm:gap-[2px]">
                     {stories.filter(s => s.status === 'approved' || s.status === 'featured').map(s => (
                       <Link key={s.id} href={s.slug ? `/community/stories/${s.slug}` : '#'} className="block group">
                         <div className="relative aspect-square overflow-hidden">
@@ -357,7 +537,24 @@ export default function ProfilePage() {
               </div>
                   </>
                 ) : (
+                  <>
+                    <div className="mb-3 flex items-center justify-center gap-3">
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community/stories/submit" aria-label="Hikaye Paylaş">
+                          <PlusCircle className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                        <Link href="/community" aria-label="Topluluğa Dön">
+                          <Users className="h-6 w-6" />
+                        </Link>
+                      </Button>
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => setShowSearch(true)} aria-label="Toplulukta Ara">
+                        <Search className="h-6 w-6" />
+                      </Button>
+                    </div>
                   <div className="text-gray-600 text-sm">Henüz gönderi yok.</div>
+                  </>
                 )
               )}
 
@@ -431,74 +628,7 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {activeTab === 'notifications' && (
-                <div className="rounded-lg border border-gray-200 p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">Bildirimler</div>
-                    {!!notifications.filter(n => !n.is_read).length && (
-                      <Button
-                        variant="secondary"
-                        className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
-                        onClick={async () => {
-                          if (!userId) return
-                          await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
-                          setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-                        }}
-                      >
-                        Tümünü okundu yap
-                      </Button>
-                    )}
-                  </div>
-                  {notifications.length ? (
-                    <ul className="divide-y divide-gray-200">
-                      {notifications.map(n => (
-                        <li key={n.id} className="py-3">
-                          <div className="flex items-start gap-3">
-                            {n.type === 'comment_like' && n.liker?.avatar_url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={n.liker.avatar_url} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
-                            ) : (
-                              <div className={`h-8 w-8 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                                {n.type === 'comment_like' ? <Heart className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              {n.type === 'comment_like' ? (
-                                <div className="text-sm text-gray-900">
-                                  <span className="font-medium">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
-                                  {n.story?.slug && (
-                                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-gray-900">Bildirim</div>
-                              )}
-                              {n.type === 'comment_like' && n.comment?.content && (
-                                <div className="mt-2 text-xs text-gray-700 border border-gray-200 bg-gray-50 rounded-md p-2 line-clamp-3">{n.comment.content}</div>
-                              )}
-                              <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
-                            </div>
-                            {!n.is_read && (
-                              <Button
-                                variant="secondary"
-                                className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
-                                onClick={async () => {
-                                  await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
-                                  setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
-                                }}
-                              >
-                                Okundu
-                              </Button>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="text-gray-600 text-sm">Bildirim yok.</div>
-                  )}
-                </div>
-              )}
+              {/* notifications moved to header popover */}
               {msg && <div className="mt-3 text-sm text-gray-600">{msg}</div>}
             </div>
           </div>
