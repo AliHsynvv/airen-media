@@ -79,15 +79,15 @@ export default function NotificationsPage() {
           try {
             if (n.payload?.liker_id) {
               const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.liker_id).single()
-              liker = ps
+              if (ps) liker = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
             }
             if (n.payload?.story_id) {
               const { data: ss } = await supabase.from('user_stories').select('id,slug,title').eq('id', n.payload.story_id).single()
-              story = ss
+              if (ss) story = ss as { id: string; slug?: string | null; title?: string | null }
             }
             if (n.payload?.comment_id) {
               const { data: cs } = await supabase.from('community_story_comments').select('id,content').eq('id', n.payload.comment_id).single()
-              comment = cs
+              if (cs) comment = cs as { id: string; content?: string | null }
             }
           } catch {}
           setNotifications(prev => [{ ...n, liker, story, comment }, ...prev])
