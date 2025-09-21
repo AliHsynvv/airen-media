@@ -90,13 +90,13 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
               .eq('id', replyTo)
               .single()
             if (parent?.user_id && parent.user_id !== userId) {
-              await supabase.from('notifications').insert({ user_id: parent.user_id, type: 'comment_reply', payload: { story_id: storyId, comment_id: inserted?.id, replier_id: userId, parent_id: replyTo } })
+              await supabase.from('notifications').insert({ user_id: parent.user_id, type: 'comment_reply', payload: { story_id: storyId, comment_id: inserted?.id, actor_id: userId, parent_id: replyTo } })
             }
           } else {
             // notify story owner
             const { data: story } = await supabase.from('user_stories').select('user_id').eq('id', storyId).single()
             if (story?.user_id && story.user_id !== userId) {
-              await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_comment', payload: { story_id: storyId, comment_id: inserted?.id, commenter_id: userId } })
+              await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_comment', payload: { story_id: storyId, comment_id: inserted?.id, actor_id: userId } })
             }
           }
         } catch {}
@@ -141,7 +141,7 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
       setComments(prev => prev.map(x => x.id === c.id ? { ...x, liked_by_me: true, like_count: (x.like_count || 0) + 1 } : x))
       try {
         if (c.user_id !== userId) {
-          await supabase.from('notifications').insert({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id, liker_id: userId } })
+          await supabase.from('notifications').insert({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id, actor_id: userId } })
         }
       } catch {}
     }

@@ -73,10 +73,10 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         })
         if (!res.ok) { setLiked(false); setLikes(v => Math.max(0, v - 1)) }
         try {
-          // notify story owner about like
+          // notify story owner about like (skip self)
           const { data: story } = await supabase.from('user_stories').select('user_id').eq('id', storyId).single()
           if (story?.user_id && story.user_id !== userId) {
-            await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_like', payload: { story_id: storyId, liker_id: userId } })
+            await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_like', payload: { story_id: storyId, actor_id: userId } })
           }
         } catch {}
         // refresh count from server to be exact

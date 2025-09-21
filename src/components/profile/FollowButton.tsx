@@ -46,6 +46,10 @@ export default function FollowButton({ profileId, className }: Props) {
       } else {
         await supabase.from('user_follows').insert({ follower_id: userId, following_id: profileId })
         setFollowing(true)
+        // notify the followed user (avoid self)
+        try {
+          await supabase.from('notifications').insert({ user_id: profileId, type: 'follow', payload: { follower_id: userId } })
+        } catch {}
       }
     } finally {
       setBusy(false)

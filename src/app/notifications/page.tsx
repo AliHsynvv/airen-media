@@ -14,6 +14,7 @@ type Notif = {
   created_at: string
   is_read: boolean
   liker?: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+  actor?: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
   story?: { id: string; slug?: string | null; title?: string | null }
   comment?: { id: string; content?: string | null }
 }
@@ -40,12 +41,14 @@ export default function NotificationsPage() {
         .limit(100)
 
       const likerIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.liker_id).filter(Boolean)))
+      const actorIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.actor_id || n.payload?.follower_id).filter(Boolean)))
       const storyIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.story_id).filter(Boolean)))
       const commentIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.comment_id).filter(Boolean)))
 
       let likers: Record<string, any> = {}
       let storiesMap: Record<string, any> = {}
       let commentsMap: Record<string, any> = {}
+      let actors: Record<string, any> = {}
       if (likerIds.length) {
         const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', likerIds)
         for (const p of (ps || [])) likers[(p as any).id] = p
@@ -58,11 +61,16 @@ export default function NotificationsPage() {
         const { data: cs } = await supabase.from('community_story_comments').select('id,content').in('id', commentIds)
         for (const c of (cs || [])) commentsMap[(c as any).id] = c
       }
+      if (actorIds.length) {
+        const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', actorIds)
+        for (const p of (ps || [])) actors[(p as any).id] = p
+      }
 
       if (!mounted) return
       setNotifications(((notifs as any[]) || []).map((n: any) => ({
         ...n,
         liker: n.payload?.liker_id ? likers[n.payload.liker_id] : undefined,
+        actor: n.payload?.actor_id ? actors[n.payload.actor_id] : (n.payload?.follower_id ? actors[n.payload.follower_id] : undefined),
         story: n.payload?.story_id ? storiesMap[n.payload.story_id] : undefined,
         comment: n.payload?.comment_id ? commentsMap[n.payload.comment_id] : undefined,
       })))
@@ -78,10 +86,19 @@ export default function NotificationsPage() {
           let liker: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null } | undefined
           let story: { id: string; slug?: string | null; title?: string | null } | undefined
           let comment: { id: string; content?: string | null } | undefined
+          let actor: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null } | undefined
           try {
             if (n.payload?.liker_id) {
               const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.liker_id).single()
               if (ps) liker = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+            }
+            if (n.payload?.actor_id) {
+              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.actor_id).single()
+              if (ps) actor = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+            }
+            if (n.payload?.follower_id) {
+              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.follower_id).single()
+              if (ps) actor = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
             }
             if (n.payload?.story_id) {
               const { data: ss } = await supabase.from('user_stories').select('id,slug,title').eq('id', n.payload.story_id).single()
@@ -92,7 +109,7 @@ export default function NotificationsPage() {
               if (cs) comment = cs as { id: string; content?: string | null }
             }
           } catch {}
-          setNotifications(prev => [{ ...n, liker, story, comment }, ...prev])
+          setNotifications(prev => [{ ...n, liker, actor, story, comment }, ...prev])
         })
         .subscribe()
       channelCleanup = () => {
@@ -149,9 +166,9 @@ export default function NotificationsPage() {
                 {unread.map(n => (
                   <li key={n.id} className="">
                     <div className="flex items-start gap-3">
-                      {n.type === 'comment_like' && n.liker?.avatar_url ? (
+                      {n.type === 'comment_like' && n.actor?.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={n.liker.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                        <img src={n.actor.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                       ) : (
                         <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
                           {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
@@ -160,31 +177,35 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
               {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
                             {n.story?.slug && (
                               <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                             )}
                           </div>
               ) : n.type === 'story_like' ? (
                 <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
+                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
                   {n.story?.slug && (
                     <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                   )}
                 </div>
               ) : n.type === 'story_comment' ? (
                 <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
+                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
                   {n.story?.slug && (
                     <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                   )}
                 </div>
               ) : n.type === 'comment_reply' ? (
                 <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
+                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
                   {n.story?.slug && (
                     <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                   )}
+                </div>
+              ) : n.type === 'follow' ? (
+                <div className="text-sm text-gray-900">
+                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> seni takip etmeye başladı.
                 </div>
               ) : (
                 <div className="text-sm text-gray-900">Bildirim</div>
@@ -204,9 +225,9 @@ export default function NotificationsPage() {
                 {earlier.map(n => (
                   <li key={n.id} className="">
                     <div className="flex items-start gap-3">
-                      {n.type === 'comment_like' && n.liker?.avatar_url ? (
+                      {n.type === 'comment_like' && n.actor?.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={n.liker.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                        <img src={n.actor.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                       ) : (
                         <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
                           {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
@@ -215,10 +236,35 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
                         {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
                             {n.story?.slug && (
                               <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                             )}
+                          </div>
+                        ) : n.type === 'story_like' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
+                            {n.story?.slug && (
+                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                            )}
+                          </div>
+                        ) : n.type === 'story_comment' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
+                            {n.story?.slug && (
+                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                            )}
+                          </div>
+                        ) : n.type === 'comment_reply' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
+                            {n.story?.slug && (
+                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                            )}
+                          </div>
+                        ) : n.type === 'follow' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> seni takip etmeye başladı.
                           </div>
                         ) : (
                           <div className="text-sm text-gray-900">Bildirim</div>

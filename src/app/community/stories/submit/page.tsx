@@ -212,6 +212,8 @@ export default function StorySubmitPage() {
       const baseSlug = slugify(title, { lower: true, strict: true })
       let slug = baseSlug
       let attempt = 0
+      let created = false
+      let lastError: any = null
       while (attempt < 2) {
         const { error } = await supabase.from('user_stories').insert({
           title,
@@ -222,13 +224,18 @@ export default function StorySubmitPage() {
           tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
           user_id: user.id,
           location: location || null,
-          status: 'pending',
+          status: 'approved',
         })
-        if (!error) break
+        if (!error) { created = true; break }
         // retry with random suffix on unique violation
+        lastError = error
         slug = `${baseSlug}-${Math.floor(Math.random() * 1000)}`
         attempt += 1
       }
+      if (!created) throw lastError || new Error('Gönderim başarısız oldu')
+      // Success → redirect to profile
+      window.location.href = '/profile'
+      return
       setMessage('Hikayen alındı! İnceleme sonrası yayınlanacaktır.')
       setTitle('')
       setContent('')
