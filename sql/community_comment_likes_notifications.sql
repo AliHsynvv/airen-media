@@ -74,7 +74,11 @@ with check (auth.uid() = user_id);
 drop policy if exists notifications_insert_self on public.notifications;
 create policy notifications_insert_self
 on public.notifications for insert
-to authenticated with check (auth.uid() = user_id);
+to authenticated
+with check (
+  -- Allow the actor to create a notification for someone else
+  (payload ? 'actor_id') and ((payload->>'actor_id')::uuid = auth.uid())
+);
 
 grant select, insert, update on public.notifications to authenticated;
 
