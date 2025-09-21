@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Menu, X, User, Search, Globe, Bell, LogIn, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { logoutAndRedirect } from '@/lib/auth/logout'
 import { ROUTES } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabase/client'
 
@@ -117,11 +118,8 @@ export function Header() {
                     <button
                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
                       onClick={async () => {
-                        try {
-                          await fetch('/api/auth/signout', { method: 'POST', cache: 'no-store' })
-                        } catch {}
-                        await supabase.auth.signOut()
-                        window.location.assign('/')
+                        setIsUserMenuOpen(false)
+                        await logoutAndRedirect('/')
                       }}
                     >
                       Çıkış Yap

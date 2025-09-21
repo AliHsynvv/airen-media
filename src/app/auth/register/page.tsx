@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
@@ -10,15 +10,108 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [usernameTaken, setUsernameTaken] = useState<boolean | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
+  const userDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const [fullName, setFullName] = useState('')
   const [message, setMessage] = useState<string | null>(null)
+  const [emailTaken, setEmailTaken] = useState<boolean | null>(null)
+  const [checkingEmail, setCheckingEmail] = useState(false)
+  const [emailCheckError, setEmailCheckError] = useState<string | null>(null)
+  const [usernameCheckError, setUsernameCheckError] = useState<string | null>(null)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const value = email.toLowerCase().trim()
+    if (!value) { setEmailTaken(null); setEmailCheckError(null); return }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      setCheckingEmail(true)
+      try {
+        const res = await fetch('/api/auth/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: value }) })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          setEmailCheckError(err?.error || 'Sunucu hatası')
+          setEmailTaken(null)
+        } else {
+          const json = await res.json()
+          setEmailTaken(!!json?.exists)
+          setEmailCheckError(null)
+        }
+      } catch {
+        setEmailCheckError('Ağ hatası')
+        setEmailTaken(null)
+      } finally {
+        setCheckingEmail(false)
+      }
+    }, 400)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [email])
+
+  useEffect(() => {
+    const value = username.toLowerCase().trim()
+    if (!value || value.length < 3) { setUsernameTaken(null); setUsernameCheckError(null); return }
+    if (userDebounceRef.current) clearTimeout(userDebounceRef.current)
+    userDebounceRef.current = setTimeout(async () => {
+      setCheckingUsername(true)
+      try {
+        const res = await fetch('/api/auth/check-username', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: value }) })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          setUsernameCheckError(err?.error || 'Sunucu hatası')
+          setUsernameTaken(null)
+        } else {
+          const json = await res.json()
+          setUsernameTaken(!!json?.exists)
+          setUsernameCheckError(null)
+        }
+      } catch {
+        setUsernameCheckError('Ağ hatası')
+        setUsernameTaken(null)
+      } finally {
+        setCheckingUsername(false)
+      }
+    }, 400)
+    return () => { if (userDebounceRef.current) clearTimeout(userDebounceRef.current) }
+  }, [username])
 
   const submit = async () => {
     setLoading(true)
     setMessage(null)
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username, full_name: fullName } } })
+      const normalized = email.toLowerCase().trim()
+      // Final server-side check before attempt
+      const pre = await fetch('/api/auth/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: normalized }) })
+      if (!pre.ok) {
+        const err = await pre.json().catch(() => ({}))
+        setMessage(`E-posta kontrol hatası: ${err?.error || pre.status}`)
+        setLoading(false)
+        return
+      }
+      const preJson = await pre.json()
+      if (preJson?.exists) {
+        setMessage('Bu e-posta zaten kayıtlı.')
+        setEmailTaken(true)
+        setLoading(false)
+        return
+      }
+      const uname = username.toLowerCase().trim()
+      const preU = await fetch('/api/auth/check-username', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: uname }) })
+      if (!preU.ok) {
+        const err = await preU.json().catch(() => ({}))
+        setMessage(`Kullanıcı adı kontrol hatası: ${err?.error || preU.status}`)
+        setLoading(false)
+        return
+      }
+      const preUJson = await preU.json()
+      if (preUJson?.exists) {
+        setMessage('Bu kullanıcı adı zaten alınmış.')
+        setUsernameTaken(true)
+        setLoading(false)
+        return
+      }
+      const { data, error } = await supabase.auth.signUp({ email: normalized, password, options: { data: { username, full_name: fullName } } })
       if (error) throw error
       // Ensure profile via server (service role) to bypass RLS edge cases
       if (data.user) {
@@ -63,7 +156,20 @@ export default function RegisterPage() {
           <div className="space-y-3">
             <div>
               <label className="block text-sm text-gray-700 mb-1">Kullanıcı Adı</label>
-              <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="airenuser" className="border-gray-200" />
+              <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="airenuser" className={`border-gray-200 ${usernameTaken ? 'ring-1 ring-red-500' : ''}`} />
+              {username && (
+                <div className="mt-1 text-xs">
+                  {checkingUsername ? (
+                    <span className="text-gray-500">Kontrol ediliyor…</span>
+                  ) : usernameCheckError ? (
+                    <span className="text-orange-600">Kontrol edilemedi. Tekrar deneyin.</span>
+                  ) : usernameTaken ? (
+                    <span className="text-red-600">Bu kullanıcı adı zaten alınmış.</span>
+                  ) : username.length >= 3 ? (
+                    <span className="text-green-600">Uygun.</span>
+                  ) : null}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Ad Soyad</label>
@@ -71,7 +177,20 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">E-posta</label>
-              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="mail@site.com" className="border-gray-200" />
+              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="mail@site.com" className={`border-gray-200 ${emailTaken ? 'ring-1 ring-red-500' : ''}`} />
+              {email && (
+                <div className="mt-1 text-xs">
+                  {checkingEmail ? (
+                    <span className="text-gray-500">Kontrol ediliyor…</span>
+                  ) : emailCheckError ? (
+                    <span className="text-orange-600">Kontrol edilemedi. Tekrar deneyin.</span>
+                  ) : emailTaken ? (
+                    <span className="text-red-600">Bu e-posta zaten kayıtlı.</span>
+                  ) : (
+                    <span className="text-green-600">Uygun.</span>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Şifre</label>
@@ -79,7 +198,7 @@ export default function RegisterPage() {
             </div>
             <div className="flex items-center justify-between pt-1">
               <div className="text-sm text-gray-500">{message}</div>
-              <Button onClick={submit} className="rounded-full px-5 bg-black text-white hover:bg-black/90" disabled={loading || !email || !password || !username}>
+              <Button onClick={submit} className="rounded-full px-5 bg-black text-white hover:bg-black/90" disabled={loading || !email || !password || !username || emailTaken === true || usernameTaken === true || !!emailCheckError || !!usernameCheckError}>
                 {loading ? 'Yükleniyor...' : 'Kayıt Ol'}
               </Button>
             </div>

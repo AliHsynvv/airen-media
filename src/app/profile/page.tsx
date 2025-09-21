@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Heart, Bell, PlusCircle, Search, Users } from 'lucide-react'
@@ -199,8 +200,7 @@ export default function ProfilePage() {
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
+    await logoutAndRedirect('/')
   }
 
   const remove = async (id: string) => {

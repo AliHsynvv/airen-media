@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
@@ -83,8 +84,7 @@ export default function ProfileEditPage() {
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
+    await logoutAndRedirect('/')
   }
 
   if (loading) {
