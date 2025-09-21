@@ -27,7 +27,7 @@ grant select on public.community_comment_likes to anon, authenticated;
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users_profiles(id) on delete cascade,
-  type text not null check (type in ('comment_like')),
+  type text not null check (type in ('comment_like','comment_reply','story_like','story_comment')),
   payload jsonb not null,
   is_read boolean not null default false,
   created_at timestamptz not null default now()

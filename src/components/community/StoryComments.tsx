@@ -75,8 +75,31 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
     if (!isUuid || !content.trim()) return
     setBusy(true)
     try {
-      const { error } = await supabase.from('community_story_comments').insert({ story_id: storyId, user_id: userId, content: content.trim(), parent_id: replyTo })
+      const { data: inserted, error } = await supabase
+        .from('community_story_comments')
+        .insert({ story_id: storyId, user_id: userId, content: content.trim(), parent_id: replyTo })
+        .select('id, parent_id, user_id')
+        .single()
       if (!error) {
+        // Notifications: reply and top-level comment
+        try {
+          if (replyTo) {
+            const { data: parent } = await supabase
+              .from('community_story_comments')
+              .select('user_id')
+              .eq('id', replyTo)
+              .single()
+            if (parent?.user_id && parent.user_id !== userId) {
+              await supabase.from('notifications').insert({ user_id: parent.user_id, type: 'comment_reply', payload: { story_id: storyId, comment_id: inserted?.id, replier_id: userId, parent_id: replyTo } })
+            }
+          } else {
+            // notify story owner
+            const { data: story } = await supabase.from('user_stories').select('user_id').eq('id', storyId).single()
+            if (story?.user_id && story.user_id !== userId) {
+              await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_comment', payload: { story_id: storyId, comment_id: inserted?.id, commenter_id: userId } })
+            }
+          }
+        } catch {}
         setContent('')
         setReplyTo(null)
         const { data } = await supabase
@@ -116,8 +139,11 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
     } else {
       await supabase.from('community_comment_likes').insert({ comment_id: c.id, user_id: userId })
       setComments(prev => prev.map(x => x.id === c.id ? { ...x, liked_by_me: true, like_count: (x.like_count || 0) + 1 } : x))
-      // Create notification (including self-like so user can see it in their feed)
-      await supabase.from('notifications').insert({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id, liker_id: userId } })
+      try {
+        if (c.user_id !== userId) {
+          await supabase.from('notifications').insert({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id, liker_id: userId } })
+        }
+      } catch {}
     }
   }
 

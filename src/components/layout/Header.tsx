@@ -37,6 +37,24 @@ export function Header() {
     return () => { mounted = false; sub.subscription.unsubscribe() }
   }, [])
 
+  // Realtime: update unread notifications count instantly
+  useEffect(() => {
+    if (!userId) return
+    const channel = supabase
+      .channel(`notif-badge-${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => {
+        setUnreadCount(c => (c || 0) + 1)
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload: any) => {
+        const oldRead = !!payload?.old?.is_read
+        const newRead = !!payload?.new?.is_read
+        if (!oldRead && newRead) setUnreadCount(c => Math.max(0, (c || 0) - 1))
+        if (oldRead && !newRead) setUnreadCount(c => (c || 0) + 1)
+      })
+      .subscribe()
+    return () => { try { channel.unsubscribe() } catch {} }
+  }, [userId])
+
   const navigation = [
     { name: 'Ana Sayfa', href: ROUTES.HOME },
     { name: 'Haberler', href: ROUTES.NEWS },
@@ -81,11 +99,6 @@ export function Header() {
             {userId && (
               <Link href={ROUTES.NOTIFICATIONS} className="relative inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
                 <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-5 text-center">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
               </Link>
             )}
 

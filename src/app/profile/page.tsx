@@ -162,6 +162,19 @@ export default function ProfilePage() {
     }
   }, [])
 
+  // Realtime: notifications badge on profile header (mobile button removed earlier, keep counts fresh)
+  useEffect(() => {
+    if (!userId) return
+    const channel = supabase
+      .channel(`notif-profile-${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => {
+        // increment unread count quickly
+        // We no longer render a badge here, but keep parity with header count updates if used elsewhere
+      })
+      .subscribe()
+    return () => { try { channel.unsubscribe() } catch {} }
+  }, [userId])
+
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])
   const approvedCount = useMemo(() => stories.filter(s => s.status === 'approved' || s.status === 'featured').length, [stories])
   const savedTotal = useMemo(() => savedArticles.length + savedCountries.length, [savedArticles.length, savedCountries.length])
@@ -312,14 +325,14 @@ export default function ProfilePage() {
                   <div className="text-lg font-semibold text-black">{approvedCount}</div>
                   <div className="text-xs text-gray-600">Posts</div>
                 </div>
-                <div className="text-center">
+                <Link href="/followers" className="text-center block hover:opacity-90" aria-label="Followers sayfasına git">
                   <div className="text-lg font-semibold text-black">{followersCount}</div>
                   <div className="text-xs text-gray-600">Followers</div>
-                </div>
-                <div className="text-center">
+                </Link>
+                <Link href="/following" className="text-center block hover:opacity-90" aria-label="Following sayfasına git">
                   <div className="text-lg font-semibold text-black">{followingCount}</div>
                   <div className="text-xs text-gray-600">Following</div>
-                </div>
+                </Link>
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>

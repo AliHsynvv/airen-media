@@ -22,6 +22,7 @@ export default function NotificationsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<Notif[]>([])
+  const autoClearedRef = useRef(false)
 
   useEffect(() => {
     let mounted = true
@@ -65,15 +66,60 @@ export default function NotificationsPage() {
         comment: n.payload?.comment_id ? commentsMap[n.payload.comment_id] : undefined,
       })))
       setLoading(false)
+
+      // Realtime subscribe for live notifications
+      const channel = supabase
+        .channel(`notifications-${u.id}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, async (payload) => {
+          const n: any = payload.new
+          // Enrich minimal fields similar to initial load
+          let liker, story, comment
+          try {
+            if (n.payload?.liker_id) {
+              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.liker_id).single()
+              liker = ps
+            }
+            if (n.payload?.story_id) {
+              const { data: ss } = await supabase.from('user_stories').select('id,slug,title').eq('id', n.payload.story_id).single()
+              story = ss
+            }
+            if (n.payload?.comment_id) {
+              const { data: cs } = await supabase.from('community_story_comments').select('id,content').eq('id', n.payload.comment_id).single()
+              comment = cs
+            }
+          } catch {}
+          setNotifications(prev => [{ ...n, liker, story, comment }, ...prev])
+        })
+        .subscribe()
+
+      return () => {
+        try { channel.unsubscribe() } catch {}
+      }
     }
-    load()
+    const cleanup = load()
     const { data: sub } = supabase.auth.onAuthStateChange(() => load())
-    return () => { mounted = false; sub.subscription.unsubscribe() }
+    return () => { mounted = false; sub.subscription.unsubscribe(); try { (cleanup as any)?.() } catch {} }
   }, [])
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
   const unread = useMemo(() => notifications.filter(n => !n.is_read), [notifications])
   const earlier = useMemo(() => notifications.filter(n => n.is_read), [notifications])
+
+  // Auto-mark all as read when visiting the page once
+  useEffect(() => {
+    const markAllRead = async () => {
+      if (!userId) return
+      if (autoClearedRef.current) return
+      const hasUnread = notifications.some(n => !n.is_read)
+      if (!hasUnread) return
+      autoClearedRef.current = true
+      try {
+        await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      } catch {}
+    }
+    markAllRead()
+  }, [userId, notifications])
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -109,16 +155,37 @@ export default function NotificationsPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        {n.type === 'comment_like' ? (
+              {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
                             <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
                             {n.story?.slug && (
                               <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
                             )}
                           </div>
-                        ) : (
-                          <div className="text-sm text-gray-900">Bildirim</div>
-                        )}
+              ) : n.type === 'story_like' ? (
+                <div className="text-sm text-gray-900">
+                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
+                  {n.story?.slug && (
+                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                  )}
+                </div>
+              ) : n.type === 'story_comment' ? (
+                <div className="text-sm text-gray-900">
+                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
+                  {n.story?.slug && (
+                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                  )}
+                </div>
+              ) : n.type === 'comment_reply' ? (
+                <div className="text-sm text-gray-900">
+                  <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
+                  {n.story?.slug && (
+                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                  )}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-900">Bildirim</div>
+              )}
                         <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
                       </div>
                     </div>
