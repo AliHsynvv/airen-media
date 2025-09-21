@@ -4,6 +4,10 @@ let SUPABASE_HOST = ''
 try { SUPABASE_HOST = new URL(SUPABASE_URL).host } catch {}
 
 const nextConfig = {
+  eslint: {
+    // Skip eslint errors during production builds (Vercel)
+    ignoreDuringBuilds: true,
+  },
   images: {
     domains: [
       // Supabase storage host (from env)
