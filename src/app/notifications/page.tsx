@@ -70,10 +70,12 @@ export default function NotificationsPage() {
       // Realtime subscribe for live notifications
       const channel = supabase
         .channel(`notifications-${u.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, async (payload) => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, async (payload: { new: any; old: any }) => {
           const n: any = payload.new
           // Enrich minimal fields similar to initial load
-          let liker, story, comment
+          let liker: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null } | undefined
+          let story: { id: string; slug?: string | null; title?: string | null } | undefined
+          let comment: { id: string; content?: string | null } | undefined
           try {
             if (n.payload?.liker_id) {
               const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.liker_id).single()
