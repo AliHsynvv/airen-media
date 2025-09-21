@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabase/client'
 import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Heart, Bell, PlusCircle, Search, Users } from 'lucide-react'
+import { PlusCircle, Search, Users, LayoutGrid, Bookmark, MessageSquareText, Plus, LogIn, UserPlus } from 'lucide-react'
+import { ROUTES } from '@/lib/utils/constants'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 
@@ -38,13 +39,9 @@ export default function ProfilePage() {
   const [favoriteCountries, setFavoriteCountries] = useState<Array<{ id: string; name: string; slug: string }>>([])
   const [articleComments, setArticleComments] = useState<Array<{ id: string; article_id: string; content: string; article?: { id: string; title: string; slug: string } }>>([])
   const [countryReviews, setCountryReviews] = useState<Array<{ id: string; country_id: string; comment: string | null; rating: number; country?: { id: string; name: string; slug: string } }>>([])
-  const [notifications, setNotifications] = useState<Array<{ id: string; type: string; payload: any; created_at: string; is_read: boolean; liker?: { id: string; full_name?: string|null; username?: string|null; avatar_url?: string|null }; story?: { id: string; slug?: string|null; title?: string|null }; comment?: { id: string; content?: string|null } }>>([])
   const savedSectionRef = useRef<HTMLDivElement | null>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'comments'>('posts')
-  const [showNotifs, setShowNotifs] = useState(false)
   const notifRef = useRef<HTMLDivElement | null>(null)
-  const notifBtnRefDesktop = useRef<HTMLButtonElement | null>(null)
-  const notifBtnRefMobile = useRef<HTMLButtonElement | null>(null)
   const [followersCount, setFollowersCount] = useState<number>(0)
   const [followingCount, setFollowingCount] = useState<number>(0)
 
@@ -118,33 +115,6 @@ export default function ProfilePage() {
         }
         setCountryReviews(((cr as any) || []).map((r: any) => ({ ...r, country: crCnts.find(c => c.id === r.country_id) })))
 
-        // Notifications
-        const { data: notifs } = await supabase.from('notifications').select('id,type,payload,created_at,is_read').order('created_at', { ascending: false }).limit(50)
-        const likerIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.liker_id).filter(Boolean)))
-        const storyIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.story_id).filter(Boolean)))
-        const commentIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.comment_id).filter(Boolean)))
-        let likers: Record<string, any> = {}
-        let storiesMap: Record<string, any> = {}
-        let commentsMap: Record<string, any> = {}
-        if (likerIds.length) {
-          const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', likerIds)
-          for (const p of (ps || [])) likers[(p as any).id] = p
-        }
-        if (storyIds.length) {
-          const { data: ss } = await supabase.from('user_stories').select('id,slug,title').in('id', storyIds)
-          for (const s of (ss || [])) storiesMap[(s as any).id] = s
-        }
-        if (commentIds.length) {
-          const { data: cs } = await supabase.from('community_story_comments').select('id,content').in('id', commentIds)
-          for (const c of (cs || [])) commentsMap[(c as any).id] = c
-        }
-        setNotifications(((notifs as any) || []).map((n: any) => ({
-          ...n,
-          liker: n.payload?.liker_id ? likers[n.payload.liker_id] : undefined,
-          story: n.payload?.story_id ? storiesMap[n.payload.story_id] : undefined,
-          comment: n.payload?.comment_id ? commentsMap[n.payload.comment_id] : undefined,
-        })))
-
         // Follow counts (Instagram-like)
         const { count: followersCountRes } = await supabase
           .from('user_follows')
@@ -179,12 +149,10 @@ export default function ProfilePage() {
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as Node
       if (notifRef.current && notifRef.current.contains(target)) return
-      if (notifBtnRefDesktop.current && notifBtnRefDesktop.current.contains(target)) return
-      if (notifBtnRefMobile.current && notifBtnRefMobile.current.contains(target)) return
-      setShowNotifs(false)
+      setShowSearch(false)
     }
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowNotifs(false)
+      if (e.key === 'Escape') setShowSearch(false)
     }
     document.addEventListener('mousedown', onDocClick)
     document.addEventListener('keydown', onEsc)
@@ -197,7 +165,7 @@ export default function ProfilePage() {
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])
   const approvedCount = useMemo(() => stories.filter(s => s.status === 'approved' || s.status === 'featured').length, [stories])
   const savedTotal = useMemo(() => savedArticles.length + savedCountries.length, [savedArticles.length, savedCountries.length])
-  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
+  
 
   const logout = async () => {
     await logoutAndRedirect('/')
@@ -296,87 +264,75 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-0 sm:px-4 py-0 bg-white">
       {!userId ? (
-        <div className="text-black">Oturum bulunamadı. Lütfen giriş yapın.</div>
+        <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm p-6 text-center mt-8">
+          <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
+            <LogIn className="h-7 w-7 text-gray-700" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-gray-900">Oturum bulunamadı</h1>
+          <p className="mt-1 text-sm text-gray-600">Devam etmek için lütfen hesabınıza giriş yapın veya yeni bir hesap oluşturun.</p>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button asChild className="h-10 rounded-full bg-black text-white hover:bg-black/90">
+              <Link href={ROUTES.AUTH.LOGIN}>
+                <LogIn className="h-4 w-4 mr-2" /> Giriş Yap
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="h-10 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50">
+              <Link href={ROUTES.AUTH.REGISTER}>
+                <UserPlus className="h-4 w-4 mr-2" /> Kayıt Ol
+              </Link>
+            </Button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-0">
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
           {/* Header */}
-          <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-6 relative">
-            <button onClick={onPickAvatar} className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-black text-xl">{(fullName || email || 'U')[0]}</span>
-              )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center text-[10px] text-white">Değiştir</div>
-            </button>
-            <div className="flex-1 min-w-0 w-full space-y-2 sm:space-y-3">
-              <div className="flex items-baseline gap-2 min-w-0">
-                <div className="text-black font-semibold text-base sm:text-lg truncate">{fullName || username || 'Kullanıcı'}</div>
-                <div className="text-gray-600 text-xs sm:text-sm truncate">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
-                <Button
-                  ref={notifBtnRefMobile}
-                  variant="ghost"
-                  aria-label="Bildirimler"
-                  className="ml-auto h-9 w-9 p-0 text-gray-700 hover:text-black sm:hidden relative"
-                  onClick={() => setShowNotifs(v => !v)}
-                >
-                  <Bell className="h-5 w-5" />
-                  {!!unreadCount && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500" />}
-                </Button>
+          <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-6">
+            <div className="flex flex-col items-center text-center gap-3">
+              <button onClick={onPickAvatar} className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-black text-2xl">{(fullName || email || 'U')[0]}</span>
+                )}
+                <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-black text-white flex items-center justify-center ring-2 ring-white">
+                  <Plus className="h-4 w-4" />
+                </div>
+              </button>
+              <div className="max-w-xl">
+                <div className="text-xl sm:text-2xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
+                <div className="text-gray-600 text-sm">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
+                <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap px-2">
+                  {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
+                </div>
               </div>
-                <div className="text-gray-600 text-xs sm:text-sm truncate">{email}</div>
-              {/* Visible bio just under username */}
-              <div className="text-sm text-gray-800 whitespace-pre-wrap">
-                {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
+              <div className="mt-1 grid grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-black">{approvedCount}</div>
+                  <div className="text-xs text-gray-600">Posts</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-black">{followersCount}</div>
+                  <div className="text-xs text-gray-600">Followers</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-black">{followingCount}</div>
+                  <div className="text-xs text-gray-600">Following</div>
+                </div>
               </div>
-              {/* Desktop actions */}
-              <div className="hidden sm:flex items-center gap-3 sm:self-start sm:ml-auto">
-                <Button
-                  ref={notifBtnRefDesktop}
-                  variant="ghost"
-                  aria-label="Bildirimler"
-                  className="h-9 w-9 p-0 text-gray-700 hover:text-black relative"
-                  onClick={() => setShowNotifs(v => !v)}
-                >
-                  <Bell className="h-5 w-5" />
-                  {!!unreadCount && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500" />}
+              <div className="flex items-center gap-3 mt-1">
+                <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+                  <Link href="/profile/edit">Edit Profile</Link>
                 </Button>
-                <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-                  <Link href="/profile/edit">Profili Düzenle</Link>
+                <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
+                  Share Profile
                 </Button>
-                <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
-                  Profili Paylaş
-                </Button>
-              </div>
-              {/* Stats */}
-              <div className="mt-2 grid grid-cols-3 gap-2 text-center sm:text-left sm:flex sm:items-center sm:gap-6">
-                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{approvedCount}</span> Gönderi</div>
-                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followersCount}</span> Takipçi</div>
-                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followingCount}</span> Takip</div>
               </div>
             </div>
           </div>
-            {showNotifs && (
-              <div ref={notifRef} className="absolute right-4 sm:right-6 top-full mt-2 w-[92vw] max-w-sm rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
-                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
-                  <div className="text-sm text-gray-600">Bildirimler</div>
-                  {!!notifications.filter(n => !n.is_read).length && (
-                    <Button
-                      variant="secondary"
-                      className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
-                      onClick={async () => {
-                        if (!userId) return
-                        await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
-                        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-                      }}
-                    >
-                      Tümünü okundu yap
-                    </Button>
-                  )}
             {showSearch && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[92vw] max-w-2xl rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+              <div ref={notifRef} className="fixed right-4 top-20 w-[92vw] max-w-2xl rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
                 <div className="flex items-center gap-2 p-3 border-b border-gray-200">
                   <Search className="h-5 w-5 text-gray-600" />
                   <input
@@ -409,80 +365,35 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-                </div>
-                <div className="max-h-[70vh] overflow-auto">
-                  {notifications.length ? (
-                    <ul className="divide-y divide-gray-200">
-                      {notifications.map(n => (
-                        <li key={n.id} className="py-3 px-3">
-                          <div className="flex items-start gap-3">
-                            {n.type === 'comment_like' && n.liker?.avatar_url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={n.liker.avatar_url} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
-                            ) : (
-                              <div className={`h-8 w-8 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                                {n.type === 'comment_like' ? <Heart className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              {n.type === 'comment_like' ? (
-                                <div className="text-sm text-gray-900">
-                                  <span className="font-medium">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
-                                  {n.story?.slug && (
-                                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-gray-900">Bildirim</div>
-                              )}
-                              {n.type === 'comment_like' && n.comment?.content && (
-                                <div className="mt-2 text-xs text-gray-700 border border-gray-200 bg-gray-50 rounded-md p-2 line-clamp-3">{n.comment.content}</div>
-                              )}
-                              <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
-                            </div>
-                            {!n.is_read && (
-                              <Button
-                                variant="secondary"
-                                className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
-                                onClick={async () => {
-                                  await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
-                                  setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
-                                }}
-                              >
-                                Okundu
-                              </Button>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="px-3 py-4 text-gray-600 text-sm">Bildirim yok.</div>
-                  )}
-                </div>
-              </div>
-            )}
-          <div className="flex items-center gap-2 flex-nowrap w-full justify-center px-4 py-3 sm:hidden">
-            <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-              <Link href="/profile/edit">Profili Düzenle</Link>
-            </Button>
-            <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
-              Profili Paylaş
-            </Button>
-          </div>
+          
           {/* Removed duplicate Bio under header */}
           {/* Tabs */}
           <div className="border-t border-gray-200 bg-white">
-            <div className="flex items-center justify-center gap-6 sm:gap-10 border-b border-gray-200 overflow-x-auto whitespace-nowrap px-2">
-              {(['posts','saved','comments'] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-3 text-sm font-medium shrink-0 ${activeTab === tab ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
-                >
-                  {tab === 'posts' ? 'Gönderiler' : tab === 'saved' ? 'Kaydedilenler' : 'Yorumlar'}
-                </button>
-              ))}
+            <div className="flex items-center justify-center gap-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap px-2">
+              <button
+                onClick={() => setActiveTab('posts')}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'posts' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
+                aria-label="Gönderiler"
+              >
+                <LayoutGrid className="h-5 w-5" />
+                <span className="hidden sm:inline">Gönderiler</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('saved')}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'saved' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
+                aria-label="Kaydedilenler"
+              >
+                <Bookmark className="h-5 w-5" />
+                <span className="hidden sm:inline">Kaydedilenler</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('comments')}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'comments' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
+                aria-label="Yorumlar"
+              >
+                <MessageSquareText className="h-5 w-5" />
+                <span className="hidden sm:inline">Yorumlar</span>
+              </button>
             </div>
 
             <div className="p-4" ref={savedSectionRef}>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Bell, Heart, MessageCircle } from 'lucide-react'
+import { Bell, Heart, MessageCircle, Search } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 
 type Notif = {
@@ -72,27 +72,17 @@ export default function NotificationsPage() {
   }, [])
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
+  const unread = useMemo(() => notifications.filter(n => !n.is_read), [notifications])
+  const earlier = useMemo(() => notifications.filter(n => n.is_read), [notifications])
 
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Bildirimler</h1>
-          <div className="text-sm text-gray-600">{unreadCount} okunmamış</div>
-        </div>
-        {!!unreadCount && (
-          <Button
-            variant="secondary"
-            className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50"
-            onClick={async () => {
-              if (!userId) return
-              await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
-              setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-            }}
-          >
-            Tümünü okundu yap
-          </Button>
-        )}
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Notifications</h1>
+        <button className="h-9 w-9 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
+          <Search className="h-5 w-5" />
+          <span className="sr-only">Search</span>
+        </button>
       </div>
 
       {loading ? (
@@ -102,50 +92,76 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : notifications.length ? (
-        <ul className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200">
-          {notifications.map(n => (
-            <li key={n.id} className={`px-4 py-3 ${!n.is_read ? 'bg-gray-50' : ''}`}>
-              <div className="flex items-start gap-3">
-                {n.type === 'comment_like' && n.liker?.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={n.liker.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                ) : (
-                  <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                    {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  {n.type === 'comment_like' ? (
-                    <div className="text-sm text-gray-900">
-                      <span className="font-medium">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
-                      {n.story?.slug && (
-                        <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+        <div className="bg-white rounded-lg border border-gray-200">
+          {!!unread.length && (
+            <div className="px-4 py-3">
+              <div className="text-sm font-semibold text-gray-900 mb-2">New</div>
+              <ul className="space-y-3">
+                {unread.map(n => (
+                  <li key={n.id} className="">
+                    <div className="flex items-start gap-3">
+                      {n.type === 'comment_like' && n.liker?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={n.liker.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                          {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+                        </div>
                       )}
+                      <div className="flex-1 min-w-0">
+                        {n.type === 'comment_like' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
+                            {n.story?.slug && (
+                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-900">Bildirim</div>
+                        )}
+                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="text-sm text-gray-900">Bildirim</div>
-                  )}
-                  {n.type === 'comment_like' && n.comment?.content && (
-                    <div className="mt-2 text-xs text-gray-700 border border-gray-200 bg-gray-50 rounded-md p-2 line-clamp-3">{n.comment.content}</div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">{formatRelativeTime(n.created_at)}</div>
-                </div>
-                {!n.is_read && (
-                  <Button
-                    variant="secondary"
-                    className="h-8 px-3 border border-gray-200 bg-white text-black hover:bg-gray-50"
-                    onClick={async () => {
-                      await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
-                      setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x))
-                    }}
-                  >
-                    Okundu
-                  </Button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!!earlier.length && (
+            <div className="px-4 py-3 border-t border-gray-200">
+              <div className="text-sm font-semibold text-gray-900 mb-2">Earlier</div>
+              <ul className="space-y-3">
+                {earlier.map(n => (
+                  <li key={n.id} className="">
+                    <div className="flex items-start gap-3">
+                      {n.type === 'comment_like' && n.liker?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={n.liker.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                          {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        {n.type === 'comment_like' ? (
+                          <div className="text-sm text-gray-900">
+                            <span className="font-semibold">{n.liker?.full_name || n.liker?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
+                            {n.story?.slug && (
+                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-900">Bildirim</div>
+                        )}
+                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="text-center text-gray-600">Bildirim yok.</div>
       )}

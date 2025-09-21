@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Pencil } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProfileEditPage() {
@@ -13,12 +14,15 @@ export default function ProfileEditPage() {
   const [fullName, setFullName] = useState<string>('')
   const [username, setUsername] = useState<string>('')
   const [bio, setBio] = useState<string>('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [message, setMessage] = useState<string | null>(null)
 
   const [newPassword, setNewPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [saving, setSaving] = useState<boolean>(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -32,10 +36,11 @@ export default function ProfileEditPage() {
       }
       setUserId(u.id)
       setEmail(u.email || '')
-      const { data: p } = await supabase.from('users_profiles').select('full_name,username,bio').eq('id', u.id).single()
+      const { data: p } = await supabase.from('users_profiles').select('full_name,username,bio,avatar_url').eq('id', u.id).single()
       setFullName(p?.full_name || '')
       setUsername(p?.username || '')
       setBio(p?.bio || '')
+      setAvatarUrl(p?.avatar_url || null)
       setLoading(false)
     }
     load()
@@ -61,6 +66,37 @@ export default function ProfileEditPage() {
       setMessage(e?.message || 'Güncelleme başarısız')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const onPickAvatar = () => fileInputRef.current?.click()
+  const onAvatarSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !userId) return
+    setMessage(null)
+    setUploadingAvatar(true)
+    try {
+      const path = `${userId}/${Date.now()}_${file.name}`
+      const candidates = [process.env.NEXT_PUBLIC_AVATARS_BUCKET || 'avatars', 'Avatars']
+      let usedBucket: string | null = null
+      let lastErr: any = null
+      for (const b of candidates) {
+        const { error: upErr } = await supabase.storage.from(b).upload(path, file, { cacheControl: '3600', upsert: false })
+        if (!upErr) { usedBucket = b; break }
+        lastErr = upErr
+      }
+      if (!usedBucket) throw lastErr || new Error('Upload failed')
+      const { data: pub } = supabase.storage.from(usedBucket).getPublicUrl(path)
+      const finalUrl = pub.publicUrl
+      const { error: updErr } = await supabase.from('users_profiles').update({ avatar_url: finalUrl }).eq('id', userId)
+      if (updErr) throw updErr
+      setAvatarUrl(finalUrl)
+      setMessage('Profil fotoğrafı güncellendi')
+    } catch (err: any) {
+      setMessage(err?.message || 'Yükleme başarısız')
+    } finally {
+      setUploadingAvatar(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -96,67 +132,47 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-900">Profili Düzenle</h1>
-        <Link href="/profile" className="text-sm text-gray-700 hover:underline">Geri</Link>
+    <div className="container mx-auto px-4 py-6 max-w-md">
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-4">
+        <Link href="/profile" className="text-gray-900 text-xl leading-none">×</Link>
+        <div className="text-base font-semibold text-gray-900">Edit Profile</div>
+        <button className="text-sm font-medium text-blue-600 disabled:text-gray-400" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 space-y-6">
-        {/* Email & Name */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="flex flex-col items-center text-center">
+          <div className="relative h-28 w-28 rounded-full overflow-hidden bg-gray-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-gray-700 text-3xl">{(fullName || email || 'U')[0]}</div>
+            )}
+            <button onClick={onPickAvatar} className="absolute bottom-1 right-1 h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center ring-2 ring-white">
+              <Pencil className="h-4 w-4" />
+            </button>
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
+          <button onClick={onPickAvatar} className="mt-3 text-sm font-medium text-blue-600">{uploadingAvatar ? 'Uploading…' : 'Change Profile Photo'}</button>
+        </div>
+
+        <div className="mt-6 space-y-4">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Ad Soyad</label>
-            <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ad Soyad" />
+            <label className="block text-xs text-gray-600 mb-1">Full Name</label>
+            <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jane Doe" />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Kullanıcı Adı</label>
-            <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="kullanici" />
+            <label className="block text-xs text-gray-600 mb-1">Username</label>
+            <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="@janedoe" />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">E-posta</label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="ornek@mail.com" />
+            <label className="block text-xs text-gray-600 mb-1">Bio</label>
+            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="w-full rounded-md border border-gray-200 bg-white text-gray-900 p-3 placeholder:text-gray-400" placeholder="Tell us about yourself" />
           </div>
         </div>
 
-        {/* Bio */}
-        <div>
-          <label className="block text-xs text-gray-600 mb-1">Biyografi</label>
-          <textarea value={bio} onChange={e => setBio(e.target.value)} rows={5} className="w-full rounded-md border border-gray-200 bg-white text-gray-900 p-2" placeholder="Kendini tanıt..." />
-        </div>
-
-        <div className="flex items-center justify-end gap-2">
-          <Button className="h-9 px-4 bg-black text-white hover:bg-black/90" disabled={saving} onClick={saveProfile}>Kaydet</Button>
-        </div>
-
-        {/* Password */}
-        <div className="pt-2 border-t border-gray-200">
-          <div className="text-sm font-medium text-gray-900 mb-2">Şifreyi Güncelle</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Yeni Şifre</label>
-              <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="******" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Yeni Şifre (Tekrar)</label>
-              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="******" />
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-2 mt-2">
-            <Button variant="secondary" className="h-9 px-4 border border-gray-200 bg-white text-black hover:bg-gray-50" disabled={saving} onClick={updatePassword}>Şifreyi Güncelle</Button>
-          </div>
-        </div>
-
-        {/* Logout */}
-        <div className="pt-2 border-t border-gray-200">
-          <div className="text-sm font-medium text-gray-900 mb-2">Hesap</div>
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">Oturumu kapat</div>
-            <Button variant="destructive" className="h-9 px-4" onClick={logout}>Çıkış Yap</Button>
-          </div>
-        </div>
-
-        {message && <div className="text-sm text-gray-700">{message}</div>}
+        {message && <div className="mt-4 text-sm text-gray-700">{message}</div>}
       </div>
     </div>
   )
