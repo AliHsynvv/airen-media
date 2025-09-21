@@ -26,6 +26,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     let mounted = true
+    let channelCleanup: (() => void) | undefined
     const load = async () => {
       const { data } = await supabase.auth.getUser()
       const u = data.user
@@ -68,6 +69,7 @@ export default function NotificationsPage() {
       setLoading(false)
 
       // Realtime subscribe for live notifications
+      try { channelCleanup?.() } catch {}
       const channel = supabase
         .channel(`notifications-${u.id}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, async (payload: { new: any; old: any }) => {
@@ -93,14 +95,13 @@ export default function NotificationsPage() {
           setNotifications(prev => [{ ...n, liker, story, comment }, ...prev])
         })
         .subscribe()
-
-      return () => {
+      channelCleanup = () => {
         try { channel.unsubscribe() } catch {}
       }
     }
-    const cleanup = load()
-    const { data: sub } = supabase.auth.onAuthStateChange(() => load())
-    return () => { mounted = false; sub.subscription.unsubscribe(); try { (cleanup as any)?.() } catch {} }
+    void load()
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { void load() })
+    return () => { mounted = false; sub.subscription.unsubscribe(); try { channelCleanup?.() } catch {} }
   }, [])
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])

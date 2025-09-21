@@ -303,22 +303,22 @@ export default function ProfilePage() {
           <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-6">
             <div className="flex flex-col items-center text-center gap-3">
               <button onClick={onPickAvatar} className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-                ) : (
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+              ) : (
                   <span className="text-black text-2xl">{(fullName || email || 'U')[0]}</span>
-                )}
+              )}
                 <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-black text-white flex items-center justify-center ring-2 ring-white">
                   <Plus className="h-4 w-4" />
                 </div>
-              </button>
+            </button>
               <div className="max-w-xl">
                 <div className="text-xl sm:text-2xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
                 <div className="text-gray-600 text-sm">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
                 <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap px-2">
-                  {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
-                </div>
+                {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
+              </div>
               </div>
               <div className="mt-1 grid grid-cols-3 gap-6">
                 <div className="text-center">
@@ -399,14 +399,14 @@ export default function ProfilePage() {
                 <Bookmark className="h-5 w-5" />
                 <span className="hidden sm:inline">Kaydedilenler</span>
               </button>
-              <button
+                <button
                 onClick={() => setActiveTab('comments')}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'comments' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
                 aria-label="Yorumlar"
               >
                 <MessageSquareText className="h-5 w-5" />
                 <span className="hidden sm:inline">Yorumlar</span>
-              </button>
+                </button>
             </div>
 
             <div className="p-4" ref={savedSectionRef}>
