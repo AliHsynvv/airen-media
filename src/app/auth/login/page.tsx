@@ -1,16 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Prefetch profile route for instant navigation after login
+    try { router.prefetch?.('/profile') } catch {}
+  }, [router])
 
   const submit = async () => {
     setLoading(true)
@@ -19,7 +26,8 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       setMessage('Giriş başarılı!')
-      window.location.href = '/profile'
+      // Client-side navigation for faster transition
+      router.push('/profile')
     } catch (e: any) {
       setMessage(`Hata: ${e.message}`)
     } finally {

@@ -51,82 +51,98 @@ export default function ProfilePage() {
       const u = data.user
       setEmail(u?.email ?? null)
       setUserId(u?.id ?? null)
-      if (u?.id) {
-        const { data: p } = await supabase
+      if (!u?.id) { setLoading(false); return }
+
+      const userIdLocal = u.id
+
+      const [
+        profileRes,
+        storiesRes,
+        bookmarksRes,
+        countryBookmarksRes,
+        likesRes,
+        favoritesRes,
+        commentsRes,
+        reviewsRes,
+        followersCountQuery,
+        followingCountQuery,
+      ] = await Promise.all([
+        supabase
           .from('users_profiles')
           .select('full_name, username, avatar_url, bio')
-          .eq('id', u.id)
-          .single()
-        setFullName(p?.full_name ?? null)
-        setUsername(p?.username ?? null)
-        setAvatarUrl(p?.avatar_url ?? null)
-        setBio(p?.bio || '')
-        const { data: s } = await supabase
+          .eq('id', userIdLocal)
+          .single(),
+        supabase
           .from('user_stories')
           .select('id,title,slug,status,created_at,image_url')
-          .eq('user_id', u.id)
+          .eq('user_id', userIdLocal)
           .order('created_at', { ascending: false })
-          .limit(100)
-        setStories((s as any) || [])
-        // Saved articles
-        const { data: ab } = await supabase.from('article_bookmarks').select('article_id').eq('user_id', u.id)
-        const articleIds = (ab || []).map((r: any) => r.article_id)
-        if (articleIds.length) {
-          const { data: arts } = await supabase.from('articles').select('id,title,slug,featured_image,image_alt').in('id', articleIds)
-          setSavedArticles((arts as any) || [])
-        }
-        // Saved countries
-        const { data: cb } = await supabase.from('country_bookmarks').select('country_id').eq('user_id', u.id)
-        const countryIds = (cb || []).map((r: any) => r.country_id)
-        if (countryIds.length) {
-          const { data: cnts } = await supabase.from('countries').select('id,name,slug').in('id', countryIds)
-          setSavedCountries((cnts as any) || [])
-        }
-        // Liked articles
-        const { data: al } = await supabase.from('article_likes').select('article_id').eq('user_id', u.id)
-        const likedIds = (al || []).map((r: any) => r.article_id)
-        if (likedIds.length) {
-          const { data: larts } = await supabase.from('articles').select('id,title,slug').in('id', likedIds)
-          setLikedArticles((larts as any) || [])
-        }
-        // Favorite countries
-        const { data: cf } = await supabase.from('country_favorites').select('country_id').eq('user_id', u.id)
-        const favIds = (cf || []).map((r: any) => r.country_id)
-        if (favIds.length) {
-          const { data: fcnts } = await supabase.from('countries').select('id,name,slug').in('id', favIds)
-          setFavoriteCountries((fcnts as any) || [])
-        }
-        // Article comments
-        const { data: ac } = await supabase.from('article_comments').select('id,article_id,content,created_at').eq('user_id', u.id).order('created_at', { ascending: false })
-        const acIds = (ac || []).map((r: any) => r.article_id)
-        let acArts: any[] = []
-        if (acIds.length) {
-          const { data: arts2 } = await supabase.from('articles').select('id,title,slug').in('id', acIds)
-          acArts = (arts2 as any) || []
-        }
-        setArticleComments(((ac as any) || []).map((r: any) => ({ ...r, article: acArts.find(a => a.id === r.article_id) })))
-        // Country reviews
-        const { data: cr } = await supabase.from('country_reviews').select('id,country_id,comment,rating,created_at').eq('user_id', u.id).order('created_at', { ascending: false })
-        const crIds = (cr || []).map((r: any) => r.country_id)
-        let crCnts: any[] = []
-        if (crIds.length) {
-          const { data: cnts2 } = await supabase.from('countries').select('id,name,slug').in('id', crIds)
-          crCnts = (cnts2 as any) || []
-        }
-        setCountryReviews(((cr as any) || []).map((r: any) => ({ ...r, country: crCnts.find(c => c.id === r.country_id) })))
-
-        // Follow counts (Instagram-like)
-        const { count: followersCountRes } = await supabase
+          .limit(100),
+        supabase.from('article_bookmarks').select('article_id').eq('user_id', userIdLocal),
+        supabase.from('country_bookmarks').select('country_id').eq('user_id', userIdLocal),
+        supabase.from('article_likes').select('article_id').eq('user_id', userIdLocal),
+        supabase.from('country_favorites').select('country_id').eq('user_id', userIdLocal),
+        supabase
+          .from('article_comments')
+          .select('id,article_id,content,created_at')
+          .eq('user_id', userIdLocal)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('country_reviews')
+          .select('id,country_id,comment,rating,created_at')
+          .eq('user_id', userIdLocal)
+          .order('created_at', { ascending: false }),
+        supabase
           .from('user_follows')
           .select('follower_id', { count: 'exact', head: true })
-          .eq('following_id', u.id)
-        const { count: followingCountRes } = await supabase
+          .eq('following_id', userIdLocal),
+        supabase
           .from('user_follows')
           .select('following_id', { count: 'exact', head: true })
-          .eq('follower_id', u.id)
-        setFollowersCount(followersCountRes || 0)
-        setFollowingCount(followingCountRes || 0)
-      }
+          .eq('follower_id', userIdLocal),
+      ])
+
+      const articleIds = (bookmarksRes?.data || []).map((r: any) => r.article_id)
+      const likedIds = (likesRes?.data || []).map((r: any) => r.article_id)
+      const acIds = (commentsRes?.data || []).map((r: any) => r.article_id)
+      const savedCountryIds = (countryBookmarksRes?.data || []).map((r: any) => r.country_id)
+      const favCountryIds = (favoritesRes?.data || []).map((r: any) => r.country_id)
+      const reviewCountryIds = (reviewsRes?.data || []).map((r: any) => r.country_id)
+
+      const [
+        savedArticlesRes,
+        likedArticlesRes,
+        commentArticlesRes,
+        savedCountriesRes,
+        favCountriesRes,
+        reviewCountriesRes,
+      ] = await Promise.all([
+        articleIds.length ? supabase.from('articles').select('id,title,slug,featured_image,image_alt').in('id', articleIds) : Promise.resolve({ data: [] }),
+        likedIds.length ? supabase.from('articles').select('id,title,slug').in('id', likedIds) : Promise.resolve({ data: [] }),
+        acIds.length ? supabase.from('articles').select('id,title,slug').in('id', acIds) : Promise.resolve({ data: [] }),
+        savedCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', savedCountryIds) : Promise.resolve({ data: [] }),
+        favCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', favCountryIds) : Promise.resolve({ data: [] }),
+        reviewCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', reviewCountryIds) : Promise.resolve({ data: [] }),
+      ])
+
+      setFullName(profileRes?.data?.full_name ?? null)
+      setUsername(profileRes?.data?.username ?? null)
+      setAvatarUrl(profileRes?.data?.avatar_url ?? null)
+      setBio(profileRes?.data?.bio || '')
+      setStories((storiesRes?.data as any) || [])
+      setSavedArticles((savedArticlesRes?.data as any) || [])
+      setSavedCountries((savedCountriesRes?.data as any) || [])
+      setLikedArticles((likedArticlesRes?.data as any) || [])
+      setFavoriteCountries((favCountriesRes?.data as any) || [])
+
+      const commentArticles = (commentArticlesRes?.data as any[]) || []
+      setArticleComments(((commentsRes?.data as any[]) || []).map((r: any) => ({ ...r, article: commentArticles.find(a => a.id === r.article_id) })))
+
+      const reviewCountries = (reviewCountriesRes?.data as any[]) || []
+      setCountryReviews(((reviewsRes?.data as any[]) || []).map((r: any) => ({ ...r, country: reviewCountries.find(c => c.id === r.country_id) })))
+
+      setFollowersCount(followersCountQuery?.count || 0)
+      setFollowingCount(followingCountQuery?.count || 0)
       setLoading(false)
     }
     load()
@@ -276,7 +292,13 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-0 sm:px-4 py-0 bg-white">
-      {!userId ? (
+      {loading ? (
+        <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm p-6 text-center mt-8">
+          <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 animate-pulse" />
+          <h1 className="mt-4 text-2xl font-semibold text-gray-900">Yükleniyor...</h1>
+          <p className="mt-1 text-sm text-gray-600">Lütfen bekleyin</p>
+        </div>
+      ) : !userId ? (
         <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm p-6 text-center mt-8">
           <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
             <LogIn className="h-7 w-7 text-gray-700" />
