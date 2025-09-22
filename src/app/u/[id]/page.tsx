@@ -17,6 +17,7 @@ interface Props {
 
 export default async function PublicUserProfilePage(context: Props) {
   const { id } = await context.params
+  let isSelf = false
   // If this is the current user's own id, redirect to private profile page
   try {
     const supabase = await getServerSupabase()
@@ -26,7 +27,7 @@ export default async function PublicUserProfilePage(context: Props) {
       redirect('/profile')
     }
     // Keep isSelf flag to hide Follow button if needed (in case redirect conditions change)
-    var isSelf = !!meId && meId === id
+    isSelf = !!meId && meId === id
   } catch {}
   const { data: profile } = await supabaseAdmin
     .from('users_profiles')
