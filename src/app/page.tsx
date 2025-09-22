@@ -120,7 +120,7 @@ export default async function Home() {
                 </Link>
 
                 {/* 4. Travelers */}
-                <Link href="/community" aria-label="View travelers" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
+                <Link href="/travelers" aria-label="View travelers" className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur p-3 sm:p-4 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 cursor-pointer">
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 text-gray-600">
                       <Users className="h-5 w-5" />

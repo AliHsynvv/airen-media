@@ -26,10 +26,14 @@ export function Header() {
         const { data: p } = await supabase.from('users_profiles').select('full_name,username,avatar_url').eq('id', id).single()
         if (mounted) setProfile(p || null)
         const { count } = await supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', id).eq('is_read', false)
-        if (mounted) setUnreadCount(count || 0)
+        if (mounted) {
+          setUnreadCount(count || 0)
+          try { localStorage.setItem('unread_notifications', String(count || 0)) } catch {}
+        }
       } else {
         setProfile(null)
         setUnreadCount(0)
+        try { localStorage.setItem('unread_notifications', '0') } catch {}
       }
     }
     load()
@@ -43,17 +47,57 @@ export function Header() {
     const channel = supabase
       .channel(`notif-badge-${userId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => {
-        setUnreadCount(c => (c || 0) + 1)
+        setUnreadCount(c => {
+          const next = (c || 0) + 1
+          try { localStorage.setItem('unread_notifications', String(next)) } catch {}
+          return next
+        })
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload: any) => {
         const oldRead = !!payload?.old?.is_read
         const newRead = !!payload?.new?.is_read
-        if (!oldRead && newRead) setUnreadCount(c => Math.max(0, (c || 0) - 1))
-        if (oldRead && !newRead) setUnreadCount(c => (c || 0) + 1)
+        if (!oldRead && newRead) setUnreadCount(c => {
+          const next = Math.max(0, (c || 0) - 1)
+          try { localStorage.setItem('unread_notifications', String(next)) } catch {}
+          return next
+        })
+        if (oldRead && !newRead) setUnreadCount(c => {
+          const next = (c || 0) + 1
+          try { localStorage.setItem('unread_notifications', String(next)) } catch {}
+          return next
+        })
       })
       .subscribe()
     return () => { try { channel.unsubscribe() } catch {} }
   }, [userId])
+
+  // Listen for explicit notification updates from other pages (fallback if realtime misses)
+  useEffect(() => {
+    const onUpdate = (e: any) => {
+      const count = typeof e?.detail?.count === 'number' ? e.detail.count : 0
+      setUnreadCount(count)
+      try { localStorage.setItem('unread_notifications', String(count)) } catch {}
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'unread_notifications' && e.newValue != null) {
+        const n = parseInt(e.newValue)
+        if (!Number.isNaN(n)) setUnreadCount(n)
+      }
+    }
+    try {
+      const v = localStorage.getItem('unread_notifications')
+      if (v != null) {
+        const n = parseInt(v)
+        if (!Number.isNaN(n)) setUnreadCount(n)
+      }
+    } catch {}
+    window.addEventListener('notifications:update', onUpdate as any)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('notifications:update', onUpdate as any)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
 
   const navigation = [
     { name: 'Ana Sayfa', href: ROUTES.HOME },

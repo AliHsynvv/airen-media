@@ -134,8 +134,18 @@ export default function NotificationsPage() {
       if (!hasUnread) return
       autoClearedRef.current = true
       try {
+        const { count } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('is_read', false)
         await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+        const next = 0
+        try { localStorage.setItem('unread_notifications', String(next)) } catch {}
+        try {
+          window.dispatchEvent(new CustomEvent('notifications:update', { detail: { count: next }}))
+        } catch {}
       } catch {}
     }
     markAllRead()
@@ -166,50 +176,50 @@ export default function NotificationsPage() {
                 {unread.map(n => (
                   <li key={n.id} className="">
                     <div className="flex items-start gap-3">
-                      {n.type === 'comment_like' && n.actor?.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={n.actor.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                      ) : (
-                        <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                          {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-              {n.type === 'comment_like' ? (
-                          <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
-                            {n.story?.slug && (
-                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                            )}
+                      {(() => {
+                        const actorLike = n.liker || n.actor
+                        if (actorLike?.avatar_url) {
+                          return (
+                            <Link href={`/u/${actorLike.id}`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={actorLike.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                            </Link>
+                          )
+                        }
+                        return (
+                          <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                            {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                           </div>
-              ) : n.type === 'story_like' ? (
-                <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
-                  {n.story?.slug && (
-                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                  )}
-                </div>
-              ) : n.type === 'story_comment' ? (
-                <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
-                  {n.story?.slug && (
-                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                  )}
-                </div>
-              ) : n.type === 'comment_reply' ? (
-                <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
-                  {n.story?.slug && (
-                    <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                  )}
-                </div>
-              ) : n.type === 'follow' ? (
-                <div className="text-sm text-gray-900">
-                  <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> seni takip etmeye başladı.
-                </div>
-              ) : (
-                <div className="text-sm text-gray-900">Bildirim</div>
-              )}
+                        )
+                      })()}
+                      <div className="flex-1 min-w-0">
+                        {n.type === 'comment_like' ? (
+                          <div className="text-sm text-gray-900">
+                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || 'Bir kullanıcı'}</Link> yorumunu beğendi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                          </div>
+                        ) : n.type === 'story_like' ? (
+                          <div className="text-sm text-gray-900">
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayeni beğendi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                          </div>
+                        ) : n.type === 'story_comment' ? (
+                          <div className="text-sm text-gray-900">
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayene yorum yaptı.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                          </div>
+                        ) : n.type === 'comment_reply' ? (
+                          <div className="text-sm text-gray-900">
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> yorumuna yanıt verdi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                          </div>
+                        ) : n.type === 'follow' ? (
+                          <div className="text-sm text-gray-900">
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> seni takip etmeye başladı.
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-900">Bildirim</div>
+                        )}
                         <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
                       </div>
                     </div>
@@ -225,46 +235,46 @@ export default function NotificationsPage() {
                 {earlier.map(n => (
                   <li key={n.id} className="">
                     <div className="flex items-start gap-3">
-                      {n.type === 'comment_like' && n.actor?.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={n.actor.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                      ) : (
-                        <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                          {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                        </div>
-                      )}
+                      {(() => {
+                        const actorLike = n.liker || n.actor
+                        if (actorLike?.avatar_url) {
+                          return (
+                            <Link href={`/u/${actorLike.id}`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={actorLike.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                            </Link>
+                          )
+                        }
+                        return (
+                          <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                            {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+                          </div>
+                        )
+                      })()}
                       <div className="flex-1 min-w-0">
                         {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumunu beğendi.
-                            {n.story?.slug && (
-                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                            )}
+                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || 'Bir kullanıcı'}</Link> yorumunu beğendi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
                           </div>
                         ) : n.type === 'story_like' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayeni beğendi.
-                            {n.story?.slug && (
-                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                            )}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayeni beğendi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
                           </div>
                         ) : n.type === 'story_comment' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> hikayene yorum yaptı.
-                            {n.story?.slug && (
-                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                            )}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayene yorum yaptı.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
                           </div>
                         ) : n.type === 'comment_reply' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> yorumuna yanıt verdi.
-                            {n.story?.slug && (
-                              <> <Link href={`/community/stories/${n.story.slug}`} className="underline">Hikayeyi gör</Link></>
-                            )}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> yorumuna yanıt verdi.
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
                           </div>
                         ) : n.type === 'follow' ? (
                           <div className="text-sm text-gray-900">
-                            <span className="font-semibold">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</span> seni takip etmeye başladı.
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> seni takip etmeye başladı.
                           </div>
                         ) : (
                           <div className="text-sm text-gray-900">Bildirim</div>

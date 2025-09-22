@@ -14,6 +14,12 @@ export default function ProfileEditPage() {
   const [fullName, setFullName] = useState<string>('')
   const [username, setUsername] = useState<string>('')
   const [bio, setBio] = useState<string>('')
+  // UI-only placeholders (no backend wiring yet)
+  const [firstName, setFirstName] = useState<string>('')
+  const [lastName, setLastName] = useState<string>('')
+  const [gender, setGender] = useState<string>('')
+  const [favoriteLocation, setFavoriteLocation] = useState<string>('')
+  const [phone, setPhone] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [message, setMessage] = useState<string | null>(null)
@@ -38,6 +44,12 @@ export default function ProfileEditPage() {
       setEmail(u.email || '')
       const { data: p } = await supabase.from('users_profiles').select('full_name,username,bio,avatar_url').eq('id', u.id).single()
       setFullName(p?.full_name || '')
+      // best effort split for UI placeholders
+      try {
+        const parts = (p?.full_name || '').split(' ')
+        setFirstName(parts[0] || '')
+        setLastName(parts.slice(1).join(' ') || '')
+      } catch {}
       setUsername(p?.username || '')
       setBio(p?.bio || '')
       setAvatarUrl(p?.avatar_url || null)
@@ -158,21 +170,58 @@ export default function ProfileEditPage() {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Full Name</label>
-            <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jane Doe" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Name</label>
+              <Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Jane" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Surname</label>
+              <Input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Doe" />
+            </div>
           </div>
           <div>
             <label className="block text-xs text-gray-600 mb-1">Username</label>
             <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="@janedoe" />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Bio</label>
-            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="w-full rounded-md border border-gray-200 bg-white text-gray-900 p-3 placeholder:text-gray-400" placeholder="Tell us about yourself" />
+            <label className="block text-xs text-gray-600 mb-1">Biography</label>
+            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="w-full rounded-md border border-gray-200 bg-white text-gray-900 p-3 placeholder:text-gray-400" placeholder="Passionate product designer with a knack for creating intuitive and beautiful user experiences." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Favorite Location</label>
+              <Input value={favoriteLocation} onChange={e => setFavoriteLocation(e.target.value)} placeholder="San Francisco, CA" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Gender</label>
+              <select value={gender} onChange={e => setGender(e.target.value)} className="w-full h-10 rounded-md border border-gray-200 bg-white text-gray-900 px-3">
+                <option value="">Select</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Email</label>
+            <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="jane.doe@example.com" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Phone Numbers</label>
+            <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (415) 555-0132" />
           </div>
         </div>
 
         {message && <div className="mt-4 text-sm text-gray-700">{message}</div>}
+      </div>
+
+      {/* Bottom actions */}
+      <div className="flex items-center justify-between mt-4">
+        <Button variant="outline" className="rounded-full" asChild>
+          <Link href="/profile">Cancel</Link>
+        </Button>
+        <Button className="rounded-full" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</Button>
       </div>
     </div>
   )

@@ -13,6 +13,7 @@ export default function FollowButton({ profileId, className }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
   const [following, setFollowing] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -29,11 +30,29 @@ export default function FollowButton({ profileId, className }: Props) {
           .eq('following_id', profileId)
           .maybeSingle()
         setFollowing(!!f)
+      } else {
+        setFollowing(false)
       }
+      setInitialized(true)
     }
     load()
-    return () => { mounted = false }
+    const { data: sub } = supabase.auth.onAuthStateChange(() => load())
+    return () => { mounted = false; sub.subscription.unsubscribe() }
   }, [profileId])
+
+  useEffect(() => {
+    if (!userId || !profileId || userId === profileId) return
+    const channel = supabase
+      .channel(`follow-${userId}-${profileId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: any) => {
+        if (payload?.new?.following_id === profileId) setFollowing(true)
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: any) => {
+        if (payload?.old?.following_id === profileId) setFollowing(false)
+      })
+      .subscribe()
+    return () => { try { channel.unsubscribe() } catch {} }
+  }, [userId, profileId])
 
   const toggle = async () => {
     if (!userId) { window.location.href = '/auth/login'; return }
@@ -56,6 +75,7 @@ export default function FollowButton({ profileId, className }: Props) {
     }
   }
 
+  if (!initialized) return null
   if (userId === profileId) return null
 
   return (

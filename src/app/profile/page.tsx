@@ -31,7 +31,7 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string }>>([])
+  const [searchResults, setSearchResults] = useState<Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string; avatar_url?: string | null }>>([])
   // New data buckets
   const [savedArticles, setSavedArticles] = useState<Array<{ id: string; title: string; slug: string; featured_image?: string | null; image_alt?: string | null }>>([])
   const [savedCountries, setSavedCountries] = useState<Array<{ id: string; name: string; slug: string }>>([])
@@ -55,7 +55,29 @@ export default function ProfilePage() {
 
       const userIdLocal = u.id
 
-      const [
+      // Fast path: fetch essential profile payload via RPC for instant render
+      try {
+        const { data: rp } = await supabase.rpc('get_profile_payload', { p_user: userIdLocal })
+        if (rp) {
+          const profile = (rp as any).profile || {}
+          const stories = (rp as any).stories || []
+          const followers = (rp as any).followers || 0
+          const following = (rp as any).following || 0
+          setFullName(profile.full_name ?? null)
+          setUsername(profile.username ?? null)
+          setAvatarUrl(profile.avatar_url ?? null)
+          setBio(profile.bio || '')
+          setStories(stories)
+          setFollowersCount(followers)
+          setFollowingCount(following)
+          // Allow UI to render quickly with essential data
+          setLoading(false)
+        }
+      } catch {}
+
+      // Load the rest of the data in background (bookmarks, likes, comments, reviews, counts)
+      ;(async () => {
+        const [
         profileRes,
         storiesRes,
         bookmarksRes,
@@ -66,84 +88,85 @@ export default function ProfilePage() {
         reviewsRes,
         followersCountQuery,
         followingCountQuery,
-      ] = await Promise.all([
-        supabase
-          .from('users_profiles')
-          .select('full_name, username, avatar_url, bio')
-          .eq('id', userIdLocal)
-          .single(),
-        supabase
-          .from('user_stories')
-          .select('id,title,slug,status,created_at,image_url')
-          .eq('user_id', userIdLocal)
-          .order('created_at', { ascending: false })
-          .limit(100),
-        supabase.from('article_bookmarks').select('article_id').eq('user_id', userIdLocal),
-        supabase.from('country_bookmarks').select('country_id').eq('user_id', userIdLocal),
-        supabase.from('article_likes').select('article_id').eq('user_id', userIdLocal),
-        supabase.from('country_favorites').select('country_id').eq('user_id', userIdLocal),
-        supabase
-          .from('article_comments')
-          .select('id,article_id,content,created_at')
-          .eq('user_id', userIdLocal)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('country_reviews')
-          .select('id,country_id,comment,rating,created_at')
-          .eq('user_id', userIdLocal)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('user_follows')
-          .select('follower_id', { count: 'exact', head: true })
-          .eq('following_id', userIdLocal),
-        supabase
-          .from('user_follows')
-          .select('following_id', { count: 'exact', head: true })
-          .eq('follower_id', userIdLocal),
-      ])
+        ] = await Promise.all([
+          supabase
+            .from('users_profiles')
+            .select('full_name, username, avatar_url, bio')
+            .eq('id', userIdLocal)
+            .single(),
+          supabase
+            .from('user_stories')
+            .select('id,title,slug,status,created_at,image_url')
+            .eq('user_id', userIdLocal)
+            .order('created_at', { ascending: false })
+            .limit(100),
+          supabase.from('article_bookmarks').select('article_id').eq('user_id', userIdLocal),
+          supabase.from('country_bookmarks').select('country_id').eq('user_id', userIdLocal),
+          supabase.from('article_likes').select('article_id').eq('user_id', userIdLocal),
+          supabase.from('country_favorites').select('country_id').eq('user_id', userIdLocal),
+          supabase
+            .from('article_comments')
+            .select('id,article_id,content,created_at')
+            .eq('user_id', userIdLocal)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('country_reviews')
+            .select('id,country_id,comment,rating,created_at')
+            .eq('user_id', userIdLocal)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('user_follows')
+            .select('follower_id', { count: 'exact', head: true })
+            .eq('following_id', userIdLocal),
+          supabase
+            .from('user_follows')
+            .select('following_id', { count: 'exact', head: true })
+            .eq('follower_id', userIdLocal),
+        ])
 
-      const articleIds = (bookmarksRes?.data || []).map((r: any) => r.article_id)
-      const likedIds = (likesRes?.data || []).map((r: any) => r.article_id)
-      const acIds = (commentsRes?.data || []).map((r: any) => r.article_id)
-      const savedCountryIds = (countryBookmarksRes?.data || []).map((r: any) => r.country_id)
-      const favCountryIds = (favoritesRes?.data || []).map((r: any) => r.country_id)
-      const reviewCountryIds = (reviewsRes?.data || []).map((r: any) => r.country_id)
+        const articleIds = (bookmarksRes?.data || []).map((r: any) => r.article_id)
+        const likedIds = (likesRes?.data || []).map((r: any) => r.article_id)
+        const acIds = (commentsRes?.data || []).map((r: any) => r.article_id)
+        const savedCountryIds = (countryBookmarksRes?.data || []).map((r: any) => r.country_id)
+        const favCountryIds = (favoritesRes?.data || []).map((r: any) => r.country_id)
+        const reviewCountryIds = (reviewsRes?.data || []).map((r: any) => r.country_id)
 
-      const [
-        savedArticlesRes,
-        likedArticlesRes,
-        commentArticlesRes,
-        savedCountriesRes,
-        favCountriesRes,
-        reviewCountriesRes,
-      ] = await Promise.all([
-        articleIds.length ? supabase.from('articles').select('id,title,slug,featured_image,image_alt').in('id', articleIds) : Promise.resolve({ data: [] }),
-        likedIds.length ? supabase.from('articles').select('id,title,slug').in('id', likedIds) : Promise.resolve({ data: [] }),
-        acIds.length ? supabase.from('articles').select('id,title,slug').in('id', acIds) : Promise.resolve({ data: [] }),
-        savedCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', savedCountryIds) : Promise.resolve({ data: [] }),
-        favCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', favCountryIds) : Promise.resolve({ data: [] }),
-        reviewCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', reviewCountryIds) : Promise.resolve({ data: [] }),
-      ])
+        const [
+          savedArticlesRes,
+          likedArticlesRes,
+          commentArticlesRes,
+          savedCountriesRes,
+          favCountriesRes,
+          reviewCountriesRes,
+        ] = await Promise.all([
+          articleIds.length ? supabase.from('articles').select('id,title,slug,featured_image,image_alt').in('id', articleIds) : Promise.resolve({ data: [] }),
+          likedIds.length ? supabase.from('articles').select('id,title,slug').in('id', likedIds) : Promise.resolve({ data: [] }),
+          acIds.length ? supabase.from('articles').select('id,title,slug').in('id', acIds) : Promise.resolve({ data: [] }),
+          savedCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', savedCountryIds) : Promise.resolve({ data: [] }),
+          favCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', favCountryIds) : Promise.resolve({ data: [] }),
+          reviewCountryIds.length ? supabase.from('countries').select('id,name,slug').in('id', reviewCountryIds) : Promise.resolve({ data: [] }),
+        ])
 
-      setFullName(profileRes?.data?.full_name ?? null)
-      setUsername(profileRes?.data?.username ?? null)
-      setAvatarUrl(profileRes?.data?.avatar_url ?? null)
-      setBio(profileRes?.data?.bio || '')
-      setStories((storiesRes?.data as any) || [])
-      setSavedArticles((savedArticlesRes?.data as any) || [])
-      setSavedCountries((savedCountriesRes?.data as any) || [])
-      setLikedArticles((likedArticlesRes?.data as any) || [])
-      setFavoriteCountries((favCountriesRes?.data as any) || [])
+        // If RPC already populated some fields, these will refine/expand them
+        setFullName(prev => prev ?? (profileRes?.data?.full_name ?? null))
+        setUsername(prev => prev ?? (profileRes?.data?.username ?? null))
+        setAvatarUrl(prev => prev ?? (profileRes?.data?.avatar_url ?? null))
+        setBio(prev => prev || (profileRes?.data?.bio || ''))
+        setStories(prev => prev?.length ? prev : ((storiesRes?.data as any) || []))
+        setSavedArticles((savedArticlesRes?.data as any) || [])
+        setSavedCountries((savedCountriesRes?.data as any) || [])
+        setLikedArticles((likedArticlesRes?.data as any) || [])
+        setFavoriteCountries((favCountriesRes?.data as any) || [])
 
-      const commentArticles = (commentArticlesRes?.data as any[]) || []
-      setArticleComments(((commentsRes?.data as any[]) || []).map((r: any) => ({ ...r, article: commentArticles.find(a => a.id === r.article_id) })))
+        const commentArticles = (commentArticlesRes?.data as any[]) || []
+        setArticleComments(((commentsRes?.data as any[]) || []).map((r: any) => ({ ...r, article: commentArticles.find(a => a.id === r.article_id) })))
 
-      const reviewCountries = (reviewCountriesRes?.data as any[]) || []
-      setCountryReviews(((reviewsRes?.data as any[]) || []).map((r: any) => ({ ...r, country: reviewCountries.find(c => c.id === r.country_id) })))
+        const reviewCountries = (reviewCountriesRes?.data as any[]) || []
+        setCountryReviews(((reviewsRes?.data as any[]) || []).map((r: any) => ({ ...r, country: reviewCountries.find(c => c.id === r.country_id) })))
 
-      setFollowersCount(followersCountQuery?.count || 0)
-      setFollowingCount(followingCountQuery?.count || 0)
-      setLoading(false)
+        setFollowersCount(c => c || (followersCountQuery?.count || 0))
+        setFollowingCount(c => c || (followingCountQuery?.count || 0))
+      })()
     }
     load()
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -214,20 +237,28 @@ export default function ProfilePage() {
   const runCommunitySearch = async (q: string) => {
     const term = q.trim()
     if (!term) { setSearchResults([]); return }
-    // Simple combined search: users by username/full_name, stories by title, hashtags by tag
-    const usersP = supabase.from('users_profiles').select('id,username,full_name').ilike('username', `%${term}%`).limit(5)
-    const usersP2 = supabase.from('users_profiles').select('id,username,full_name').ilike('full_name', `%${term}%`).limit(5)
+    // Simple combined search: users by username/full_name (with avatar), stories by title, hashtags by tag
+    const usersP = supabase.from('users_profiles').select('id,username,full_name,avatar_url').ilike('username', `%${term}%`).limit(5)
+    const usersP2 = supabase.from('users_profiles').select('id,username,full_name,avatar_url').ilike('full_name', `%${term}%`).limit(5)
     const storiesP = supabase.from('user_stories').select('id,slug,title').ilike('title', `%${term}%`).limit(5)
     const tagsP = supabase.from('user_stories').select('id,slug,title,tags').contains('tags', [term]).limit(5)
     const [users, users2, stories, tags] = await Promise.all([usersP, usersP2, storiesP, tagsP])
     const uMap = new Map<string, any>()
     ;(users.data || []).concat(users2.data || []).forEach((u: any) => { uMap.set(u.id, u) })
-    const results: Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string }> = []
-    for (const u of Array.from(uMap.values())) results.push({ type: 'user', id: u.id, username: u.username || u.full_name })
+    const results: Array<{ type: 'user' | 'story' | 'hashtag'; id: string; title?: string; username?: string; slug?: string; avatar_url?: string | null }> = []
+    for (const u of Array.from(uMap.values())) results.push({ type: 'user', id: u.id, username: u.username || u.full_name, avatar_url: u.avatar_url || null })
     for (const s of (stories.data || [])) results.push({ type: 'story', id: s.id, title: s.title, slug: s.slug || undefined })
     for (const t of (tags.data || [])) results.push({ type: 'hashtag', id: t.id, title: `#${term}`, slug: t.slug || undefined })
     setSearchResults(results.slice(0, 12))
   }
+
+  // Debounced live search
+  useEffect(() => {
+    const term = searchQuery.trim()
+    if (!term) { setSearchResults([]); return }
+    const t = setTimeout(() => { runCommunitySearch(term) }, 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const onPickAvatar = () => fileInputRef.current?.click()
@@ -385,7 +416,15 @@ export default function ProfilePage() {
                       {searchResults.map(r => (
                         <li key={`${r.type}-${r.id}`} className="py-2">
                           {r.type === 'user' ? (
-                            <Link href={`/u/${r.id}`} className="text-sm text-gray-900 hover:underline">@{r.username}</Link>
+                            <Link href={`/u/${r.id}`} className="flex items-center gap-2">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {r.avatar_url ? (
+                                <img src={r.avatar_url} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
+                              ) : (
+                                <div className="h-7 w-7 rounded-full bg-gray-100" />
+                              )}
+                              <span className="text-sm text-gray-900">@{r.username}</span>
+                            </Link>
                           ) : r.type === 'story' ? (
                             <Link href={r.slug ? `/community/stories/${r.slug}` : '#'} className="text-sm text-gray-900 hover:underline">{r.title}</Link>
                           ) : (

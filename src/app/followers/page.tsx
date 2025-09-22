@@ -80,16 +80,18 @@ export default function FollowersPage() {
           {followers.map(p => (
             <li key={p.id} className="px-3 sm:px-4 py-3">
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {p.avatar_url ? (
-                  <img src={p.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">{(p.full_name || p.username || 'U')[0]}</div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-900 truncate">{p.full_name || p.username || 'User'}</div>
-                  <div className="text-xs text-gray-600 truncate">@{p.username || p.id.slice(0,6)}</div>
-                </div>
+                <Link href={`/u/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">{(p.full_name || p.username || 'U')[0]}</div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-gray-900 truncate">{p.full_name || p.username || 'User'}</div>
+                    <div className="text-xs text-gray-600 truncate">@{p.username || p.id.slice(0,6)}</div>
+                  </div>
+                </Link>
                 <Button
                   className={`h-8 px-4 rounded-full ${p.isFollowingBack ? 'bg-blue-600 text-white hover:bg-blue-600' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
                   onClick={() => toggleFollow(p.id, p.isFollowingBack)}
