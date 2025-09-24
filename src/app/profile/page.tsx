@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusCircle, Search, Users, LayoutGrid, Bookmark, MessageSquareText, Plus, LogIn, UserPlus } from 'lucide-react'
 import EnlargeableAvatar from '@/components/common/EnlargeableAvatar'
+import MeetAirenButton from '@/components/home/MeetAirenButton'
 import { ROUTES } from '@/lib/utils/constants'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatRelativeTime } from '@/lib/utils/formatters'
@@ -323,7 +324,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-0 sm:px-4 py-0 bg-white">
+    <div className="container mx-auto px-0 sm:px-0 py-0 bg-white">
       {loading ? (
         <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm p-6 text-center mt-8">
           <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 animate-pulse" />
@@ -390,6 +391,12 @@ export default function ProfilePage() {
                 <Button variant="secondary" className="h-11 px-6 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
                   Share Profile
                 </Button>
+                <div className="hidden sm:block">
+                  <MeetAirenButton />
+                </div>
+              </div>
+              <div className="sm:hidden w-full px-4 mt-3">
+                <MeetAirenButton fullWidth />
               </div>
             </div>
           </div>
@@ -466,7 +473,7 @@ export default function ProfilePage() {
                 </button>
             </div>
 
-            <div className="p-4" ref={savedSectionRef}>
+            <div className="px-0 py-4" ref={savedSectionRef}>
               {activeTab === 'posts' && (
                 loading ? (
                   <>

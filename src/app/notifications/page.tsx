@@ -178,18 +178,11 @@ export default function NotificationsPage() {
                     <div className="flex items-start gap-3">
                       {(() => {
                         const actorLike = n.liker || n.actor
-                        if (actorLike?.avatar_url) {
-                          return (
-                            <Link href={`/u/${actorLike.id}`}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={actorLike.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                            </Link>
-                          )
-                        }
                         return (
-                          <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                            {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                          </div>
+                          <Link href={`/u/${actorLike?.id || ''}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={actorLike?.avatar_url || '/default-avatar.svg'} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                          </Link>
                         )
                       })()}
                       <div className="flex-1 min-w-0">
@@ -237,18 +230,11 @@ export default function NotificationsPage() {
                     <div className="flex items-start gap-3">
                       {(() => {
                         const actorLike = n.liker || n.actor
-                        if (actorLike?.avatar_url) {
-                          return (
-                            <Link href={`/u/${actorLike.id}`}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={actorLike.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
-                            </Link>
-                          )
-                        }
                         return (
-                          <div className={`h-10 w-10 rounded-full border flex items-center justify-center ${n.type === 'comment_like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                            {n.type === 'comment_like' ? <Heart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                          </div>
+                          <Link href={`/u/${actorLike?.id || ''}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={actorLike?.avatar_url || '/default-avatar.svg'} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                          </Link>
                         )
                       })()}
                       <div className="flex-1 min-w-0">
