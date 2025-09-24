@@ -75,7 +75,8 @@ create index if not exists idx_country_reviews_country
 -- Adds columns
 alter table public.users_profiles
   add column if not exists followers_count integer default 0 not null,
-  add column if not exists following_count integer default 0 not null;
+  add column if not exists following_count integer default 0 not null,
+  add column if not exists gender text check (gender in ('Female','Male','Other'));
 
 -- Triggers to keep counts in sync
 create or replace function public.trg_user_follows_update_counts()

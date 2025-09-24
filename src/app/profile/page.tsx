@@ -353,9 +353,9 @@ export default function ProfilePage() {
         <div className="space-y-0">
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
           {/* Header */}
-          <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-6">
+          <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-7">
             <div className="flex flex-col items-center text-center gap-3">
-              <button onClick={onPickAvatar} className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
+              <button onClick={onPickAvatar} className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {avatarUrl ? (
                 <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
@@ -367,31 +367,31 @@ export default function ProfilePage() {
                 </div>
             </button>
               <div className="max-w-xl">
-                <div className="text-xl sm:text-2xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
-                <div className="text-gray-600 text-sm">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
-                <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap px-2">
+                <div className="text-2xl sm:text-3xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
+                <div className="text-gray-600 text-base">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
+                <div className="mt-2 text-base text-gray-700 whitespace-pre-wrap px-2">
                 {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
               </div>
               </div>
-              <div className="mt-1 grid grid-cols-3 gap-6">
+              <div className="mt-2 grid grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-black">{approvedCount}</div>
-                  <div className="text-xs text-gray-600">Posts</div>
+                  <div className="text-xl font-semibold text-black">{approvedCount}</div>
+                  <div className="text-sm text-gray-600">Posts</div>
                 </div>
                 <Link href="/followers" className="text-center block hover:opacity-90" aria-label="Followers sayfasına git">
-                  <div className="text-lg font-semibold text-black">{followersCount}</div>
-                  <div className="text-xs text-gray-600">Followers</div>
+                  <div className="text-xl font-semibold text-black">{followersCount}</div>
+                  <div className="text-sm text-gray-600">Followers</div>
                 </Link>
                 <Link href="/following" className="text-center block hover:opacity-90" aria-label="Following sayfasına git">
-                  <div className="text-lg font-semibold text-black">{followingCount}</div>
-                  <div className="text-xs text-gray-600">Following</div>
+                  <div className="text-xl font-semibold text-black">{followingCount}</div>
+                  <div className="text-sm text-gray-600">Following</div>
                 </Link>
               </div>
-              <div className="flex items-center gap-3 mt-1">
-                <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
+              <div className="flex items-center gap-3 mt-2">
+                <Button variant="secondary" className="h-11 px-6 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
                   <Link href="/profile/edit">Edit Profile</Link>
                 </Button>
-                <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
+                <Button variant="secondary" className="h-11 px-6 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
                   Share Profile
                 </Button>
               </div>

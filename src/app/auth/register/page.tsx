@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [usernameCheckError, setUsernameCheckError] = useState<string | null>(null)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
+  const [gender, setGender] = useState('')
 
   useEffect(() => {
     const value = email.toLowerCase().trim()
@@ -111,14 +112,14 @@ export default function RegisterPage() {
         setLoading(false)
         return
       }
-      const { data, error } = await supabase.auth.signUp({ email: normalized, password, options: { data: { username, full_name: fullName } } })
+      const { data, error } = await supabase.auth.signUp({ email: normalized, password, options: { data: { username, full_name: fullName, gender } } })
       if (error) throw error
       // Ensure profile via server (service role) to bypass RLS edge cases
       if (data.user) {
         await fetch('/api/auth/ensure-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: data.user.id, username, full_name: fullName }),
+          body: JSON.stringify({ user_id: data.user.id, username, full_name: fullName, gender }),
         })
       }
       setMessage('Kayıt başarılı! E-posta doğrulamasını tamamlayın.')
@@ -174,6 +175,15 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm text-gray-700 mb-1">Ad Soyad</label>
               <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ad Soyad" className="border-gray-200" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Cinsiyet</label>
+              <select value={gender} onChange={e => setGender(e.target.value)} className="w-full h-10 rounded-md border border-gray-200 bg-white text-gray-900 px-3">
+                <option value="">Seçiniz</option>
+                <option value="Female">Kadın</option>
+                <option value="Male">Erkek</option>
+                <option value="Other">Diğer</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">E-posta</label>
