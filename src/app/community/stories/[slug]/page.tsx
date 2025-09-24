@@ -36,7 +36,11 @@ export default async function CommunityStoryDetailPage(context: Props) {
     <div className="container mx-auto px-0 sm:px-4 py-4 sm:py-8">
       <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
         <div className="px-4 sm:px-0">
-          <Link href="/community" className="inline-flex items-center text-sm text-gray-700 hover:text-black border border-gray-200 bg-white rounded-md px-3 py-1">
+          <Link
+            href="/community"
+            className="inline-flex items-center h-9 px-3 rounded-full border border-gray-200/80 bg-white text-gray-800 hover:bg-gray-50 hover:text-gray-900 shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+            aria-label="Hikayelere dön"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" /> Hikayelere Dön
           </Link>
         </div>

@@ -16,6 +16,7 @@ type Props = {
 export default function StoryCardClientActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className }: Props) {
   const [open, setOpen] = useState(false)
   const [commentCount, setCommentCount] = useState<number>(initialComments)
+  const [likeKey, setLikeKey] = useState(0)
 
   return (
     <>
@@ -27,6 +28,7 @@ export default function StoryCardClientActions({ storyId, initialLikes, initialC
         storyTitle={storyTitle}
         className={className}
         onComment={() => setOpen(true)}
+        key={likeKey}
       />
 
       {/* Mobile comment sheet */}

@@ -5,6 +5,7 @@ import { UserStory } from '@/types/story'
 import { cn } from '@/lib/utils'
 import StoryCardClientActions from '@/components/community/StoryCardClientActions'
 import { MapPin } from 'lucide-react'
+import StoryMediaClient from '@/components/community/StoryMediaClient'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 import FollowButton from '@/components/profile/FollowButton'
 import StoryCardHeaderClient from '@/components/community/StoryCardHeaderClient'
@@ -51,29 +52,8 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           />
         </div>
 
-        {/* Media: full-bleed on mobile (edge-to-edge), contained on desktop */}
-        <Link href={href} className="block">
-          <div
-            className={cn(
-              'relative overflow-hidden',
-              variant === 'fixed'
-                ? 'w-full rounded-t-xl aspect-[4/5] sm:aspect-[3/4]'
-                : 'w-screen sm:w-full left-1/2 -ml-[50vw] sm:ml-0 sm:left-0 rounded-none sm:rounded-t-2xl aspect-[3/4] sm:aspect-[3/4]'
-            )}
-          >
-            <Image
-              src={story.image_url || '/next.svg'}
-              alt={story.image_alt || story.title}
-              fill
-              priority={false}
-              className={cn(
-                'object-cover',
-                variant === 'fixed' ? '' : 'transform scale-[1.08] sm:scale-100'
-              )}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
-        </Link>
+        {/* Media: full-bleed on mobile (edge-to-edge), contained on desktop; double-tap to like */}
+        <StoryMediaClient href={href} imageUrl={story.image_url} imageAlt={story.image_alt || story.title} variant={variant} storyId={(story as any).id} />
 
         {/* Content block */}
         <div className="py-2 px-3 sm:px-4 flex-1 flex flex-col gap-2">

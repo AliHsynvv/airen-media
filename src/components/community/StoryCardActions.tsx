@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Bookmark, Heart, MessageSquare, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
@@ -22,6 +22,8 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(false)
   const [shares, setShares] = useState<number>(initialShares)
+  const [initialized, setInitialized] = useState(false)
+  const likedRef = useRef<boolean>(false)
 
   useEffect(() => {
     let mounted = true
@@ -39,7 +41,10 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         .eq('story_id', storyId)
         .eq('user_id', userId)
         .maybeSingle()
-      if (mounted) setLiked(!!data)
+      if (mounted) {
+        setLiked(!!data)
+        likedRef.current = !!data
+      }
       // check saved
       const { data: s } = await supabase
         .from('story_saves')
@@ -48,10 +53,37 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         .eq('user_id', userId)
         .maybeSingle()
       if (mounted) setSaved(!!s)
+      if (mounted) setInitialized(true)
     }
     check()
-    return () => { mounted = false }
+    const onDoubleTap = async (e: any) => {
+      if (e?.detail?.storyId !== storyId) return
+      if (!initialized) return
+      if (likedRef.current || loading) return
+      // Optimistic like, but prevent multiple increments
+      setLiked(true)
+      setLikes(v => v + 1)
+      setLoading(true)
+      try {
+        const res = await fetch('/api/community/stories/like', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storyId }),
+        })
+        if (!res.ok) {
+          setLiked(false)
+          setLikes(v => Math.max(0, v - 1))
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    window.addEventListener('story:doubletap', onDoubleTap as any)
+    return () => { mounted = false; window.removeEventListener('story:doubletap', onDoubleTap as any) }
   }, [storyId])
+
+  // keep ref in sync
+  useEffect(() => { likedRef.current = liked }, [liked])
 
   const toggleLike = async () => {
     if (loading) return
@@ -161,14 +193,18 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
             onClick={onClick}
             className={cn(
               'group flex items-center justify-center gap-2 py-3 min-h-11 rounded-md text-gray-600 hover:text-gray-900 transition-colors duration-150 ease-in-out',
-              key === 'like' && liked ? 'text-red-600 bg-red-50 hover:text-red-700' : '',
+              key === 'like' && liked ? 'text-red-600 bg-red-50 hover:text-red-700 ring-1 ring-red-100' : '',
               key === 'save' && saved ? 'text-blue-700 bg-blue-50 hover:text-blue-800' : '',
               key === 'like' ? 'hover:bg-red-50' : key === 'save' ? 'hover:bg-blue-50' : 'hover:bg-gray-50'
             )}
           >
             <Icon
               className={cn(
-                'h-5 w-5 transition-transform duration-150 ease-in-out group-hover:scale-110',
+                'transition-transform duration-150 ease-in-out group-hover:scale-110',
+                // Bigger icon sizes
+                key === 'like' ? 'h-6 w-6 sm:h-7 sm:w-7' : 'h-5 w-5',
+                // Like icon styling: red outline by default, solid red when liked
+                key === 'like' ? 'text-red-500' : '',
                 key === 'like' && liked ? 'fill-red-600' : key === 'save' && saved ? 'fill-blue-700' : 'fill-transparent'
               )}
             />
