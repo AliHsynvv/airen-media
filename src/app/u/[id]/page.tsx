@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import EnlargeableAvatar from '@/components/common/EnlargeableAvatar'
 import StoryCard from '@/components/community/StoryCard'
 import FollowButton from '@/components/profile/FollowButton'
 import { Button } from '@/components/ui/button'
@@ -64,11 +65,7 @@ export default async function PublicUserProfilePage(context: Props) {
         <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4 sm:gap-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover" />
-            ) : (
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gray-200" />
-            )}
+            <EnlargeableAvatar src={profile.avatar_url || undefined} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24" />
             <div className="flex-1 min-w-0 w-full">
               <div className="flex items-baseline gap-2 w-full min-w-0">
                 <div className="text-gray-900 font-semibold text-base sm:text-lg truncate">{profile.full_name || profile.username || 'Kullanıcı'}</div>

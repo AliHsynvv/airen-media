@@ -6,6 +6,7 @@ import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusCircle, Search, Users, LayoutGrid, Bookmark, MessageSquareText, Plus, LogIn, UserPlus } from 'lucide-react'
+import EnlargeableAvatar from '@/components/common/EnlargeableAvatar'
 import { ROUTES } from '@/lib/utils/constants'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatRelativeTime } from '@/lib/utils/formatters'
@@ -355,17 +356,12 @@ export default function ProfilePage() {
           {/* Header */}
           <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-7">
             <div className="flex flex-col items-center text-center gap-3">
-              <button onClick={onPickAvatar} className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-              ) : (
-                  <span className="text-black text-2xl">{(fullName || email || 'U')[0]}</span>
-              )}
+              <div className="relative">
+                <EnlargeableAvatar src={avatarUrl || undefined} alt="avatar" fallbackLabel={(fullName || email || 'U')} className="h-28 w-28 sm:h-32 sm:w-32" />
                 <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-black text-white flex items-center justify-center ring-2 ring-white">
                   <Plus className="h-4 w-4" />
                 </div>
-            </button>
+              </div>
               <div className="max-w-xl">
                 <div className="text-2xl sm:text-3xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
                 <div className="text-gray-600 text-base">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
