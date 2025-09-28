@@ -5,11 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { MapPin, Star, Users, ArrowLeft } from 'lucide-react'
-import CountryActions from '@/components/countries/CountryActions'
-import CountryReviews from '@/components/countries/CountryReviews'
-import CountryTabs from '@/components/countries/CountryTabs'
-import CountryCardReview from '@/components/countries/CountryCardReview'
-import CountryReviewKPI from '@/components/countries/CountryReviewKPI'
+import dynamic from 'next/dynamic'
+const CountryActions = dynamic(() => import('@/components/countries/CountryActions'))
+const CountryReviews = dynamic(() => import('@/components/countries/CountryReviews'))
+const CountryTabs = dynamic(() => import('@/components/countries/CountryTabs'))
+const CountryCardReview = dynamic(() => import('@/components/countries/CountryCardReview'))
+const CountryReviewKPI = dynamic(() => import('@/components/countries/CountryReviewKPI'))
 
 interface CountryPageProps {
   params: Promise<{ slug: string }>
@@ -77,7 +78,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
         {/* Right media box */}
         <div className="relative aspect-[4/3] rounded-xl border border-gray-200 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
           {hasImage ? (
-            <Image src={country.featured_image || '/next.svg'} alt={country.name} fill className="object-cover" sizes="50vw" />
+            <Image src={country.featured_image || '/next.svg'} alt={country.name} fill className="object-cover" sizes="50vw" priority />
           ) : (
             <div className="text-6xl font-semibold tracking-widest text-gray-600">{country.iso_code || '—'}</div>
           )}

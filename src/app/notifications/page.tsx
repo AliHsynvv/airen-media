@@ -34,46 +34,10 @@ export default function NotificationsPage() {
       setUserId(u?.id || null)
       if (!u?.id) { setLoading(false); return }
 
-      const { data: notifs } = await supabase
-        .from('notifications')
-        .select('id,type,payload,created_at,is_read')
-        .order('created_at', { ascending: false })
-        .limit(100)
-
-      const likerIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.liker_id).filter(Boolean)))
-      const actorIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.actor_id || n.payload?.follower_id).filter(Boolean)))
-      const storyIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.story_id).filter(Boolean)))
-      const commentIds = Array.from(new Set(((notifs as any[]) || []).map(n => n.payload?.comment_id).filter(Boolean)))
-
-      let likers: Record<string, any> = {}
-      let storiesMap: Record<string, any> = {}
-      let commentsMap: Record<string, any> = {}
-      let actors: Record<string, any> = {}
-      if (likerIds.length) {
-        const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', likerIds)
-        for (const p of (ps || [])) likers[(p as any).id] = p
-      }
-      if (storyIds.length) {
-        const { data: ss } = await supabase.from('user_stories').select('id,slug,title').in('id', storyIds)
-        for (const s of (ss || [])) storiesMap[(s as any).id] = s
-      }
-      if (commentIds.length) {
-        const { data: cs } = await supabase.from('community_story_comments').select('id,content').in('id', commentIds)
-        for (const c of (cs || [])) commentsMap[(c as any).id] = c
-      }
-      if (actorIds.length) {
-        const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', actorIds)
-        for (const p of (ps || [])) actors[(p as any).id] = p
-      }
-
+      const feedRes = await fetch('/api/notifications?limit=100', { cache: 'no-store' })
+      const feedJson = await feedRes.json()
       if (!mounted) return
-      setNotifications(((notifs as any[]) || []).map((n: any) => ({
-        ...n,
-        liker: n.payload?.liker_id ? likers[n.payload.liker_id] : undefined,
-        actor: n.payload?.actor_id ? actors[n.payload.actor_id] : (n.payload?.follower_id ? actors[n.payload.follower_id] : undefined),
-        story: n.payload?.story_id ? storiesMap[n.payload.story_id] : undefined,
-        comment: n.payload?.comment_id ? commentsMap[n.payload.comment_id] : undefined,
-      })))
+      setNotifications((feedJson?.data as any[]) || [])
       setLoading(false)
 
       // Realtime subscribe for live notifications
@@ -88,32 +52,29 @@ export default function NotificationsPage() {
           let comment: { id: string; content?: string | null } | undefined
           let actor: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null } | undefined
           try {
+            // fallback enrichment if RPC not yet deployed
             if (n.payload?.liker_id) {
-              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.liker_id).single()
-              if (ps) liker = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+              const r = await fetch(`/api/auth/profile-by-id?id=${n.payload.liker_id}`, { cache: 'force-cache' })
+              const j = await r.json(); liker = j?.data
             }
-            if (n.payload?.actor_id) {
-              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.actor_id).single()
-              if (ps) actor = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
-            }
-            if (n.payload?.follower_id) {
-              const { data: ps } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').eq('id', n.payload.follower_id).single()
-              if (ps) actor = ps as { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+            if (n.payload?.actor_id || n.payload?.follower_id) {
+              const id = n.payload?.actor_id || n.payload?.follower_id
+              const r = await fetch(`/api/auth/profile-by-id?id=${id}`, { cache: 'force-cache' })
+              const j = await r.json(); actor = j?.data
             }
             if (n.payload?.story_id) {
-              const { data: ss } = await supabase.from('user_stories').select('id,slug,title').eq('id', n.payload.story_id).single()
-              if (ss) story = ss as { id: string; slug?: string | null; title?: string | null }
+              // minimal fallback
+              story = { id: n.payload.story_id }
             }
             if (n.payload?.comment_id) {
-              const { data: cs } = await supabase.from('community_story_comments').select('id,content').eq('id', n.payload.comment_id).single()
-              if (cs) comment = cs as { id: string; content?: string | null }
+              comment = { id: n.payload.comment_id }
             }
           } catch {}
           setNotifications(prev => [{ ...n, liker, actor, story, comment }, ...prev])
         })
         .subscribe()
       channelCleanup = () => {
-        try { channel.unsubscribe() } catch {}
+        try { supabase.removeChannel(channel) } catch {}
       }
     }
     void load()
@@ -134,12 +95,7 @@ export default function NotificationsPage() {
       if (!hasUnread) return
       autoClearedRef.current = true
       try {
-        const { count } = await supabase
-          .from('notifications')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .eq('is_read', false)
-        await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
+        await fetch('/api/notifications', { method: 'PATCH' })
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
         const next = 0
         try { localStorage.setItem('unread_notifications', String(next)) } catch {}

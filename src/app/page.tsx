@@ -4,12 +4,14 @@ import { Globe, MapPin, Users, Video, BookOpen, MessageCircle, Play, ArrowRight,
 import { supabaseAdmin } from "@/lib/supabase/server"
 import Link from "next/link"
 import { ArticleCard } from "@/components/articles/ArticleCard"
-import MeetAirenButton from "@/components/home/MeetAirenButton"
-import HeroSearch from "@/components/home/HeroSearch"
-import HeroLiveStats from "@/components/home/HeroLiveStats"
+import nextDynamic from "next/dynamic"
+const MeetAirenButton = nextDynamic(() => import("@/components/home/MeetAirenButton"))
+const HeroSearch = nextDynamic(() => import("@/components/home/HeroSearch"))
+const HeroLiveStats = nextDynamic(() => import("@/components/home/HeroLiveStats"))
+const HomeStoriesGridLazy = nextDynamic(() => import("@/components/home/HomeStoriesGrid.lazy"))
 import HeroTitle from "@/components/home/HeroTitle"
-import StoryCard from "@/components/community/StoryCard"
-import AnimatedNumber from "@/components/common/AnimatedNumber"
+const StoryCard = nextDynamic(() => import("@/components/community/StoryCard"))
+const AnimatedNumber = nextDynamic(() => import("@/components/common/AnimatedNumber"))
 
 export const dynamic = 'force-dynamic'
 
@@ -138,24 +140,15 @@ export default async function Home() {
               <div className="absolute -top-2 right-12 hidden lg:flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 shadow-sm animate-gentle-bounce">
                 <Globe className="h-5 w-5" />
               </div>
-              <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] lg:h-[520px] lg:w-[520px] max-w-full rounded-full mx-auto">
-                {/* Video as circular background */}
-                <div className="absolute inset-0 rounded-full overflow-hidden shadow-inner">
-                  <video
-                    className="h-full w-full object-cover"
-                    src="/Airen%208.mp4"
-                    playsInline
-                    loop
-                    muted
-                    autoPlay
-                  />
-                </div>
+            <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] lg:h-[520px] lg:w-[520px] max-w-full rounded-full mx-auto">
+                {/* Decorative orb instead of video for performance */}
+                <div className="absolute inset-0 rounded-full overflow-hidden shadow-inner bg-gradient-to-br from-gray-100 via-white to-gray-50" />
                 {/* subtle overlays and rings */}
                 <div className="absolute inset-0 rounded-full ring-1 ring-black/5" />
                 <div className="absolute inset-12 rounded-full ring-1 ring-black/5" />
                 <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
 
-                {/* content overlay removed as requested */}
+                {/* content overlay intentionally minimal */}
               </div>
             </div>
           </div>
@@ -201,13 +194,7 @@ export default async function Home() {
         <div className="sm:hidden mb-4">
           <Link href="/community" className="inline-block text-sm px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900">Daha fazla</Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-3">
-          {latestStories.map((s: any, i: number) => (
-            <div key={s.id} className="opacity-0 translate-y-4 animate-[fadein_0.6s_ease_forwards] sm:px-0" style={{ animationDelay: `${i * 80}ms` }}>
-              <StoryCard story={s as any} variant="responsive" />
-            </div>
-          ))}
-        </div>
+        <HomeStoriesGridLazy stories={latestStories} />
       </section>
 
       {/* Why Airen - now placed here */}

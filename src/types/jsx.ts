@@ -1,14 +1,27 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import type React from 'react'
 
-declare global {}
+type AnyRecord = Record<string, unknown>
 
 declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'elevenlabs-convai': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        [key: string]: any
-      }
-    }
+  interface HTMLElementTagNameMap {
+    'elevenlabs-convai': HTMLElement
+  }
+}
+
+declare module 'react' {
+  // Augment React JSX for our custom element with safer typing
+  interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
+    // allow arbitrary attributes for the custom element
+    [key: `data-${string}`]: unknown
+  }
+}
+
+declare namespace JSX {
+  interface IntrinsicElements {
+    'elevenlabs-convai': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & AnyRecord
   }
 }
 

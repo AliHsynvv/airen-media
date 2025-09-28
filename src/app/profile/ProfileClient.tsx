@@ -149,14 +149,7 @@ export default function ProfileClient(props: ProfileClientProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!userId) return
-    const channel = supabase
-      .channel(`notif-profile-${userId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => {})
-      .subscribe()
-    return () => { try { channel.unsubscribe() } catch {} }
-  }, [userId])
+  // Removed duplicate notifications realtime channel; Header handles notification updates
 
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])
   const approvedCount = useMemo(() => stories.filter(s => s.status === 'approved' || s.status === 'featured').length, [stories])

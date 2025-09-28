@@ -19,8 +19,8 @@ export default function StoryMediaClient({ href, imageUrl, imageAlt, variant, st
   }
 
   return (
-    <DoubleTapLike onLike={onLike}>
-      <Link href={href} className="block">
+    <DoubleTapLike onLike={onLike} onSingleTap={() => { try { window.location.href = href } catch {} }}>
+      <Link href={href} className="block" onClick={(e) => { e.preventDefault() }}>
         <div
           className={cn(
             'relative overflow-hidden',
@@ -38,7 +38,8 @@ export default function StoryMediaClient({ href, imageUrl, imageAlt, variant, st
               'object-cover',
               variant === 'fixed' ? '' : 'transform scale-[1.08] sm:scale-100'
             )}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes={variant === 'fixed' ? '220px' : '(max-width: 640px) 100vw, 50vw'}
+            loading="lazy"
           />
         </div>
       </Link>

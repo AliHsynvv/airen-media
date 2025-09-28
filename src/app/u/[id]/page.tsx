@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import EnlargeableAvatar from '@/components/common/EnlargeableAvatar'
-import StoryCard from '@/components/community/StoryCard'
+// import StoryCard from '@/components/community/StoryCard'
 import FollowButton from '@/components/profile/FollowButton'
 import { Button } from '@/components/ui/button'
-import { Users, User as UserIcon, Search } from 'lucide-react'
+import { Users, User as UserIcon /*, Search*/ } from 'lucide-react'
 import UserSearchPopover from '@/components/profile/UserSearchPopover'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
 import MutualConnections from '@/components/profile/MutualConnections'
@@ -72,8 +72,9 @@ export default async function PublicUserProfilePage(context: Props) {
         supabaseAdmin.from('user_follows').select('following_id').eq('follower_id', meId).limit(1000),
         supabaseAdmin.from('user_follows').select('following_id').eq('follower_id', profile.id).limit(1000),
       ])
-      const mySet = new Set((myFollowingRes.data || []).map((r: any) => r.following_id))
-      const theirSet = new Set((theirFollowingRes.data || []).map((r: any) => r.following_id))
+      type FollowRow = { following_id: string }
+      const mySet = new Set(((myFollowingRes.data || []) as FollowRow[]).map((r) => r.following_id))
+      const theirSet = new Set(((theirFollowingRes.data || []) as FollowRow[]).map((r) => r.following_id))
       const commonIds: string[] = []
       for (const id of mySet) { if (theirSet.has(id)) commonIds.push(id) }
       if (commonIds.length) {
@@ -108,11 +109,14 @@ export default async function PublicUserProfilePage(context: Props) {
           .order('created_at', { ascending: false })
           .limit(100),
       ])
-      const popular = (popularRes.data || []) as any[]
-      const theirFollowingIds = new Set(((theirFollowingIdsRes.data || []) as any[]).map(r => r.following_id))
-      const theirFollowerIds = new Set(((theirFollowersIdsRes.data || []) as any[]).map(r => r.follower_id))
-      const recent = (recentRes.data || []) as any[]
-      const idToProfile = new Map<string, any>()
+      type ProfileRow = { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null; followers_count?: number }
+      type FollowRow2 = { following_id: string }
+      type FollowerRow = { follower_id: string }
+      const popular = (popularRes.data || []) as ProfileRow[]
+      const theirFollowingIds = new Set(((theirFollowingIdsRes.data || []) as FollowRow2[]).map(r => r.following_id))
+      const theirFollowerIds = new Set(((theirFollowersIdsRes.data || []) as FollowerRow[]).map(r => r.follower_id))
+      const recent = (recentRes.data || []) as ProfileRow[]
+      const idToProfile = new Map<string, ProfileRow>()
       for (const p of popular.concat(recent)) idToProfile.set(p.id, p)
       const candidateIds: string[] = []
       for (const p of popular) if (!excludeIds.has(p.id)) candidateIds.push(p.id)
@@ -126,7 +130,7 @@ export default async function PublicUserProfilePage(context: Props) {
         if (!seen.has(id)) { seen.add(id); uniqIds.push(id) }
       }
       const candIds = uniqIds.slice(0, 120)
-      let mutualMap: Record<string, number> = {}
+      const mutualMap: Record<string, number> = {}
       if (candIds.length && mySet.size) {
         // Count how many of my following also follow each candidate (mutual friends count)
         const { data: overlaps } = await supabaseAdmin
@@ -134,8 +138,8 @@ export default async function PublicUserProfilePage(context: Props) {
           .select('following_id')
           .in('follower_id', Array.from(mySet))
           .in('following_id', candIds)
-        for (const row of (overlaps || []) as any[]) {
-          const k = row.following_id as string
+        for (const row of (overlaps || []) as FollowRow2[]) {
+          const k = row.following_id
           mutualMap[k] = (mutualMap[k] || 0) + 1
         }
       }
@@ -154,7 +158,7 @@ export default async function PublicUserProfilePage(context: Props) {
       <div className="max-w-4xl mx-auto">
         <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4 sm:gap-6">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <EnlargeableAvatar src={profile.avatar_url || undefined} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24" />
             <div className="flex-1 min-w-0 w-full">
               <div className="flex items-baseline gap-2 w-full min-w-0">
@@ -180,7 +184,7 @@ export default async function PublicUserProfilePage(context: Props) {
       {/* Mutual connections */}
       {mutuals.length > 0 && (
         <div className="px-4 sm:px-6 py-3">
-          <MutualConnections mutuals={mutuals as any} />
+          <MutualConnections mutuals={mutuals} />
         </div>
       )}
 
@@ -189,9 +193,9 @@ export default async function PublicUserProfilePage(context: Props) {
         <div className="px-4 sm:px-6 py-3">
           <div className="text-sm font-medium text-gray-900 mb-2">Discover people</div>
           <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar">
-            {suggestions.slice(0, 12).map((p: any) => (
+            {suggestions.slice(0, 12).map((p) => (
               <div key={p.id} className="shrink-0 w-[200px] sm:w-[220px] rounded-2xl border border-blue-100 bg-blue-50/30 p-4 text-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.avatar_url || '/default-avatar.svg'} alt="avatar" className="mx-auto h-16 w-16 rounded-full object-cover" />
                 <Link href={`/u/${p.id}`} className="block mt-3 text-sm font-semibold text-gray-900 hover:underline truncate">{p.full_name || p.username || 'Kullanıcı'}</Link>

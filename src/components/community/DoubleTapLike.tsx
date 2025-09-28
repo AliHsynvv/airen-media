@@ -5,16 +5,22 @@ import { Heart } from 'lucide-react'
 
 interface Props {
   onLike: () => Promise<void> | void
+  onSingleTap?: () => void
   children: React.ReactNode
+  thresholdMs?: number
 }
 
-export default function DoubleTapLike({ onLike, children }: Props) {
+export default function DoubleTapLike({ onLike, onSingleTap, children, thresholdMs = 320 }: Props) {
   const lastTapRef = useRef<number>(0)
+  const singleTimerRef = useRef<number | null>(null)
   const [burst, setBurst] = useState(false)
 
-  const handleTap = () => {
+  const handleTap = (e: React.MouseEvent<HTMLDivElement>) => {
     const now = Date.now()
-    if (now - lastTapRef.current < 320) {
+    if (now - lastTapRef.current < thresholdMs) {
+      // prevent navigating the underlying Link on the 2nd tap
+      try { e.preventDefault(); e.stopPropagation() } catch {}
+      if (singleTimerRef.current) { try { clearTimeout(singleTimerRef.current) } catch {} singleTimerRef.current = null }
       Promise.resolve(onLike()).finally(() => {
         setBurst(false)
         // trigger reflow for animation restart
@@ -23,6 +29,12 @@ export default function DoubleTapLike({ onLike, children }: Props) {
       })
     }
     lastTapRef.current = now
+    // schedule single tap action
+    if (singleTimerRef.current) { try { clearTimeout(singleTimerRef.current) } catch {} }
+    singleTimerRef.current = window.setTimeout(() => {
+      singleTimerRef.current = null
+      try { onSingleTap?.() } catch {}
+    }, thresholdMs + 30)
   }
 
   return (
@@ -44,7 +56,7 @@ export default function DoubleTapLike({ onLike, children }: Props) {
           </span>
           {/* Sparks */}
           {[...Array(12)].map((_, i) => (
-            <span key={i} className="like-spark" style={{ ['--i' as any]: i }} />
+            <span key={i} className="like-spark" style={{ ['--i' as unknown as string]: String(i) }} />
           ))}
         </>
       )}

@@ -66,12 +66,14 @@ export function DialogDescription({ className, ...props }: React.HTMLAttributes<
   return <p className={cn('text-sm text-gray-600', className)} {...props} />
 }
 
-export function DialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement<any> }) {
+type ClickableElement = React.ReactElement<any>
+
+export function DialogTrigger({ asChild, children }: { asChild?: boolean; children: ClickableElement }) {
   const ctx = React.useContext(DialogContext)
   if (!ctx) return children
 
   if (asChild) {
-    return React.cloneElement(children as React.ReactElement<any>, {
+    return React.cloneElement(children as ClickableElement, {
       onClick: (e: any) => {
         children.props.onClick?.(e)
         ctx.setOpen(true)
@@ -79,7 +81,7 @@ export function DialogTrigger({ asChild, children }: { asChild?: boolean; childr
     } as any)
   }
 
-  return React.cloneElement(children as React.ReactElement<any>, {
+  return React.cloneElement(children as ClickableElement, {
     onClick: (e: any) => {
       children.props.onClick?.(e)
       ctx.setOpen(true)
@@ -87,12 +89,12 @@ export function DialogTrigger({ asChild, children }: { asChild?: boolean; childr
   } as any)
 }
 
-export function DialogClose({ asChild, children }: { asChild?: boolean; children: React.ReactElement<any> }) {
+export function DialogClose({ asChild, children }: { asChild?: boolean; children: ClickableElement }) {
   const ctx = React.useContext(DialogContext)
   if (!ctx) return children
 
   if (asChild) {
-    return React.cloneElement(children as React.ReactElement<any>, {
+    return React.cloneElement(children as ClickableElement, {
       onClick: (e: any) => {
         children.props.onClick?.(e)
         ctx.setOpen(false)
@@ -100,7 +102,7 @@ export function DialogClose({ asChild, children }: { asChild?: boolean; children
     } as any)
   }
 
-  return React.cloneElement(children as React.ReactElement<any>, {
+  return React.cloneElement(children as ClickableElement, {
     onClick: (e: any) => {
       children.props.onClick?.(e)
       ctx.setOpen(false)

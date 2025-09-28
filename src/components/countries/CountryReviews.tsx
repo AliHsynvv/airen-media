@@ -68,8 +68,9 @@ export default function CountryReviews({ countryId, countrySlug, className }: Co
         } else {
           if (mounted) setProfiles({})
         }
-      } catch (e: any) {
-        if (mounted) setError(e?.message || 'Unexpected error')
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : 'Unexpected error'
+        if (mounted) setError(msg)
       } finally {
         if (mounted) setLoading(false)
       }
@@ -120,8 +121,9 @@ export default function CountryReviews({ countryId, countrySlug, className }: Co
       }
       // notify listeners to refresh aggregates
       window.dispatchEvent(new CustomEvent('country-reviews-updated', { detail: { countryId, countrySlug } }))
-    } catch (e: any) {
-      setError(e?.message || 'Unexpected error')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unexpected error'
+      setError(msg)
     } finally {
       setSubmitting(false)
     }

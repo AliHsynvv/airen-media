@@ -19,6 +19,7 @@ export default function SocialFeed() {
       {mockPosts.map(p => (
         <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
           <Card className="glass-card overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.image} alt={p.caption} className="w-full h-28 object-cover" />
             <div className="p-2 text-gray-300 text-xs line-clamp-2">{p.caption}</div>
           </Card>

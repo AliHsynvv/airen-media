@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Menu, X, User, Search, Globe, Bell, LogIn, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { logoutAndRedirect } from '@/lib/auth/logout'
@@ -53,7 +54,7 @@ export function Header() {
           return next
         })
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload: any) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload: { old?: { is_read?: boolean }, new?: { is_read?: boolean } }) => {
         const oldRead = !!payload?.old?.is_read
         const newRead = !!payload?.new?.is_read
         if (!oldRead && newRead) setUnreadCount(c => {
@@ -68,12 +69,12 @@ export function Header() {
         })
       })
       .subscribe()
-    return () => { try { channel.unsubscribe() } catch {} }
+    return () => { try { supabase.removeChannel(channel) } catch {} }
   }, [userId])
 
   // Listen for explicit notification updates from other pages (fallback if realtime misses)
   useEffect(() => {
-    const onUpdate = (e: any) => {
+    const onUpdate = (e: CustomEvent<{ count: number }>) => {
       const count = typeof e?.detail?.count === 'number' ? e.detail.count : 0
       setUnreadCount(count)
       try { localStorage.setItem('unread_notifications', String(count)) } catch {}
@@ -91,10 +92,10 @@ export function Header() {
         if (!Number.isNaN(n)) setUnreadCount(n)
       }
     } catch {}
-    window.addEventListener('notifications:update', onUpdate as any)
+    window.addEventListener('notifications:update', onUpdate as unknown as EventListener)
     window.addEventListener('storage', onStorage)
     return () => {
-      window.removeEventListener('notifications:update', onUpdate as any)
+      window.removeEventListener('notifications:update', onUpdate as unknown as EventListener)
       window.removeEventListener('storage', onStorage)
     }
   }, [])
@@ -157,8 +158,7 @@ export function Header() {
               <div className="relative">
                 <Button variant="ghost" size="icon" onClick={() => setIsUserMenuOpen(v => !v)}>
                   {profile?.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={profile.avatar_url} alt="avatar" className="h-6 w-6 rounded-full object-cover" />
+                    <Image src={profile.avatar_url} alt="avatar" width={24} height={24} className="rounded-full object-cover" sizes="24px" loading="lazy" />
                   ) : (
                     <User className="h-5 w-5 text-gray-700" />
                   )}

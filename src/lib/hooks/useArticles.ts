@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
+// import { supabase } from '@/lib/supabase/client'
 import { Article } from '@/types/article'
 
 interface UseArticlesOptions {
@@ -32,23 +32,25 @@ export function useArticles(options: UseArticlesOptions = {}): UseArticlesResult
         if (type) params.set('type', type)
         if (status) params.set('status', status)
         params.set('limit', String(limit))
-        const res = await fetch('/api/news', { cache: 'no-store' })
-        const json = await res.json()
+        const res = await fetch(`/api/news?${params.toString()}`, { cache: 'force-cache' })
+        const json: { success: boolean; data: unknown; error?: string } = await res.json()
         if (!res.ok || !json.success) throw new Error(json.error || 'fetch failed')
         if (mounted) {
-          const arr = Array.isArray(json.data) ? json.data : []
-          const normalized = arr.map((a: any) => ({
+          type ServerTag = { tags?: { slug: string; name: string } | null }
+          type ServerArticle = Article & { article_tags?: ServerTag[] }
+          const arr = Array.isArray(json.data) ? (json.data as ServerArticle[]) : []
+          const normalized: Article[] = arr.map((a) => ({
             ...a,
             tags: Array.isArray(a.article_tags)
-              ? a.article_tags.map((at: any) => at?.tags).filter(Boolean)
+              ? a.article_tags.map((at) => at.tags).filter(Boolean) as Article['tags']
               : [],
-          })) as Article[]
+          }))
           setData(normalized)
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (mounted) {
           setData([])
-          setError(err?.message || 'fetch_failed')
+          setError(err instanceof Error ? err.message : 'fetch_failed')
         }
       } finally {
         if (mounted) setLoading(false)

@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Country } from '@/types/country'
 import { ROUTES } from '@/lib/utils/constants'
 import { cn } from '@/lib/utils'
-import { MapPin, Calendar, Thermometer, Wallet, Star, ArrowRight } from 'lucide-react'
+import { MapPin, Calendar, Thermometer, Wallet, ArrowRight } from 'lucide-react'
 import CountryCardReview from '@/components/countries/CountryCardReview'
 import CountryCardActions from '@/components/countries/CountryCardActions'
 
@@ -35,6 +34,7 @@ export function CountryCard({ country, className }: CountryCardProps) {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             </>

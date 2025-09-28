@@ -1,6 +1,8 @@
-import HeygenEmbed from '@/components/interaction/HeygenEmbed'
-import ChatInterface from '@/components/interaction/ChatInterface'
-import SocialFeed from '@/components/interaction/SocialFeed'
+"use client"
+import dynamic from 'next/dynamic'
+const HeygenEmbed = dynamic(() => import('@/components/interaction/HeygenEmbed'), { ssr: false })
+const ChatInterface = dynamic(() => import('@/components/interaction/ChatInterface'), { ssr: false })
+const SocialFeed = dynamic(() => import('@/components/interaction/SocialFeed'))
 
 export default function InteractionPage() {
   return (

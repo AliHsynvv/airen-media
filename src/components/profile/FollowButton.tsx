@@ -44,14 +44,14 @@ export default function FollowButton({ profileId, className }: Props) {
     if (!userId || !profileId || userId === profileId) return
     const channel = supabase
       .channel(`follow-${userId}-${profileId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: any) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: { new?: { following_id?: string } }) => {
         if (payload?.new?.following_id === profileId) setFollowing(true)
       })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: any) => {
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'user_follows', filter: `follower_id=eq.${userId}` }, (payload: { old?: { following_id?: string } }) => {
         if (payload?.old?.following_id === profileId) setFollowing(false)
       })
       .subscribe()
-    return () => { try { channel.unsubscribe() } catch {} }
+    return () => { try { supabase.removeChannel(channel) } catch {} }
   }, [userId, profileId])
 
   const toggle = async () => {

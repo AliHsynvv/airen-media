@@ -8,7 +8,7 @@ export async function GET() {
       supabaseAdmin.from('users_profiles').select('id', { count: 'exact', head: true }),
       supabaseAdmin.from('user_stories').select('id', { count: 'exact', head: true }).eq('status', 'approved')
     ])
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       data: {
         countries: countries.count || 0,
@@ -16,6 +16,8 @@ export async function GET() {
         stories: stories.count || 0,
       }
     })
+    res.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
+    return res
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Unexpected error' }, { status: 500 })
   }

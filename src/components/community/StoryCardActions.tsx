@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, /* useMemo, */ useState, useRef } from 'react'
 import { Bookmark, Heart, MessageSquare, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
@@ -56,31 +56,31 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
       if (mounted) setInitialized(true)
     }
     check()
-    const onDoubleTap = async (e: any) => {
+    const onDoubleTap = async (evt: Event) => {
+      const e = evt as CustomEvent<{ storyId: string }>
       if (e?.detail?.storyId !== storyId) return
       if (!initialized) return
-      if (likedRef.current || loading) return
+      if (loading) return
       // Optimistic like, but prevent multiple increments
-      setLiked(true)
-      setLikes(v => v + 1)
+      if (!likedRef.current) {
+        setLiked(true)
+        setLikes(v => v + 1)
+      }
       setLoading(true)
       try {
-        const res = await fetch('/api/community/stories/like', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ storyId }),
-        })
-        if (!res.ok) {
-          setLiked(false)
-          setLikes(v => Math.max(0, v - 1))
-        }
+        const res = await fetch('/api/community/stories/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storyId }) })
+        // Always re-sync count with server after request to reflect real value
+        const countRes = await fetch(`/api/community/stories/like?storyId=${encodeURIComponent(storyId)}`)
+        const j = await countRes.json().catch(() => ({}))
+        if (j?.success) setLikes(j.data?.count || 0)
+        if (!res.ok) setLiked(likedRef.current)
       } finally {
         setLoading(false)
       }
     }
-    window.addEventListener('story:doubletap', onDoubleTap as any)
-    return () => { mounted = false; window.removeEventListener('story:doubletap', onDoubleTap as any) }
-  }, [storyId])
+    window.addEventListener('story:doubletap', onDoubleTap)
+    return () => { mounted = false; window.removeEventListener('story:doubletap', onDoubleTap) }
+  }, [storyId, initialized, loading])
 
   // keep ref in sync
   useEffect(() => { likedRef.current = liked }, [liked])

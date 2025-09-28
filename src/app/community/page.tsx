@@ -1,12 +1,13 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { StoryCard } from '@/components/community/StoryCard'
+import dynamic from 'next/dynamic'
+const StoryCard = dynamic(() => import('@/components/community/StoryCard').then(m => m.StoryCard))
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Users, User } from 'lucide-react'
-import MeetAirenButton from '@/components/home/MeetAirenButton'
+const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
 import { useStories } from '@/lib/hooks/useStories'
 

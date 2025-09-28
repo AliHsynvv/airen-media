@@ -3,14 +3,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Clock, Eye, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import LikeShareBar from '@/components/articles/LikeShareBar'
+import dynamic from 'next/dynamic'
+const LikeShareBar = dynamic(() => import('@/components/articles/LikeShareBar.lazy'))
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArticleCard } from '@/components/articles/ArticleCard'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils/formatters'
 import type { Metadata } from 'next'
-import ArticleComments from '@/components/articles/ArticleComments'
+const ArticleComments = dynamic(() => import('@/components/articles/ArticleComments.lazy'))
 import ArticleViews from '@/components/articles/ArticleViews'
 import ArticleBookmarkButton from '@/components/articles/ArticleBookmarkButton'
 
@@ -86,7 +87,7 @@ export default async function ArticlePage(context: ArticlePageProps) {
   return (
     <div className="min-h-screen py-8 bg-white">
       {/* Fire view increment client-side */}
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+      { }
       <script
         dangerouslySetInnerHTML={{ __html: `
           (function(){
@@ -209,6 +210,7 @@ export default async function ArticlePage(context: ArticlePageProps) {
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 896px, 896px"
               />
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
             </div>

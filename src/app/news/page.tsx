@@ -5,10 +5,11 @@ import { Search, LayoutGrid, List, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { ArticleCard } from '@/components/articles/ArticleCard'
+import dynamic from 'next/dynamic'
+const ArticleCard = dynamic(() => import('@/components/articles/ArticleCard').then(m => m.ArticleCard))
 import { useArticles } from '@/lib/hooks/useArticles'
 import { supabase } from '@/lib/supabase/client'
-import MeetAirenButton from '@/components/home/MeetAirenButton'
+const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
 
 type SortKey = 'latest' | 'popular'

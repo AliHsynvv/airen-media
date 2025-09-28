@@ -81,7 +81,7 @@ export default function FollowersPage() {
             <li key={p.id} className="px-3 sm:px-4 py-3">
               <div className="flex items-center gap-3">
                 <Link href={`/u/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   {p.avatar_url ? (
                     <img src={p.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                   ) : (

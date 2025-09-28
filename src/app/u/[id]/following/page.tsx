@@ -41,15 +41,17 @@ export default async function PublicFollowingPage(context: Props) {
     .select('following_id')
     .eq('follower_id', user.id)
     .limit(500)
-  const followingIds = (rows || []).map((r: any) => r.following_id)
+  type FollowRow = { following_id: string }
+  const followingIds = ((rows || []) as FollowRow[]).map((r) => r.following_id)
 
-  let following: any[] = []
+  type Profile = { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }
+  let following: Profile[] = []
   if (followingIds.length) {
     const { data: profiles } = await supabaseAdmin
       .from('users_profiles')
       .select('id,full_name,username,avatar_url')
       .in('id', followingIds)
-    following = (profiles || []) as any[]
+    following = (profiles || []) as Profile[]
   }
 
   return (
@@ -65,7 +67,7 @@ export default async function PublicFollowingPage(context: Props) {
           {following.map(p => (
             <li key={p.id} className="px-3 sm:px-4 py-3">
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                 ) : (

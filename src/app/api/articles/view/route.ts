@@ -7,12 +7,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Supabase env vars missing' }, { status: 500 })
     }
     const { articleId } = await req.json()
-    if (!articleId) return NextResponse.json({ success: false, error: 'articleId required' }, { status: 400 })
+    if (!articleId || typeof articleId !== 'string') {
+      return NextResponse.json({ success: false, error: 'articleId required' }, { status: 400 })
+    }
 
     // Prefer RPC if exists
     const { data: incData, error: incErr } = await supabaseAdmin.rpc('increment_article_views', { a_id: articleId })
     if (!incErr) {
-      return NextResponse.json({ success: true, data: { view_count: incData as number } })
+      const res = NextResponse.json({ success: true, data: { view_count: incData as number } })
+      res.headers.set('Cache-Control', 'no-store')
+      return res
     }
     // Fallback: read-modify-write (non-atomic, but acceptable as fallback)
     const { data: current, error: readErr } = await supabaseAdmin
@@ -27,7 +31,9 @@ export async function POST(req: NextRequest) {
       .update({ view_count: newCount })
       .eq('id', articleId)
     if (updErr) throw updErr
-    return NextResponse.json({ success: true, data: { view_count: newCount } })
+    const res = NextResponse.json({ success: true, data: { view_count: newCount } })
+    res.headers.set('Cache-Control', 'no-store')
+    return res
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Unexpected error' }, { status: 500 })
   }

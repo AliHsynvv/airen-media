@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function getServerSupabase() {
@@ -11,7 +11,7 @@ export async function getServerSupabase() {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
             // Next.js 15: Cookie mutations only allowed in Server Actions or Route Handlers
             cookieStore.set({ name, value, ...options })
@@ -19,7 +19,7 @@ export async function getServerSupabase() {
             // Silently ignore when used in Server Components to avoid runtime error
           }
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options, maxAge: 0 })
           } catch {

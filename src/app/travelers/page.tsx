@@ -49,7 +49,7 @@ export default async function TravelersPage(context: TravelersPageProps) {
             <li key={u.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 {u.avatar_url ? (
                   <img src={u.avatar_url} alt="avatar" className="h-14 w-14 rounded-full object-cover ring-1 ring-gray-200" />
                 ) : (

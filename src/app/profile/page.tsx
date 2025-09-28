@@ -203,18 +203,7 @@ export default function ProfilePage() {
     }
   }, [])
 
-  // Realtime: notifications badge on profile header (mobile button removed earlier, keep counts fresh)
-  useEffect(() => {
-    if (!userId) return
-    const channel = supabase
-      .channel(`notif-profile-${userId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => {
-        // increment unread count quickly
-        // We no longer render a badge here, but keep parity with header count updates if used elsewhere
-      })
-      .subscribe()
-    return () => { try { channel.unsubscribe() } catch {} }
-  }, [userId])
+  // Removed duplicate notifications realtime channel; Header handles notification updates
 
   const pendingCount = useMemo(() => stories.filter(s => s.status === 'pending').length, [stories])
   const approvedCount = useMemo(() => stories.filter(s => s.status === 'approved' || s.status === 'featured').length, [stories])
@@ -420,7 +409,7 @@ export default function ProfilePage() {
                         <li key={`${r.type}-${r.id}`} className="py-2">
                           {r.type === 'user' ? (
                             <Link href={`/u/${r.id}`} className="flex items-center gap-2">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              { }
                               {r.avatar_url ? (
                                 <img src={r.avatar_url} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
                               ) : (

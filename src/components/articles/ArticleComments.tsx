@@ -95,10 +95,10 @@ export default function ArticleComments({ articleId, className }: ArticleComment
             .in('comment_id', cids)
           const counts: Record<string, number> = {}
           const mine = new Set<string>()
-          for (const row of (likesRes.data as any[] || [])) {
-            const cid = (row as any).comment_id as string
+          for (const row of (likesRes.data || [])) {
+            const cid = (row as { comment_id: string }).comment_id as string
             counts[cid] = (counts[cid] || 0) + 1
-            if (uid && (row as any).user_id === uid) mine.add(cid)
+            if (uid && (row as { user_id: string }).user_id === uid) mine.add(cid)
           }
           if (mounted) {
             setLikeCountById(counts)
@@ -158,10 +158,10 @@ export default function ArticleComments({ articleId, className }: ArticleComment
           .in('comment_id', cids)
         const counts: Record<string, number> = {}
         const mine = new Set<string>()
-        for (const row of (likesRes.data as any[] || [])) {
-          const cid = (row as any).comment_id as string
+        for (const row of (likesRes.data || [])) {
+          const cid = (row as { comment_id: string }).comment_id as string
           counts[cid] = (counts[cid] || 0) + 1
-          if (userId && (row as any).user_id === userId) mine.add(cid)
+          if (userId && (row as { user_id: string }).user_id === userId) mine.add(cid)
         }
         setLikeCountById(counts)
         const likedMap: Record<string, boolean> = {}
@@ -170,8 +170,9 @@ export default function ArticleComments({ articleId, className }: ArticleComment
       } else {
         setLikeCountById({}); setLikedByMe({})
       }
-    } catch (e: any) {
-      setError(e?.message || 'Unexpected error')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unexpected error'
+      setError(msg)
     } finally {
       setSubmitting(false)
     }
@@ -201,7 +202,7 @@ export default function ArticleComments({ articleId, className }: ArticleComment
         // rollback
         setLikedByMe(prev => ({ ...prev, [commentId]: true }))
         setLikeCountById(prev => ({ ...prev, [commentId]: (prev[commentId] || 0) + 1 }))
-        const j = await res.json().catch(() => ({} as any))
+        const j = await res.json().catch(() => null) as { error?: string } | null
         alert(`Beğeni silinemedi: ${j?.error || res.statusText}`)
       }
     } else {
@@ -214,7 +215,7 @@ export default function ArticleComments({ articleId, className }: ArticleComment
         // rollback
         setLikedByMe(prev => ({ ...prev, [commentId]: false }))
         setLikeCountById(prev => ({ ...prev, [commentId]: Math.max(0, (prev[commentId] || 0) - 1) }))
-        const j = await res.json().catch(() => ({} as any))
+        const j = await res.json().catch(() => null) as { error?: string } | null
         alert(`Beğeni kaydedilemedi: ${j?.error || res.statusText}`)
       }
     }

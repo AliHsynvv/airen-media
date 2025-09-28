@@ -29,10 +29,10 @@ export function useCountries(): UseCountriesResult {
           .limit(60)
         if (error) throw error
         if (mounted) setData((data as Country[]) || [])
-      } catch (err: any) {
-        console.warn('Supabase countries fetch failed:', err?.message)
+      } catch (err: unknown) {
+        console.warn('Supabase countries fetch failed:', err)
         if (mounted) setData([])
-        if (mounted) setError(err?.message || 'Failed to load countries')
+        if (mounted) setError(err instanceof Error ? err.message : 'Failed to load countries')
       } finally {
         if (mounted) setLoading(false)
       }

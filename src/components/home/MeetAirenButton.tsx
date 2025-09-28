@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Sparkles } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import ChatInterface from '@/components/interaction/ChatInterface'
+import dynamic from 'next/dynamic'
+const ChatInterface = dynamic(() => import('@/components/interaction/ChatInterface'), { ssr: false })
 
 export default function MeetAirenButton({ className, fullWidth = false }: { className?: string; fullWidth?: boolean }) {
   const [open, setOpen] = useState(false)
@@ -121,7 +121,6 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
                   </div>
                 ) : isHome ? (
                   <div className="absolute inset-0 p-2 flex items-center justify-center">
-                    {/* Render custom element via alias to satisfy TS in CI */}
                     {(() => {
                       const ConvaiTag = 'elevenlabs-convai' as any
                       return (

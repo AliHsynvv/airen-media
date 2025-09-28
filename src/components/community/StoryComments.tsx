@@ -23,6 +23,8 @@ interface CommentRow {
   liked_by_me?: boolean
 }
 
+type ProfileRow = { id: string; full_name: string | null; username: string | null; avatar_url: string | null }
+
 export default function StoryComments({ storyId, variant = 'default', onSubmitted }: StoryCommentsProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
@@ -45,26 +47,26 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
         .eq('story_id', storyId)
         .order('created_at', { ascending: true })
       const ids = Array.from(new Set((data || []).map(d => d.user_id)))
-      let users: Record<string, any> = {}
+      const users: Record<string, ProfileRow> = {}
       if (ids.length) {
         const { data: profs } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', ids)
-        for (const p of (profs || [])) users[(p as any).id] = p
+        for (const p of ((profs || []) as ProfileRow[])) users[p.id] = p
       }
       // likes
       const cids = (data || []).map(d => d.id)
-      let byId: Record<string, { count: number; me: boolean }> = {}
+      const byId: Record<string, { count: number; me: boolean }> = {}
       if (cids.length) {
         const likesRes = await supabase.from('community_comment_likes').select('comment_id,user_id').in('comment_id', cids)
         const counts: Record<string, number> = {}
         const mineSet = new Set<string>()
-        for (const row of (likesRes.data as any[] || [])) {
-          const cid = (row as any).comment_id
+        for (const row of (likesRes.data || [])) {
+          const cid = row.comment_id as string
           counts[cid] = (counts[cid] || 0) + 1
           if (row.user_id === u.user?.id) mineSet.add(cid)
         }
         for (const id of cids) byId[id] = { count: counts[id] || 0, me: mineSet.has(id) }
       }
-      if (mounted) setComments(((data || []) as any[]).map(r => ({ ...r, user: users[r.user_id], like_count: byId[r.id]?.count || 0, liked_by_me: byId[r.id]?.me || false })))
+      if (mounted) setComments(((data || []) as CommentRow[]).map(r => ({ ...r, user: users[r.user_id], like_count: byId[r.id]?.count || 0, liked_by_me: byId[r.id]?.me || false })))
     }
     load()
     return () => { mounted = false }
@@ -108,12 +110,12 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
           .eq('story_id', storyId)
           .order('created_at', { ascending: true })
         const ids = Array.from(new Set((data || []).map(d => d.user_id)))
-        let users: Record<string, any> = {}
+        const users: Record<string, ProfileRow> = {}
         if (ids.length) {
           const { data: profs } = await supabase.from('users_profiles').select('id,full_name,username,avatar_url').in('id', ids)
-          for (const p of (profs || [])) users[(p as any).id] = p
+          for (const p of ((profs || []) as ProfileRow[])) users[p.id] = p
         }
-        setComments(((data || []) as any[]).map(r => ({ ...r, user: users[r.user_id] })))
+        setComments(((data || []) as CommentRow[]).map(r => ({ ...r, user: users[r.user_id] })))
         onSubmitted?.()
       }
     } finally {

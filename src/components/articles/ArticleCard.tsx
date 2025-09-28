@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Clock, Eye, Calendar, Heart, MessageSquare } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 import type { Article } from '@/types'
-import ArticleCardActions from '@/components/articles/ArticleCardActions'
-import CardActions from '@/components/common/CardActions'
+import dynamic from 'next/dynamic'
+const CardActions = dynamic(() => import('@/components/common/CardActions.lazy'))
 
 interface ArticleCardProps {
   article: Article
@@ -32,15 +32,16 @@ export function ArticleCard({
     published_at,
     reading_time,
     view_count,
-    type,
-    // @ts-ignore - extended by API route
-    article_likes,
-    // @ts-ignore
-    article_comments
+    type
   } = article
   // Extract counts from API extended fields if present
-  const likeCount = Array.isArray((article as any).article_likes) ? (article as any).article_likes[0]?.count ?? 0 : 0
-  const commentCount = Array.isArray((article as any).article_comments) ? (article as any).article_comments[0]?.count ?? 0 : 0
+  type Aggregate = { count?: number }
+  const likeCount = Array.isArray((article as unknown as { article_likes?: Aggregate[] }).article_likes)
+    ? ((article as unknown as { article_likes?: Aggregate[] }).article_likes?.[0]?.count ?? 0)
+    : 0
+  const commentCount = Array.isArray((article as unknown as { article_comments?: Aggregate[] }).article_comments)
+    ? ((article as unknown as { article_comments?: Aggregate[] }).article_comments?.[0]?.count ?? 0)
+    : 0
 
   if (variant === 'featured') {
     return (
@@ -53,6 +54,8 @@ export function ArticleCard({
                 alt={title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
             </div>
@@ -165,6 +168,8 @@ export function ArticleCard({
                   alt={title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="96px"
+                  loading="lazy"
                 />
               </div>
             )}
@@ -222,6 +227,8 @@ export function ArticleCard({
             alt={title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
           

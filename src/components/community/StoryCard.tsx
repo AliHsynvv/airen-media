@@ -4,11 +4,22 @@ import { Card } from '@/components/ui/card'
 import { UserStory } from '@/types/story'
 import { cn } from '@/lib/utils'
 import StoryCardClientActions from '@/components/community/StoryCardClientActions'
-import { MapPin } from 'lucide-react'
+// import { MapPin } from 'lucide-react'
 import StoryMediaClient from '@/components/community/StoryMediaClient'
 import { formatRelativeTime } from '@/lib/utils/formatters'
-import FollowButton from '@/components/profile/FollowButton'
+// import FollowButton from '@/components/profile/FollowButton'
 import StoryCardHeaderClient from '@/components/community/StoryCardHeaderClient'
+
+type StoryWithAggregates = UserStory & {
+  users_profiles?: {
+    id?: string
+    avatar_url?: string | null
+    username?: string | null
+    full_name?: string | null
+  }
+  community_story_comments?: Array<{ count?: number }>
+  comments_count?: number
+}
 
 interface StoryCardProps {
   story: UserStory
@@ -17,6 +28,7 @@ interface StoryCardProps {
 }
 
 export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProps) {
+  const s = story as StoryWithAggregates
   const href = story.slug ? `/community/stories/${story.slug}` : '#'
   if (variant === 'grid') {
     return (
@@ -28,7 +40,8 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
               alt={story.image_alt || story.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 33vw, 200px"
+              sizes="(max-width: 640px) 50vw, 200px"
+              loading="lazy"
             />
           </div>
         </Link>
@@ -45,15 +58,15 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
         {/* Header: compact, minimal (client logic to route to /profile if self) */}
         <div className="px-0 sm:px-3 py-2 flex items-center gap-2 sm:gap-3 max-[390px]:gap-4 min-[391px]:gap-5">
           <StoryCardHeaderClient
-            profileId={(story as any).users_profiles?.id}
-            avatarUrl={(story as any).users_profiles?.avatar_url}
-            username={(story as any).users_profiles?.username}
-            fullName={(story as any).users_profiles?.full_name}
+            profileId={s.users_profiles?.id}
+            avatarUrl={s.users_profiles?.avatar_url}
+            username={s.users_profiles?.username}
+            fullName={s.users_profiles?.full_name}
           />
         </div>
 
         {/* Media: full-bleed on mobile (edge-to-edge), contained on desktop; double-tap to like */}
-        <StoryMediaClient href={href} imageUrl={story.image_url} imageAlt={story.image_alt || story.title} variant={variant} storyId={(story as any).id} />
+        <StoryMediaClient href={href} imageUrl={story.image_url} imageAlt={story.image_alt || story.title} variant={variant} storyId={story.id} />
 
         {/* Content block */}
         <div className="py-2 px-3 sm:px-4 flex-1 flex flex-col gap-2">
@@ -61,7 +74,7 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           <StoryCardClientActions
             storyId={story.id}
             initialLikes={story.likes_count || 0}
-            initialComments={Array.isArray((story as any).community_story_comments) ? (story as any).community_story_comments[0]?.count || 0 : ((story as any).comments_count || 0)}
+            initialComments={Array.isArray(s.community_story_comments) ? s.community_story_comments[0]?.count || 0 : s.comments_count || 0}
             storySlug={story.slug}
             storyTitle={story.title}
             className="px-0 -ml-4 sm:ml-0 pr-4 pt-2 pb-0"
@@ -70,7 +83,7 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           {/* Post description line: bold username + real content; align to page-left on mobile */}
           <Link href={href} className="block -ml-4 sm:ml-0 pr-4 -mt-1">
             <div className="text-[16px] min-[430px]:text-[17px] sm:text-[17px] text-black leading-6 flex items-baseline gap-2">
-              <span className="font-semibold shrink-0 text-black">{(story as any).users_profiles?.username || (story as any).users_profiles?.full_name || 'Kullanıcı'}</span>
+              <span className="font-semibold shrink-0 text-black">{s.users_profiles?.username || s.users_profiles?.full_name || 'Kullanıcı'}</span>
               <span className="font-normal truncate flex-1 min-w-0 whitespace-nowrap text-black">
                 {story.content}
               </span>

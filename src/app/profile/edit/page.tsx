@@ -155,7 +155,7 @@ export default function ProfileEditPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex flex-col items-center text-center">
           <div className="relative h-28 w-28 rounded-full overflow-hidden bg-gray-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             {avatarUrl ? (
               <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
             ) : (

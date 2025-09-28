@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import StoryCardActions from '@/components/community/StoryCardActions'
-import StoryComments from '@/components/community/StoryComments'
+import dynamic from 'next/dynamic'
+const StoryComments = dynamic(() => import('@/components/community/StoryComments'), { ssr: false })
 
 type Props = {
   storyId: string
@@ -16,7 +17,7 @@ type Props = {
 export default function StoryCardClientActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className }: Props) {
   const [open, setOpen] = useState(false)
   const [commentCount, setCommentCount] = useState<number>(initialComments)
-  const [likeKey, setLikeKey] = useState(0)
+  // local UI state for comment count badge
 
   return (
     <>
@@ -28,7 +29,6 @@ export default function StoryCardClientActions({ storyId, initialLikes, initialC
         storyTitle={storyTitle}
         className={className}
         onComment={() => setOpen(true)}
-        key={likeKey}
       />
 
       {/* Mobile comment sheet */}
@@ -45,11 +45,15 @@ export default function StoryCardClientActions({ storyId, initialLikes, initialC
             </div>
             <div className="overflow-y-auto px-4 pb-4 pt-3 max-h-[calc(78vh-48px)]">
               <StoryComments storyId={storyId} variant="minimal" onSubmitted={async () => {
-                // re-fetch count after submit to keep badge updated
-                const { data, error, count } = await fetch(`/api/community/stories/${storyId}/comments-count`).then(r => r.json()).catch(() => ({ data: null })) as any
-                if (data?.success && typeof data.count === 'number') setCommentCount(data.count)
-                else if (typeof count === 'number') setCommentCount(count)
-                else setCommentCount(c => c + 1) // fallback optimistic
+                type CountResponse = { success?: boolean; count?: number }
+                type AltResponse = { data?: { success?: boolean; count?: number }; count?: number }
+                const raw = await fetch(`/api/community/stories/${storyId}/comments-count`).then(r => r.json()).catch(() => null) as CountResponse | AltResponse | null
+                const newCount =
+                  raw && 'count' in raw && typeof raw.count === 'number' ? raw.count
+                  : raw && 'data' in raw && raw.data && typeof raw.data.count === 'number' ? raw.data.count
+                  : null
+                if (typeof newCount === 'number') setCommentCount(newCount)
+                else setCommentCount(c => c + 1)
               }} />
             </div>
           </div>

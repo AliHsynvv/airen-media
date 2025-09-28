@@ -23,8 +23,9 @@ export default function MutualConnections({ mutuals }: { mutuals: MutualProfile[
       <div className="flex -space-x-2">
         {firstThree.map(m => (
           <Link key={m.id} href={`/u/${m.id}`} className="block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             {m.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={m.avatar_url} alt="avatar" className="h-full w-full object-cover" />
             ) : null}
           </Link>
@@ -46,8 +47,9 @@ export default function MutualConnections({ mutuals }: { mutuals: MutualProfile[
               {mutuals.map(m => (
                 <li key={m.id} className="py-2">
                   <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    { }
                     {m.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={m.avatar_url} alt="avatar" className="h-9 w-9 rounded-full object-cover" />
                     ) : (
                       <div className="h-9 w-9 rounded-full bg-gray-100" />

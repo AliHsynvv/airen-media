@@ -33,19 +33,19 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
           ? supabase.from('country_reviews').select('*', { count: 'exact', head: true }).eq('country_id', countryId!)
           : supabase.from('country_reviews').select('*', { count: 'exact', head: true }).eq('country_slug', countrySlug),
         isUuid
-          ? supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_id', countryId!).single()
-          : supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_slug', countrySlug).single(),
+          ? supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_id', countryId!).single<{ avg_rating: number | null }>()
+          : supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_slug', countrySlug).single<{ avg_rating: number | null }>(),
         isUuid
-          ? supabase.from('country_reviews').select('sum_rating:sum(rating)').eq('country_id', countryId!).single()
-          : supabase.from('country_reviews').select('sum_rating:sum(rating)').eq('country_slug', countrySlug).single(),
+          ? supabase.from('country_reviews').select('sum_rating:sum(rating)').eq('country_id', countryId!).single<{ sum_rating: number | null }>()
+          : supabase.from('country_reviews').select('sum_rating:sum(rating)').eq('country_slug', countrySlug).single<{ sum_rating: number | null }>(),
       ])
       if (!mounted) return
       const cnt = countRes.count ?? 0
       setCount(cnt)
-      const rawAvg = (avgRes.data as any)?.avg_rating as any
+      const rawAvg = (avgRes.data)?.avg_rating
       const avgNum = rawAvg != null ? Number(rawAvg) : null
       setAvgRating(avgNum != null && !Number.isNaN(avgNum) ? Number(avgNum.toFixed(1)) : null)
-      const rawSum = (sumRes.data as any)?.sum_rating ?? (sumRes.data as any)?.sum
+      const rawSum = (sumRes.data)?.sum_rating ?? (sumRes.data as unknown as { sum?: number })?.sum
       let sumNum = rawSum != null ? Number(rawSum) : null
       if ((sumNum == null || Number.isNaN(sumNum)) && avgNum != null && cnt > 0) {
         sumNum = Math.round(avgNum * cnt)
@@ -58,7 +58,7 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
             : supabase.from('country_reviews').select('rating').eq('country_slug', countrySlug)
         )
         if (ratingsRes.data && Array.isArray(ratingsRes.data) && ratingsRes.data.length > 0) {
-          const ratings = ratingsRes.data.map((r: any) => Number(r.rating) || 0)
+          const ratings = ratingsRes.data.map((r: { rating: number | null }) => Number(r.rating) || 0)
           const localSum = ratings.reduce((a, b) => a + b, 0)
           const localAvg = ratings.length ? localSum / ratings.length : null
           if (localAvg != null) setAvgRating(Number(localAvg.toFixed(1)))
@@ -75,7 +75,7 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
       if (match) load()
     }
     window.addEventListener('country-reviews-updated', onUpdated as EventListener)
-    return () => { mounted = false }
+    return () => { mounted = false; window.removeEventListener('country-reviews-updated', onUpdated as EventListener) }
   }, [countryId, countrySlug, isUuid, fallbackRating])
 
   const ratingToShow = avgRating ?? (fallbackRating !== undefined ? Number(fallbackRating.toFixed(1)) : null)

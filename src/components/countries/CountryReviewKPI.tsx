@@ -31,13 +31,13 @@ export default function CountryReviewKPI({ countryId, countrySlug, metric, class
           ? supabase.from('country_reviews').select('*', { count: 'exact', head: true }).eq('country_id', countryId!)
           : supabase.from('country_reviews').select('*', { count: 'exact', head: true }).eq('country_slug', countrySlug),
         isUuid
-          ? supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_id', countryId!).single()
-          : supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_slug', countrySlug).single(),
+          ? supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_id', countryId!).single<{ avg_rating: number | null }>()
+          : supabase.from('country_reviews').select('avg_rating:avg(rating)').eq('country_slug', countrySlug).single<{ avg_rating: number | null }>(),
       ])
       if (!mounted) return
       const cnt = countRes.count ?? 0
       setCount(cnt)
-      const rawAvg = (avgRes.data as any)?.avg_rating
+      const rawAvg = (avgRes.data)?.avg_rating
       let avgNum = rawAvg != null ? Number(rawAvg) : null
       if ((avgNum == null || Number.isNaN(avgNum)) && cnt > 0) {
         // Fallback: compute average client-side
@@ -47,7 +47,7 @@ export default function CountryReviewKPI({ countryId, countrySlug, metric, class
             : supabase.from('country_reviews').select('rating').eq('country_slug', countrySlug)
         )
         if (ratingsRes.data && Array.isArray(ratingsRes.data) && ratingsRes.data.length > 0) {
-          const ratings = ratingsRes.data.map((r: any) => Number(r.rating) || 0)
+          const ratings = ratingsRes.data.map((r: { rating: number }) => Number(r.rating) || 0)
           const sum = ratings.reduce((a, b) => a + b, 0)
           avgNum = sum / ratings.length
         }

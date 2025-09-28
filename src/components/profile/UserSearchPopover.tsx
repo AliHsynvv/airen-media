@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
@@ -14,7 +15,10 @@ export default function UserSearchPopover() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const popRef = useRef<HTMLDivElement | null>(null)
 
-  const runSearch = async (q: string) => {
+  type UserRow = { id: string; username: string | null; full_name: string | null; avatar_url: string | null }
+  type StoryRow = { id: string; slug: string | null; title: string }
+
+  const runSearch = useCallback(async (q: string) => {
     const term = q.trim()
     if (!term) { setSearchResults([]); return }
     const usersP = supabase.from('users_profiles').select('id,username,full_name,avatar_url').ilike('username', `%${term}%`).limit(5)
@@ -22,21 +26,21 @@ export default function UserSearchPopover() {
     const storiesP = supabase.from('user_stories').select('id,slug,title').ilike('title', `%${term}%`).limit(5)
     const tagsP = supabase.from('user_stories').select('id,slug,title,tags').contains('tags', [term]).limit(5)
     const [users, users2, stories, tags] = await Promise.all([usersP, usersP2, storiesP, tagsP])
-    const uMap = new Map<string, any>()
-    ;(users.data || []).concat(users2.data || []).forEach((u: any) => { uMap.set(u.id, u) })
+    const uMap = new Map<string, UserRow>()
+    ;(users.data as UserRow[] | null || []).concat((users2.data as UserRow[] | null || [])).forEach((u) => { uMap.set(String(u.id), u) })
     const results: SearchResult[] = []
-    for (const u of Array.from(uMap.values())) results.push({ type: 'user', id: u.id, username: u.username || u.full_name, avatar_url: u.avatar_url || null })
-    for (const s of (stories.data || [])) results.push({ type: 'story', id: s.id, title: s.title, slug: s.slug || undefined })
-    for (const t of (tags.data || [])) results.push({ type: 'hashtag', id: t.id, title: `#${term}`, slug: t.slug || undefined })
+    for (const u of Array.from(uMap.values())) results.push({ type: 'user', id: String(u.id), username: u.username || u.full_name || undefined, avatar_url: u.avatar_url || null })
+    for (const s of ((stories.data as StoryRow[] | null) || [])) results.push({ type: 'story', id: String(s.id), title: s.title, slug: s.slug || undefined })
+    for (const t of ((tags.data as StoryRow[] | null) || [])) results.push({ type: 'hashtag', id: String(t.id), title: `#${term}`, slug: t.slug || undefined })
     setSearchResults(results.slice(0, 12))
-  }
+  }, [])
 
   useEffect(() => {
     const term = searchQuery.trim()
     if (!term) { setSearchResults([]); return }
     const t = setTimeout(() => { runSearch(term) }, 300)
     return () => clearTimeout(t)
-  }, [searchQuery])
+  }, [searchQuery, runSearch])
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -76,9 +80,9 @@ export default function UserSearchPopover() {
                   <li key={`${r.type}-${r.id}`} className="py-2">
                     {r.type === 'user' ? (
                       <Link href={`/u/${r.id}`} className="flex items-center gap-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        { }
                         {r.avatar_url ? (
-                          <img src={r.avatar_url} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
+                          <Image src={r.avatar_url} alt="avatar" width={28} height={28} className="rounded-full object-cover" sizes="28px" loading="lazy" />
                         ) : (
                           <div className="h-7 w-7 rounded-full bg-gray-100" />
                         )}

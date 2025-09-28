@@ -65,7 +65,7 @@ export default async function PublicFollowersPage(context: Props) {
           {followers.map(p => (
             <li key={p.id} className="px-3 sm:px-4 py-3">
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                 ) : (

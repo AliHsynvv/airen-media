@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CountryCard } from '@/components/countries/CountryCard'
+import dynamic from 'next/dynamic'
+const CountryCard = dynamic(() => import('@/components/countries/CountryCard').then(m => m.CountryCard))
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import MeetAirenButton from '@/components/home/MeetAirenButton'
+const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { useCountries } from '@/lib/hooks/useCountries'

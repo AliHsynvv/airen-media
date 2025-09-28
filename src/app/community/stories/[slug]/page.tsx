@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase/server'
-import StoryComments from '@/components/community/StoryComments'
+import dynamic from 'next/dynamic'
+const StoryComments = dynamic(() => import('@/components/community/StoryComments.lazy'))
 import { Card } from '@/components/ui/card'
 import StoryCard from '@/components/community/StoryCard'
 

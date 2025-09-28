@@ -32,8 +32,9 @@ export default function StoryCardHeaderClient({ profileId, avatarUrl, username, 
     <div className="flex-1 min-w-0 flex items-center justify-between gap-2 sm:gap-2">
       <div className="min-w-0 flex items-center gap-3">
         <Link href={href} className="shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={avatarUrl} alt="avatar" className="h-12 w-12 max-[390px]:h-14 max-[390px]:w-14 min-[391px]:h-16 min-[391px]:w-16 sm:h-12 sm:w-12 lg:h-11 lg:w-11 rounded-full object-cover" />
           ) : (
             <div className="h-12 w-12 max-[390px]:h-14 max-[390px]:w-14 min-[391px]:h-16 min-[391px]:w-16 sm:h-12 sm:w-12 lg:h-11 lg:w-11 rounded-full bg-gray-200" />
