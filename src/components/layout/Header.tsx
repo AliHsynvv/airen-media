@@ -158,7 +158,7 @@ export function Header() {
               <div className="relative">
                 <Button variant="ghost" size="icon" onClick={() => setIsUserMenuOpen(v => !v)}>
                   {profile?.avatar_url ? (
-                    <Image src={profile.avatar_url} alt="avatar" width={24} height={24} className="rounded-full object-cover" sizes="24px" loading="lazy" />
+                    <Image src={profile.avatar_url} alt="avatar" width={24} height={24} className="rounded-full object-cover" sizes="24px" loading="lazy" unoptimized style={{ height: 'auto' }} />
                   ) : (
                     <User className="h-5 w-5 text-gray-700" />
                   )}

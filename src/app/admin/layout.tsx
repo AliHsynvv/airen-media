@@ -27,8 +27,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const cookieStore = await cookies()
   // Use supabase SSR client to read the current session reliably
   const supabase = await getServerSupabase()
-  const { data: session } = await supabase.auth.getSession()
-  const user = session.session?.user
+  const { data: userRes } = await supabase.auth.getUser()
+  const user = userRes.user
   if (!user) redirect('/auth/login?next=/admin')
   const { data: profile } = await supabaseAdmin.from('users_profiles').select('id, role').eq('id', user.id).maybeSingle()
   if (!profile || profile.role !== 'admin') {

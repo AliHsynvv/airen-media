@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 
-const Inner = dynamic(() => import('./CardActions'))
+const Inner = dynamic(() => import('./CardActions'), { ssr: false })
 
 interface Props {
   articleId: string
@@ -25,7 +25,7 @@ export default function CardActionsLazy(props: Props) {
         setVisible(true)
         io.disconnect()
       }
-    }, { rootMargin: '200px' })
+    }, { rootMargin: '80px' })
     io.observe(el)
     return () => io.disconnect()
   }, [visible])

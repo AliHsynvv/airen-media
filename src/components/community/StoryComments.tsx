@@ -92,13 +92,13 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
               .eq('id', replyTo)
               .single()
             if (parent?.user_id && parent.user_id !== userId) {
-              await supabase.from('notifications').insert({ user_id: parent.user_id, type: 'comment_reply', payload: { story_id: storyId, comment_id: inserted?.id, actor_id: userId, parent_id: replyTo } })
+            await fetch('/api/notifications/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: parent.user_id, type: 'comment_reply', payload: { story_id: storyId, comment_id: inserted?.id, parent_id: replyTo } }) })
             }
           } else {
             // notify story owner
             const { data: story } = await supabase.from('user_stories').select('user_id').eq('id', storyId).single()
             if (story?.user_id && story.user_id !== userId) {
-              await supabase.from('notifications').insert({ user_id: story.user_id, type: 'story_comment', payload: { story_id: storyId, comment_id: inserted?.id, actor_id: userId } })
+            await fetch('/api/notifications/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: story.user_id, type: 'story_comment', payload: { story_id: storyId, comment_id: inserted?.id } }) })
             }
           }
         } catch {}
@@ -139,11 +139,11 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
       await supabase.from('community_comment_likes').delete().eq('comment_id', c.id).eq('user_id', userId)
       setComments(prev => prev.map(x => x.id === c.id ? { ...x, liked_by_me: false, like_count: Math.max(0, (x.like_count || 0) - 1) } : x))
     } else {
-      await supabase.from('community_comment_likes').insert({ comment_id: c.id, user_id: userId })
+      await supabase.from('community_comment_likes').upsert({ comment_id: c.id, user_id: userId }, { onConflict: 'comment_id,user_id', ignoreDuplicates: true })
       setComments(prev => prev.map(x => x.id === c.id ? { ...x, liked_by_me: true, like_count: (x.like_count || 0) + 1 } : x))
       try {
         if (c.user_id !== userId) {
-          await supabase.from('notifications').insert({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id, actor_id: userId } })
+          await fetch('/api/notifications/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: c.user_id, type: 'comment_like', payload: { comment_id: c.id, story_id: c.story_id } }) })
         }
       } catch {}
     }

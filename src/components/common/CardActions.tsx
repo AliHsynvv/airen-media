@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Eye, MessageSquare, Share2, Bookmark, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
@@ -44,6 +44,14 @@ export default function CardActions({
   const [busy, setBusy] = useState(false)
   const [isSaved, setIsSaved] = useState<boolean>(saved)
   const [busySave, setBusySave] = useState(false)
+  const hasInteractedRef = useRef(false)
+
+  // Keep like count in sync with provided prop (from server) without clobbering user interaction
+  useEffect(() => {
+    if (typeof likes === 'number' && !hasInteractedRef.current) {
+      setLikeCount(likes)
+    }
+  }, [likes])
 
   useEffect(() => {
     let mounted = true
@@ -51,13 +59,14 @@ export default function CardActions({
       if (!articleId) return
       const userRes = await supabase.auth.getUser()
       const uid = userRes.data.user?.id ?? null
-
-      const { count } = await supabase
-        .from('article_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('article_id', articleId)
-
-      if (mounted) setLikeCount(count || 0)
+      // Only fetch total like count if not provided via props
+      if (typeof likes !== 'number') {
+        const { count } = await supabase
+          .from('article_likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('article_id', articleId)
+        if (mounted && !hasInteractedRef.current) setLikeCount(count || 0)
+      }
 
       if (uid) {
         const { data } = await supabase
@@ -66,7 +75,7 @@ export default function CardActions({
           .eq('article_id', articleId)
           .eq('user_id', uid)
           .maybeSingle()
-        if (mounted) setIsLiked(!!data)
+        if (mounted && !hasInteractedRef.current) setIsLiked(!!data)
         // load saved state
         const { data: b } = await supabase
           .from('article_bookmarks')
@@ -74,18 +83,19 @@ export default function CardActions({
           .eq('article_id', articleId)
           .eq('user_id', uid)
           .maybeSingle()
-        if (mounted) setIsSaved(!!b)
+        if (mounted && !hasInteractedRef.current) setIsSaved(!!b)
       } else {
-        if (mounted) { setIsLiked(false); setIsSaved(false) }
+        if (mounted && !hasInteractedRef.current) { setIsLiked(false); setIsSaved(false) }
       }
     }
     load()
     return () => { mounted = false }
-  }, [articleId])
+  }, [articleId, likes])
 
   const handleLike = async () => {
     if (onLike) return onLike()
     if (!articleId || busy) return
+    hasInteractedRef.current = true
     setBusy(true)
     try {
       const userRes = await supabase.auth.getUser()
@@ -97,7 +107,9 @@ export default function CardActions({
         if (error) { setIsLiked(true); setLikeCount(v => v + 1) }
       } else {
         setIsLiked(true); setLikeCount(v => v + 1)
-        const { error } = await supabase.from('article_likes').insert({ article_id: articleId, user_id: uid })
+        const { error } = await supabase
+          .from('article_likes')
+          .upsert({ article_id: articleId, user_id: uid }, { onConflict: 'article_id,user_id', ignoreDuplicates: true })
         if (error) { setIsLiked(false); setLikeCount(v => Math.max(0, v - 1)) }
       }
     } finally {
@@ -140,7 +152,7 @@ export default function CardActions({
         setIsSaved(true)
         const { error } = await supabase
           .from('article_bookmarks')
-          .insert({ article_id: articleId, user_id: uid })
+          .upsert({ article_id: articleId, user_id: uid }, { onConflict: 'article_id,user_id', ignoreDuplicates: true })
         if (error) setIsSaved(false)
       }
     } finally {

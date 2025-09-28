@@ -34,6 +34,7 @@ export default function StoryMediaClient({ href, imageUrl, imageAlt, variant, st
             alt={imageAlt || ''}
             fill
             priority={false}
+            unoptimized
             className={cn(
               'object-cover',
               variant === 'fixed' ? '' : 'transform scale-[1.08] sm:scale-100'

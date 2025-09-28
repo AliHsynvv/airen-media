@@ -17,8 +17,8 @@ export default async function PublicFollowingPage(context: Props) {
   // If current user is the same, redirect to private following page
   try {
     const supabase = await getServerSupabase()
-    const { data } = await supabase.auth.getSession()
-    const meId = data.session?.user?.id || null
+    const { data } = await supabase.auth.getUser()
+    const meId = data.user?.id || null
     if (meId && meId === id) redirect('/following')
   } catch {}
 

@@ -37,7 +37,7 @@ export default function AdminCategoriesPage() {
   const save = async () => {
     setMessage(null)
     if (!form.name || !form.slug) { setMessage('Name ve slug zorunlu'); return }
-    const token = (await supabase.auth.getSession()).data.session?.access_token
+    const token = (await supabase.auth.getUser()).data.user ? (await supabase.auth.getSession()).data.session?.access_token : undefined
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` }
     const res = editingId
       ? await fetch(`/api/admin/categories/${editingId}`, { method: 'PUT', headers, body: JSON.stringify(form) })
@@ -54,7 +54,7 @@ export default function AdminCategoriesPage() {
 
   const remove = async (id: string) => {
     if (!confirm('Silinsin mi?')) return
-    const token = (await supabase.auth.getSession()).data.session?.access_token
+    const token = (await supabase.auth.getUser()).data.user ? (await supabase.auth.getSession()).data.session?.access_token : undefined
     const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` } })
     const json = await res.json()
     if (!json.success) setMessage(json.error || 'Hata')

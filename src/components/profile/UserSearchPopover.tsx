@@ -82,7 +82,7 @@ export default function UserSearchPopover() {
                       <Link href={`/u/${r.id}`} className="flex items-center gap-2">
                         { }
                         {r.avatar_url ? (
-                          <Image src={r.avatar_url} alt="avatar" width={28} height={28} className="rounded-full object-cover" sizes="28px" loading="lazy" />
+                          <Image src={r.avatar_url} alt="avatar" width={28} height={28} className="rounded-full object-cover" sizes="28px" loading="lazy" unoptimized />
                         ) : (
                           <div className="h-7 w-7 rounded-full bg-gray-100" />
                         )}

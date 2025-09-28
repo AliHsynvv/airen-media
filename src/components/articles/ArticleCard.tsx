@@ -307,7 +307,14 @@ export function ArticleCard({
         </div>
       </CardContent>
       {/* Unified actions bar at bottom - consistent across cards */}
-      <CardActions articleId={article.id} articleSlug={slug} views={view_count} comments={commentCount} hideLabels={false} />
+      <CardActions
+        articleId={article.id}
+        articleSlug={slug}
+        views={view_count}
+        comments={commentCount}
+        likes={likeCount}
+        hideLabels={false}
+      />
     </Card>
   )
 }

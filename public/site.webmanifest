@@ -1,0 +1,12 @@
+{
+  "name": "Airen",
+  "short_name": "Airen",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "description": "Airen - Travel community, news and stories",
+  "icons": []
+}
+
+

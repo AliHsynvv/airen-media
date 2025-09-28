@@ -23,8 +23,8 @@ export default async function PublicUserProfilePage(context: Props) {
   // If this is the current user's own id, redirect to private profile page
   try {
     const supabase = await getServerSupabase()
-    const { data: sessionRes } = await supabase.auth.getSession()
-    const meId = sessionRes.session?.user?.id || null
+    const { data: userRes } = await supabase.auth.getUser()
+    const meId = userRes.user?.id || null
     if (meId && meId === id) {
       redirect('/profile')
     }
@@ -65,8 +65,8 @@ export default async function PublicUserProfilePage(context: Props) {
   let suggestions: Array<{ id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null; followers_count?: number; mutual_count?: number }> = []
   try {
     const supabase = await getServerSupabase()
-    const { data: s } = await supabase.auth.getSession()
-    const meId = s.session?.user?.id || null
+    const { data: ures } = await supabase.auth.getUser()
+    const meId = ures.user?.id || null
     if (meId && meId !== profile.id) {
       const [myFollowingRes, theirFollowingRes] = await Promise.all([
         supabaseAdmin.from('user_follows').select('following_id').eq('follower_id', meId).limit(1000),

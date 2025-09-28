@@ -63,11 +63,11 @@ export default function FollowButton({ profileId, className }: Props) {
         await supabase.from('user_follows').delete().eq('follower_id', userId).eq('following_id', profileId)
         setFollowing(false)
       } else {
-        await supabase.from('user_follows').insert({ follower_id: userId, following_id: profileId })
+        await supabase.from('user_follows').upsert({ follower_id: userId, following_id: profileId }, { onConflict: 'follower_id,following_id', ignoreDuplicates: true })
         setFollowing(true)
         // notify the followed user (avoid self)
         try {
-          await supabase.from('notifications').insert({ user_id: profileId, type: 'follow', payload: { actor_id: userId } })
+          await fetch('/api/notifications/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: profileId, type: 'follow' }) })
         } catch {}
       }
     } finally {

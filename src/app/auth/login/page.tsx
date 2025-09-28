@@ -20,17 +20,29 @@ export default function LoginPage() {
   }, [router])
 
   const submit = async () => {
+    if (loading) return
     setLoading(true)
     setMessage(null)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const emailNorm = email.trim().toLowerCase()
+      const signIn = supabase.auth.signInWithPassword({ email: emailNorm, password })
+      // race with manual timeout to avoid stuck UI
+      const { error } = await Promise.race([
+        signIn,
+        new Promise<{ error: any }>((resolve) => controller.signal.addEventListener('abort', () => resolve({ error: new Error('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.') })) ),
+      ])
       if (error) throw error
       setMessage('Giriş başarılı!')
-      // Client-side navigation for faster transition
-      router.push('/profile')
+      // ensure session materialized before navigate
+      await supabase.auth.getUser().catch(() => null)
+      router.replace('/profile')
     } catch (e: any) {
-      setMessage(`Hata: ${e.message}`)
+      const msg = e?.message || 'Beklenmeyen hata'
+      setMessage(`Hata: ${msg}`)
     } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }

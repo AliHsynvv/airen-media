@@ -28,6 +28,7 @@ export default function EnlargeableAvatar({ src, alt = 'avatar', className, fall
           fill
           sizes="(max-width: 640px) 48px, 64px"
           className="object-cover"
+          unoptimized
           onError={() => setThumbError(true)}
         />
       </button>
@@ -39,6 +40,7 @@ export default function EnlargeableAvatar({ src, alt = 'avatar', className, fall
             width={1200}
             height={800}
             className="w-full h-auto object-contain"
+            unoptimized
             onError={() => setDialogError(true)}
           />
         </DialogContent>
