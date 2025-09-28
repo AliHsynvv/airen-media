@@ -10,7 +10,11 @@ interface Props {
   articleSlug: string
   views?: number
   comments?: number
+  likes?: number
+  liked?: boolean
+  saved?: boolean
   hideLabels?: boolean
+  className?: string
 }
 
 export default function CardActionsLazy(props: Props) {
