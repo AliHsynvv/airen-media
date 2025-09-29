@@ -9,6 +9,7 @@ import StoryMediaClient from '@/components/community/StoryMediaClient'
 import { formatRelativeTime } from '@/lib/utils/formatters'
 // import FollowButton from '@/components/profile/FollowButton'
 import StoryCardHeaderClient from '@/components/community/StoryCardHeaderClient'
+import StoryCardOwnerMenu from '@/components/community/StoryCardOwnerMenu'
 
 type StoryWithAggregates = UserStory & {
   users_profiles?: {
@@ -56,13 +57,16 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
         variant === 'fixed' ? 'w-[220px] border border-gray-200' : 'w-full sm:max-w-none rounded-xl sm:rounded-2xl border-0 sm:border border-gray-200'
       )}>
         {/* Header: compact, minimal (client logic to route to /profile if self) */}
-        <div className="px-0 sm:px-3 py-2 flex items-center gap-2 sm:gap-3 max-[390px]:gap-4 min-[391px]:gap-5">
+        <div className="px-0 sm:px-3 py-2 flex items-center justify-between gap-2 sm:gap-3 max-[390px]:gap-4 min-[391px]:gap-5 relative">
           <StoryCardHeaderClient
             profileId={s.users_profiles?.id}
             avatarUrl={s.users_profiles?.avatar_url}
             username={s.users_profiles?.username}
             fullName={s.users_profiles?.full_name}
           />
+          <div className="ml-auto">
+            <StoryCardOwnerMenu storyId={story.id} storySlug={story.slug || null} ownerId={story.user_id} className="" />
+          </div>
         </div>
 
         {/* Media: full-bleed on mobile (edge-to-edge), contained on desktop; double-tap to like */}

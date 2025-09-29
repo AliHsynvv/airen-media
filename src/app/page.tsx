@@ -140,15 +140,21 @@ export default async function Home() {
               <div className="absolute -top-2 right-12 hidden lg:flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 shadow-sm animate-gentle-bounce">
                 <Globe className="h-5 w-5" />
               </div>
-            <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] lg:h-[520px] lg:w-[520px] max-w-full rounded-full mx-auto">
-                {/* Decorative orb instead of video for performance */}
-                <div className="absolute inset-0 rounded-full overflow-hidden shadow-inner bg-gradient-to-br from-gray-100 via-white to-gray-50" />
+            <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] lg:h-[520px] lg:w-[520px] max-w-full rounded-full mx-auto overflow-hidden shadow-inner">
+                {/* Background video */}
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src="/Airen%208.mp4"
+                  playsInline
+                  muted
+                  loop
+                  autoPlay
+                  preload="metadata"
+                />
                 {/* subtle overlays and rings */}
                 <div className="absolute inset-0 rounded-full ring-1 ring-black/5" />
                 <div className="absolute inset-12 rounded-full ring-1 ring-black/5" />
                 <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
-
-                {/* content overlay intentionally minimal */}
               </div>
             </div>
           </div>
