@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
@@ -13,37 +13,52 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const watcherRef = useRef<number | null>(null)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
     // Prefetch profile route for instant navigation after login
     try { router.prefetch?.('/profile') } catch {}
+    return () => { mountedRef.current = false; if (watcherRef.current) window.clearInterval(watcherRef.current) }
   }, [router])
 
   const submit = async () => {
     if (loading) return
     setLoading(true)
     setMessage(null)
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
+    const emailNorm = email.trim().toLowerCase()
+
+    // Start a session watcher that navigates as soon as user appears
+    const start = Date.now()
+    if (watcherRef.current) window.clearInterval(watcherRef.current)
+    watcherRef.current = window.setInterval(async () => {
+      try {
+        const { data } = await supabase.auth.getUser()
+        if (data.user) {
+          if (watcherRef.current) { window.clearInterval(watcherRef.current); watcherRef.current = null }
+          if (!mountedRef.current) return
+          router.replace('/profile')
+        }
+      } catch {}
+      if (Date.now() - start > 60000 && watcherRef.current) { // hard cap 60s
+        window.clearInterval(watcherRef.current)
+        watcherRef.current = null
+      }
+    }, 1000)
+
     try {
-      const emailNorm = email.trim().toLowerCase()
-      const signIn = supabase.auth.signInWithPassword({ email: emailNorm, password })
-      // race with manual timeout to avoid stuck UI
-      const { error } = await Promise.race([
-        signIn,
-        new Promise<{ error: any }>((resolve) => controller.signal.addEventListener('abort', () => resolve({ error: new Error('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.') })) ),
-      ])
+      const { error } = await supabase.auth.signInWithPassword({ email: emailNorm, password })
       if (error) throw error
       setMessage('Giriş başarılı!')
-      // ensure session materialized before navigate
-      await supabase.auth.getUser().catch(() => null)
-      router.replace('/profile')
+      // Best-effort immediate check
+      const { data } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }))
+      if (data?.user) router.replace('/profile')
     } catch (e: any) {
       const msg = e?.message || 'Beklenmeyen hata'
+      // If user is already logged in despite error, watcher will handle redirect
       setMessage(`Hata: ${msg}`)
     } finally {
-      clearTimeout(timeout)
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
