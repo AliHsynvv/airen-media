@@ -1,6 +1,7 @@
 'use server'
 
 import ProfileClient from './ProfileClient'
+import { redirect } from 'next/navigation'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
 
 interface MyStoryRow {
@@ -32,6 +33,19 @@ export default async function ProfilePage() {
       </div>
     )
   }
+
+  // If user owns a business profile, redirect to business dashboard
+  try {
+    const { data: biz } = await supabase
+      .from('business_profiles')
+      .select('id')
+      .eq('owner_id', u.id)
+      .limit(1)
+      .maybeSingle()
+    if (biz?.id) {
+      redirect('/business')
+    }
+  } catch {}
 
   let initialFullName: string | null = null
   let initialUsername: string | null = null

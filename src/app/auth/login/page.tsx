@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Prefetch profile route for instant navigation after login
-    try { router.prefetch?.('/profile') } catch {}
+    try { router.prefetch?.('/profile'); router.prefetch?.('/business') } catch {}
     return () => { mountedRef.current = false; if (watcherRef.current) window.clearInterval(watcherRef.current) }
   }, [router])
 
@@ -39,7 +39,18 @@ export default function LoginPage() {
         if (data.user) {
           if (watcherRef.current) { window.clearInterval(watcherRef.current); watcherRef.current = null }
           if (!mountedRef.current) return
-          router.replace('/profile')
+          // Check if user owns a business
+          try {
+            const res = await fetch('/api/business/has', { method: 'GET' })
+            const j = await res.json().catch(() => ({}))
+            if (j?.has === true) {
+              router.replace('/business')
+            } else {
+              router.replace('/profile')
+            }
+          } catch {
+            router.replace('/profile')
+          }
         }
       } catch {}
       if (Date.now() - start > 60000 && watcherRef.current) { // hard cap 60s
@@ -54,7 +65,19 @@ export default function LoginPage() {
       setMessage('Giriş başarılı!')
       // Best-effort immediate check
       const { data } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }))
-      if (data?.user) router.replace('/profile')
+      if (data?.user) {
+        try {
+          const res = await fetch('/api/business/has', { method: 'GET' })
+          const j = await res.json().catch(() => ({}))
+          if (j?.has === true) {
+            router.replace('/business')
+          } else {
+            router.replace('/profile')
+          }
+        } catch {
+          router.replace('/profile')
+        }
+      }
     } catch (e: any) {
       const msg = e?.message || 'Beklenmeyen hata'
       // If user is already logged in despite error, watcher will handle redirect

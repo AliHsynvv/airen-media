@@ -53,34 +53,39 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         .eq('user_id', userId)
         .maybeSingle()
       if (mounted) setSaved(!!s)
-      if (mounted) setInitialized(true)
     }
     check()
+    const inFlightRef = { current: false }
     const onDoubleTap = async (evt: Event) => {
       const e = evt as CustomEvent<{ storyId: string }>
       if (e?.detail?.storyId !== storyId) return
-      if (!initialized) return
-      if (loading) return
-      // Optimistic like, but prevent multiple increments
-      if (!likedRef.current) {
-        setLiked(true)
-        setLikes(v => v + 1)
-      }
-      setLoading(true)
+      if (inFlightRef.current) return
+      // Ensure logged in
+      const { data: u } = await supabase.auth.getUser()
+      const userId = u.user?.id
+      if (!userId) { try { window.location.href = '/auth/login' } catch {} return }
+      // Prevent duplicate increments
+      if (likedRef.current) return
+      setLiked(true)
+      setLikes(v => v + 1)
+      likedRef.current = true
+      inFlightRef.current = true
       try {
         const res = await fetch('/api/community/stories/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storyId }) })
-        // Always re-sync count with server after request to reflect real value
         const countRes = await fetch(`/api/community/stories/like?storyId=${encodeURIComponent(storyId)}`)
         const j = await countRes.json().catch(() => ({}))
         if (j?.success) setLikes(j.data?.count || 0)
-        if (!res.ok) setLiked(likedRef.current)
+        if (!res.ok) {
+          setLiked(false)
+          likedRef.current = false
+        }
       } finally {
-        setLoading(false)
+        inFlightRef.current = false
       }
     }
     window.addEventListener('story:doubletap', onDoubleTap)
     return () => { mounted = false; window.removeEventListener('story:doubletap', onDoubleTap) }
-  }, [storyId, initialized, loading])
+  }, [storyId])
 
   // keep ref in sync
   useEffect(() => { likedRef.current = liked }, [liked])

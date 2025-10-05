@@ -83,6 +83,10 @@ export default function CommunityPage() {
         </div>
       )}
 
+      <div className="mb-2">
+        <Link href="/community/business" className="inline-flex items-center gap-2 text-sm underline">Business</Link>
+      </div>
+
       <div className="mb-6 flex gap-2 flex-wrap items-center">
         {categories.map(c => (
           <button

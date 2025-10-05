@@ -22,6 +22,13 @@ export default function RegisterPage() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [gender, setGender] = useState('')
+  const [accountType, setAccountType] = useState<'user' | 'business'>('user')
+  const isBusiness = accountType === 'business'
+  const [businessName, setBusinessName] = useState('')
+  const [businessCategory, setBusinessCategory] = useState('')
+  const [businessWebsite, setBusinessWebsite] = useState('')
+  const [businessEmail, setBusinessEmail] = useState('')
+  const [businessPhone, setBusinessPhone] = useState('')
 
   useEffect(() => {
     const value = email.toLowerCase().trim()
@@ -121,6 +128,24 @@ export default function RegisterPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: data.user.id, username, full_name: fullName, gender }),
         })
+        if (isBusiness) {
+          const bizRes = await fetch('/api/business/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              owner_id: data.user.id,
+              name: businessName || fullName || username,
+              category: businessCategory || undefined,
+              website: businessWebsite || undefined,
+              email: businessEmail || undefined,
+              phone: businessPhone || undefined,
+            }),
+          })
+          if (bizRes.ok) {
+            window.location.href = '/business'
+            return
+          }
+        }
       }
       setMessage('Kayıt başarılı! E-posta doğrulamasını tamamlayın.')
       window.location.href = '/auth/login'
@@ -155,6 +180,10 @@ export default function RegisterPage() {
         <div className="w-full max-w-md rounded-2xl border border-gray-100/80 bg-white/80 backdrop-blur p-5 sm:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
           <h1 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">Kayıt Ol</h1>
           <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm mb-1">
+              <button type="button" onClick={() => setAccountType('user')} className={`px-3 py-1.5 rounded-full border ${!isBusiness ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-200'}`}>Kullanıcı</button>
+              <button type="button" onClick={() => setAccountType('business')} className={`px-3 py-1.5 rounded-full border ${isBusiness ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-200'}`}>İşletme</button>
+            </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Kullanıcı Adı</label>
               <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="airenuser" className={`border-gray-200 ${usernameTaken ? 'ring-1 ring-red-500' : ''}`} />
@@ -172,19 +201,23 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Ad Soyad</label>
-              <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ad Soyad" className="border-gray-200" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Cinsiyet</label>
-              <select value={gender} onChange={e => setGender(e.target.value)} className="w-full h-10 rounded-md border border-gray-200 bg-white text-gray-900 px-3">
-                <option value="">Seçiniz</option>
-                <option value="Female">Kadın</option>
-                <option value="Male">Erkek</option>
-                <option value="Other">Diğer</option>
-              </select>
-            </div>
+            {!isBusiness && (
+              <>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">Ad Soyad</label>
+                  <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ad Soyad" className="border-gray-200" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">Cinsiyet</label>
+                  <select value={gender} onChange={e => setGender(e.target.value)} className="w-full h-10 rounded-md border border-gray-200 bg-white text-gray-900 px-3">
+                    <option value="">Seçiniz</option>
+                    <option value="Female">Kadın</option>
+                    <option value="Male">Erkek</option>
+                    <option value="Other">Diğer</option>
+                  </select>
+                </div>
+              </>
+            )}
             <div>
               <label className="block text-sm text-gray-700 mb-1">E-posta</label>
               <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="mail@site.com" className={`border-gray-200 ${emailTaken ? 'ring-1 ring-red-500' : ''}`} />
@@ -206,9 +239,39 @@ export default function RegisterPage() {
               <label className="block text-sm text-gray-700 mb-1">Şifre</label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="border-gray-200" />
             </div>
+            {isBusiness && (
+              <div className="pt-2 border-t border-gray-100 mt-2">
+                <div className="mt-1 grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">İşletme Adı</label>
+                    <Input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="Firma A.Ş." className="border-gray-200" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Kategori</label>
+                    <Input value={businessCategory} onChange={e => setBusinessCategory(e.target.value)} placeholder="Cafe, Hotel, Tour..." className="border-gray-200" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Website</label>
+                      <Input value={businessWebsite} onChange={e => setBusinessWebsite(e.target.value)} placeholder="https://site.com" className="border-gray-200" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">E-posta (İşletme)</label>
+                      <Input value={businessEmail} onChange={e => setBusinessEmail(e.target.value)} placeholder="biz@site.com" className="border-gray-200" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Telefon</label>
+                    <Input value={businessPhone} onChange={e => setBusinessPhone(e.target.value)} placeholder="+90 5xx xxx xx xx" className="border-gray-200" />
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between pt-1">
               <div className="text-sm text-gray-500">{message}</div>
-              <Button onClick={submit} className="rounded-full px-5 bg-black text-white hover:bg-black/90" disabled={loading || !email || !password || !username || emailTaken === true || usernameTaken === true || !!emailCheckError || !!usernameCheckError}>
+              <Button onClick={submit} className="rounded-full px-5 bg-black text-white hover:bg-black/90" disabled={
+                loading || !email || !password || !username || emailTaken === true || usernameTaken === true || !!emailCheckError || !!usernameCheckError || (isBusiness && !businessName)
+              }>
                 {loading ? 'Yükleniyor...' : 'Kayıt Ol'}
               </Button>
             </div>
