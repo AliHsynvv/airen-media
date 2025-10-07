@@ -84,18 +84,21 @@ export default async function PublicBusinessPage(context: { params: Promise<{ id
             <section id="reviews" className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
               <h2 className="font-semibold text-lg mb-2">Reviews</h2>
               <div className="space-y-3">
-                {(reviews || []).map(r => (
-                  <div key={r.id} className="rounded-2xl border border-gray-100 p-4 hover:shadow-sm transition">
-                    <div className="flex items-center gap-2 text-sm">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {r.users?.avatar_url ? <img src={r.users.avatar_url} alt="" className="h-6 w-6 rounded-full" /> : <div className="h-6 w-6 rounded-full bg-gray-200" />}
-                      <div className="font-medium">{(r.users as any)?.full_name || (r.users as any)?.username || 'User'}</div>
-                      <div className="ml-auto text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</div>
+                {(reviews || []).map(r => {
+                  const u: any = Array.isArray(r.users) ? r.users[0] : r.users
+                  return (
+                    <div key={r.id} className="rounded-2xl border border-gray-100 p-4 hover:shadow-sm transition">
+                      <div className="flex items-center gap-2 text-sm">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-6 w-6 rounded-full" /> : <div className="h-6 w-6 rounded-full bg-gray-200" />}
+                        <div className="font-medium">{u?.full_name || u?.username || 'User'}</div>
+                        <div className="ml-auto text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</div>
+                      </div>
+                      <div className="mt-2 text-sm leading-6 text-gray-700">{r.comment || '—'}</div>
+                      <div className="mt-1 text-xs text-gray-500">Rating: {r.rating}</div>
                     </div>
-                    <div className="mt-2 text-sm leading-6 text-gray-700">{r.comment || '—'}</div>
-                    <div className="mt-1 text-xs text-gray-500">Rating: {r.rating}</div>
-                  </div>
-                ))}
+                  )
+                })}
                 {(!reviews || reviews.length === 0) && <div className="text-sm text-gray-500">No reviews yet.</div>}
               </div>
             </section>

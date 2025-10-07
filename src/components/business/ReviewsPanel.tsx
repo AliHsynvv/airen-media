@@ -22,17 +22,19 @@ export default function ReviewsPanel({ items }: { items: any[] }) {
 
   return (
     <div className="space-y-3">
-      {list.map(r => (
-        <div key={r.id} className="rounded-xl border border-gray-100 p-3">
-          <div className="flex items-center gap-2 text-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {r.users?.avatar_url ? <img src={r.users.avatar_url} alt="" className="h-6 w-6 rounded-full" /> : <div className="h-6 w-6 rounded-full bg-gray-200" />}
-            <div className="font-medium">{r.users?.full_name || r.users?.username || 'Kullanıcı'}</div>
-            <div className="ml-auto text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</div>
-          </div>
-          <div className="mt-1 text-sm">{r.comment || '—'}</div>
-          <div className="mt-1 text-xs text-gray-500">Puan: {r.rating}</div>
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-2 items-start">
+      {list.map(r => {
+        const u: any = Array.isArray(r.users) ? r.users[0] : r.users
+        return (
+          <div key={r.id} className="rounded-xl border border-gray-100 p-3">
+            <div className="flex items-center gap-2 text-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-6 w-6 rounded-full" /> : <div className="h-6 w-6 rounded-full bg-gray-200" />}
+              <div className="font-medium">{u?.full_name || u?.username || 'Kullanıcı'}</div>
+              <div className="ml-auto text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</div>
+            </div>
+            <div className="mt-1 text-sm">{r.comment || '—'}</div>
+            <div className="mt-1 text-xs text-gray-500">Puan: {r.rating}</div>
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-2 items-start">
             <select defaultValue={r.status} onChange={e => updateReview(r.id, { status: e.target.value })} className="h-9 rounded-md border border-gray-200 px-2 text-sm">
               <option value="approved">Onaylı</option>
               <option value="pending">Beklemede</option>
@@ -44,7 +46,8 @@ export default function ReviewsPanel({ items }: { items: any[] }) {
             </div>
           </div>
         </div>
-      ))}
+        )
+      })}
       {list.length === 0 && <div className="text-sm text-gray-500">Henüz yorum yok.</div>}
     </div>
   )
