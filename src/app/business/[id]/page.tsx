@@ -1,9 +1,9 @@
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
 import BusinessLocationMap from '@/components/business/BusinessLocationMap'
 
-export default async function PublicBusinessPage({ params }: { params: { id: string } }) {
+export default async function PublicBusinessPage(context: { params: Promise<{ id: string }> }) {
   const supabase = await getServerSupabase()
-  const id = params.id
+  const { id } = await context.params
 
   const [{ data: business }, { data: media }, { data: reviews }, { data: posts }] = await Promise.all([
     supabase.from('business_profiles').select('*').eq('id', id).maybeSingle(),
