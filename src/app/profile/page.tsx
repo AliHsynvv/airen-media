@@ -1,8 +1,9 @@
-'use server'
-
 import ProfileClient from './ProfileClient'
 import { redirect } from 'next/navigation'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 interface MyStoryRow {
   id: string

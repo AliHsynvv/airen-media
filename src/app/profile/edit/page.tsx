@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Pencil } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function ProfileEditPage() {
+  const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [email, setEmail] = useState<string>('')
   const [fullName, setFullName] = useState<string>('')
@@ -64,6 +66,12 @@ export default function ProfileEditPage() {
     setSaving(true)
     setMessage(null)
     try {
+      const combinedFullName = (() => {
+        const fn = firstName.trim()
+        const ln = lastName.trim()
+        const merged = [fn, ln].filter(Boolean).join(' ')
+        return merged || (fullName || '')
+      })()
       // Update email if changed
       const { data: authUser } = await supabase.auth.getUser()
       if (authUser.user?.email !== email && email) {
@@ -71,9 +79,38 @@ export default function ProfileEditPage() {
         if (emailErr) throw emailErr
       }
       // Update profile fields
-      const { error: profErr } = await supabase.from('users_profiles').update({ full_name: fullName, username, bio }).eq('id', userId)
+      const { data: updatedRows, error: profErr } = await supabase
+        .from('users_profiles')
+        .update({ full_name: combinedFullName, username, bio })
+        .eq('id', userId)
+        .select('full_name,username,bio,avatar_url')
       if (profErr) throw profErr
+      let updated = (updatedRows as any[])?.[0]
+      if (!updated) {
+        const { data: upserted, error: upsertErr } = await supabase
+          .from('users_profiles')
+          .upsert({ id: userId, full_name: combinedFullName, username, bio }, { onConflict: 'id' })
+          .select('full_name,username,bio,avatar_url')
+        if (upsertErr) throw upsertErr
+        updated = (upserted as any[])?.[0]
+      }
+      if (updated) {
+        setFullName(updated.full_name || '')
+        // keep first/last split in sync for the form
+        try {
+          const parts = (updated.full_name || '').split(' ')
+          setFirstName(parts[0] || '')
+          setLastName(parts.slice(1).join(' ') || '')
+        } catch {}
+        setUsername(updated.username || '')
+        setBio(updated.bio || '')
+        setAvatarUrl(updated.avatar_url || null)
+      }
       setMessage('Profil güncellendi')
+      try {
+        router.push('/profile')
+        router.refresh()
+      } catch {}
     } catch (e: any) {
       setMessage(e?.message || 'Güncelleme başarısız')
     } finally {
