@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const supabase = await getServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  const id = params.id
+  const { id } = await context.params
   const body = await req.json().catch(() => ({}))
 
   // Fetch post and verify ownership via business
