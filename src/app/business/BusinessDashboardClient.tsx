@@ -21,7 +21,7 @@ type Props = {
 }
 
 export default function BusinessDashboardClient({ business, viewsCount, engagementsCount, averageRating, recentPosts, recentReviews }: Props) {
-  const [active, setActive] = useState<'dashboard' | 'posts' | 'reviews' | 'listings' | 'media' | 'settings' | 'analytics' | 'profile'>('dashboard')
+  const [active, setActive] = useState<'dashboard' | 'posts' | 'reviews' | 'listings' | 'media' | 'settings' | 'analytics' | 'profile' | 'inbox'>('dashboard')
   const [posts, setPosts] = useState<any[]>(recentPosts || [])
   useEffect(() => { setPosts(recentPosts || []) }, [recentPosts])
 
