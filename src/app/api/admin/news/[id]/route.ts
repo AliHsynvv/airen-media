@@ -17,6 +17,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   try {
     const { id } = await context.params
     const payload = await req.json()
+    
     const update: any = {
       title: payload.title,
       content: payload.content,
@@ -28,6 +29,16 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
     }
     if (payload.title) {
       update.slug = slugify(payload.title, { lower: true, strict: true })
+    }
+    if (payload.status) {
+      update.status = payload.status
+      // Set published_at when changing from draft to published
+      if (payload.status === 'published') {
+        const { data: current } = await supabaseAdmin.from('articles').select('status, published_at').eq('id', id).single()
+        if (current?.status === 'draft' || !current?.published_at) {
+          update.published_at = new Date().toISOString()
+        }
+      }
     }
     const { data, error } = await supabaseAdmin.from('articles').update(update).eq('id', id).select('*').single()
     if (error) throw error

@@ -69,8 +69,8 @@ export default async function Home() {
               {/* Hero Search */}
               <HeroSearch />
 
-              <div className="flex flex-row gap-2 items-center w-full">
-                <div className="w-1/2 min-w-0">
+              <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
+                <div className="w-full sm:w-1/2 min-w-0">
                   <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
                     <Link href="/profile">
                       <span className="inline-flex items-center justify-center">
@@ -82,7 +82,7 @@ export default async function Home() {
                     </Link>
                   </Button>
                 </div>
-                <div className="w-1/2 min-w-0">
+                <div className="w-full sm:w-1/2 min-w-0">
                   <MeetAirenButton fullWidth className="text-xs sm:text-sm" />
                 </div>
               </div>
@@ -183,7 +183,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {latestNews.map((a: any, i: number) => (
             <div key={a.id} className="opacity-0 translate-y-4 animate-[fadein_0.6s_ease_forwards]" style={{ animationDelay: `${i * 80}ms` }}>
-              <ArticleCard article={a} theme="light" className="h-[360px] sm:h-[380px] lg:h-[420px]" />
+              <ArticleCard article={a} theme="light" className="h-[320px] sm:h-[380px] lg:h-[420px]" />
             </div>
           ))}
         </div>
@@ -293,7 +293,7 @@ export default async function Home() {
       {/* CTA Section - simple light card */}
       <section className="container mx-auto px-4">
         <Card className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50 border border-gray-200 rounded-2xl">
-          <CardContent className="p-10">
+          <CardContent className="p-6 sm:p-10">
             <div className="text-center space-y-5">
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
                 {t('cta.title')}

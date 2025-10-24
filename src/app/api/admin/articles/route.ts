@@ -7,10 +7,11 @@ const schema = z.object({
   title: z.string().min(3),
   content: z.string().min(20),
   excerpt: z.string().optional(),
-  featured_image: z.string().url().optional(),
+  featured_image: z.union([z.string().url(), z.literal(''), z.undefined()]).optional(),
   image_alt: z.string().optional(),
-  category_id: z.string().uuid().optional(),
+  category_id: z.union([z.string().uuid(), z.literal(''), z.undefined()]).optional(),
   type: z.enum(['article', 'news', 'guide']).default('news'),
+  status: z.enum(['draft', 'published']).default('published'),
   featured: z.boolean().optional(),
   meta_title: z.string().max(70).optional(),
   meta_description: z.string().max(160).optional(),
@@ -52,12 +53,12 @@ export async function POST(req: NextRequest) {
           image_alt: payload.image_alt ?? null,
           category_id: payload.category_id ?? null,
           author_id: authorId,
-          status: 'published',
+          status: payload.status,
           type: payload.type,
           featured: payload.featured ?? false,
           meta_title: payload.meta_title ?? null,
           meta_description: payload.meta_description ?? null,
-          published_at: new Date().toISOString(),
+          published_at: payload.status === 'published' ? new Date().toISOString() : null,
         })
         .select('*')
         .single()
