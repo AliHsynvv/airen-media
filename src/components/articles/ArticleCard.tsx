@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +10,7 @@ import { formatRelativeTime } from '@/lib/utils/formatters'
 import type { Article } from '@/types'
 import dynamic from 'next/dynamic'
 const CardActions = dynamic(() => import('@/components/common/CardActions.lazy'))
+import { useTranslations, useLocale } from 'next-intl'
 
 interface ArticleCardProps {
   article: Article
@@ -22,6 +25,8 @@ export function ArticleCard({
   className,
   theme = 'dark'
 }: ArticleCardProps) {
+  const t = useTranslations('news.article')
+  const locale = useLocale()
   const {
     title,
     slug,
@@ -76,7 +81,7 @@ export function ArticleCard({
               variant={type === 'news' ? 'destructive' : 'default'}
               className="bg-black/60 backdrop-blur text-white border-white/20"
             >
-              {type === 'news' ? 'Haber' : 'Makale'}
+              {type === 'news' ? t('news') : t('article')}
             </Badge>
           </div>
         </div>
@@ -122,7 +127,7 @@ export function ArticleCard({
               {published_at && (
                 <div className="flex items-center space-x-1">
                   <Calendar className="h-4 w-4" />
-                  <span>{formatRelativeTime(published_at)}</span>
+                  <span>{formatRelativeTime(published_at, locale)}</span>
                 </div>
               )}
             </div>
@@ -131,7 +136,7 @@ export function ArticleCard({
               {reading_time && (
                 <div className="flex items-center space-x-1">
                   <Clock className="h-4 w-4" />
-                  <span>{reading_time} dk</span>
+                  <span>{t('readingTime', { time: reading_time })}</span>
                 </div>
               )}
               
@@ -185,7 +190,7 @@ export function ArticleCard({
                   variant={type === 'news' ? 'destructive' : 'default'}
                   className="text-xs"
                 >
-                  {type === 'news' ? 'Haber' : 'Makale'}
+                  {type === 'news' ? t('news') : t('article')}
                 </Badge>
               </div>
               
@@ -207,7 +212,7 @@ export function ArticleCard({
                   <span className={`truncate ${theme === 'light' ? 'text-gray-700' : ''}`}>{author.full_name || author.username}</span>
                 )}
                 {published_at && (
-                  <span>{formatRelativeTime(published_at)}</span>
+                  <span>{formatRelativeTime(published_at, locale)}</span>
                 )}
               </div>
             </div>
@@ -249,12 +254,12 @@ export function ArticleCard({
             variant={type === 'news' ? 'destructive' : 'default'}
             className="text-xs"
           >
-            {type === 'news' ? 'Haber' : 'Makale'}
+            {type === 'news' ? t('news') : t('article')}
           </Badge>
           
           {published_at && (
             <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-              {formatRelativeTime(published_at)}
+              {formatRelativeTime(published_at, locale)}
             </span>
           )}
         </div>
@@ -299,7 +304,7 @@ export function ArticleCard({
             {reading_time && (
               <div className="flex items-center space-x-1">
                 <Clock className="h-3 w-3" />
-                <span>{reading_time} dk</span>
+                <span>{t('readingTime', { time: reading_time })}</span>
               </div>
             )}
             {/* Internal action icons removed to avoid duplication with bottom bar */}
@@ -318,3 +323,5 @@ export function ArticleCard({
     </Card>
   )
 }
+
+export default ArticleCard

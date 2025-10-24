@@ -1,0 +1,390 @@
+{
+  "header": {
+    "navigation": {
+      "home": "Home",
+      "news": "News",
+      "countries": "Countries",
+      "community": "Community",
+      "interaction": "Interaction"
+    },
+    "auth": {
+      "login": "Login",
+      "register": "Sign Up",
+      "logout": "Logout",
+      "profile": "Profile"
+    },
+    "notifications": {
+      "label": "Notifications",
+      "unread": "{count} unread"
+    },
+    "search": "Search",
+    "menu": {
+      "open": "Open menu",
+      "close": "Close menu"
+    },
+    "user": "User"
+  },
+  "home": {
+    "hero": {
+      "title": "Discover the World with AI",
+      "description": "Meet Airen, your AI travel companion who helps you explore amazing destinations through personalized recommendations and immersive content.",
+      "socialMediaButton": "Airen Social Media",
+      "meetAirenButton": "Meet Airen",
+      "liveStats": {
+        "users": "users",
+        "online": "online"
+      },
+      "search": {
+        "placeholder": "Search...",
+        "button": "Search",
+        "popularSuggestions": "Popular queries suggested by AI",
+        "phrases": [
+          "Countries you can visit visa-free from Azerbaijan",
+          "Cheapest travel destinations for 2025",
+          "Hidden gems near Azerbaijan",
+          "Budget-friendly 1-week Europe trip",
+          "Romantic cities for couples 💕",
+          "AI-planned perfect tour",
+          "Best mountain hiking routes 🏔️",
+          "Top 5 most visited cities in Turkey",
+          "What is technology tourism in Japan?",
+          "Trending countries in 2025 ✈️"
+        ]
+      },
+      "meetAiren": {
+        "buttonLabel": "MEET AIREN AI",
+        "dialogTitle": "Meet Airen AI",
+        "dialogDescription": "Your Personal Travel Assistant",
+        "avatarTitle": "Airen AI Avatar",
+        "avatarDescription": "AI avatar will be embedded here once Heygen integration is configured.",
+        "features": [
+          "Personalized travel recommendations",
+          "Interactive Q&A sessions",
+          "Multi-language support"
+        ],
+        "mainDescription": "Ask me anything about travel destinations, get personalized recommendations, or chat about your travel plans!",
+        "detailedFeatures": [
+          "Personalized destination recommendations",
+          "Real-time travel advice and tips",
+          "Multi-language conversation support",
+          "Interactive travel planning assistance"
+        ],
+        "tryAsking": "Try asking me:",
+        "prompts": [
+          "What's the best time to visit Italy?",
+          "Recommend hidden gems in Florence",
+          "Plan a 7-day Italian itinerary",
+          "What local dishes should I try?"
+        ],
+        "startConversation": "Start Conversation",
+        "close": "Close"
+      }
+    },
+    "stats": {
+      "news": "News",
+      "stories": "Stories",
+      "countries": "Countries",
+      "travelers": "Travelers"
+    },
+    "latestNews": {
+      "title": "Latest News",
+      "badge": "Top 4 stories",
+      "viewMore": "View more"
+    },
+    "community": {
+      "title": "Community",
+      "subtitle": "Latest 4 stories",
+      "viewMore": "View more"
+    },
+    "whyAiren": {
+      "title": "Why Airen?",
+      "subtitle": "Explore the features that elevate your travel experience.",
+      "features": {
+        "aiInfluencer": {
+          "title": "AI Influencer",
+          "description": "Real-time chat with Airen, get personalized suggestions."
+        },
+        "detailedGuides": {
+          "title": "Detailed Guides",
+          "description": "Comprehensive country guides and practical tips."
+        },
+        "community": {
+          "title": "Community",
+          "description": "Share experiences with a vibrant travel community."
+        },
+        "articlesNews": {
+          "title": "Articles & News",
+          "description": "Stay up to date with curated travel news and insights."
+        },
+        "videoContent": {
+          "title": "Video Content",
+          "description": "Watch city overviews and engaging travel stories."
+        },
+        "interactive": {
+          "title": "Interactive",
+          "description": "Social integrations and real-time interactions."
+        }
+      }
+    },
+    "cta": {
+      "title": "Start your journey",
+      "description": "Plan your next trip with Airen and connect with travelers worldwide.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    }
+  },
+  "community": {
+    "storyCard": {
+      "user": "User",
+      "viewAllComments": "View all comments"
+    },
+    "page": {
+      "title": "Community",
+      "subtitle": "User stories and experiences",
+      "searchPlaceholder": "Search stories...",
+      "featured": "Featured",
+      "categories": {
+        "all": "All",
+        "culture": "Culture",
+        "gastronomy": "Gastronomy",
+        "adventure": "Adventure",
+        "budget": "Budget",
+        "luxury": "Luxury"
+      },
+      "loading": "Loading…",
+      "storiesCount": "{count} stories",
+      "business": "Business",
+      "aria": {
+        "submitStory": "Submit Story",
+        "backToCommunity": "Back to Community",
+        "profile": "Profile"
+      }
+    },
+    "actions": {
+      "loginRequiredLike": "Please sign in to like.",
+      "linkCopied": "Link copied!"
+    },
+    "comments": {
+      "heading": "Comments",
+      "close": "Close",
+      "reply": "Reply",
+      "liked": "Liked",
+      "like": "Like",
+      "placeholder": "Write a comment…",
+      "placeholderReply": "Write a reply…",
+      "replyingTo": "Replying to: #{id}",
+      "cancel": "cancel",
+      "send": "Send"
+    },
+    "detail": {
+      "backAria": "Back to stories",
+      "back": "Back to Stories",
+      "moreFromUser": "More posts from this user"
+    }
+  },
+  "countries": {
+    "list": {
+      "title": "Explore Countries",
+      "subtitle": "Discover amazing destinations around the world",
+      "stats": {
+        "available": "countries available",
+        "featured": "featured destinations",
+        "trending": "trending now"
+      },
+      "controls": {
+        "searchPlaceholder": "Search countries...",
+        "continentAll": "Continent: All",
+        "budgetAll": "Budget Level: All",
+        "budget": "Budget",
+        "midRange": "Mid-range",
+        "luxury": "Luxury",
+        "featuredOnly": "Featured Only",
+        "trending": "Trending",
+        "sortName": "Name",
+        "sortPopular": "Popular"
+      },
+      "showing": "Showing {filtered} of {total} countries",
+      "socialMediaButton": "Airen Social Media"
+    },
+    "card": {
+      "trending": "Trending",
+      "featured": "Featured",
+      "fallbackDescription": "Discover unique culture, food and history.",
+      "allYear": "All year",
+      "temperate": "Temperate",
+      "budget": {
+        "budget": "Budget",
+        "midRange": "Mid-range",
+        "luxury": "Luxury"
+      },
+      "explore": "Explore"
+    },
+    "cardReview": {
+      "reviewsLabel": "{count} reviews",
+      "starsLabel": "{count} stars"
+    },
+    "actions": {
+      "bookmark": "Bookmark",
+      "bookmarked": "Bookmarked",
+      "addToFavorites": "Add to Favorites",
+      "favorited": "Favorited",
+      "shareCountry": "Share Country",
+      "demoData": "This country is demo data. Actions won't be saved on Supabase.",
+      "linkCopied": "Link copied!"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "reviews": "Reviews",
+      "reviewsHeading": "Reviews"
+    },
+    "detail": {
+      "back": "Back to Countries",
+      "featured": "Featured",
+      "planTrip": "Plan Your Trip",
+      "visitorsPerYear": "{count} million visitors/year",
+      "fallbackDescription": "Experience unique culture, cuisine and history.",
+      "quickFacts": "Quick Facts",
+      "highlights": "Top Highlights",
+      "travelStats": "Travel Statistics",
+      "annualVisitors": "Annual Visitors",
+      "averageRating": "Average Rating",
+      "reviews": "Reviews",
+      "facts": {
+        "capital": "Capital",
+        "population": "Population",
+        "currency": "Currency",
+        "language": "Language",
+        "timeZone": "Time Zone",
+        "bestTime": "Best Time to Visit",
+        "climate": "Climate",
+        "visaRequired": "Visa Required",
+        "yes": "Yes",
+        "no": "No",
+        "populationValue": "{value} million"
+      }
+    }
+  },
+  "news": {
+    "title": "Travel News & Articles",
+    "subtitle": "Stay updated with the latest travel insights, destination guides, and cultural discoveries",
+    "socialMediaButton": "Airen Social Media",
+    "searchPlaceholder": "Search articles...",
+    "categories": {
+      "all": "All"
+    },
+    "sort": {
+      "latest": "Latest",
+      "popular": "Popular"
+    },
+    "noResults": "No results",
+    "article": {
+      "news": "News",
+      "article": "Article",
+      "minutes": "min",
+      "readingTime": "{time} min"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "search": "Search",
+    "new": "New",
+    "earlier": "Earlier",
+    "viewStory": "View story",
+    "generic": "Notification",
+    "empty": "No notifications.",
+    "aUser": "A user",
+    "messages": {
+      "comment_like": "liked your comment.",
+      "story_like": "liked your story.",
+      "story_comment": "commented on your story.",
+      "comment_reply": "replied to your comment.",
+      "follow": "started following you."
+    }
+  },
+  "footer": {
+    "brand": {
+      "description": "World's leading platform offering AI-powered personalized tourism experiences."
+    },
+    "platform": {
+      "title": "Platform",
+      "home": "Home",
+      "news": "News",
+      "articles": "Articles",
+      "media": "Media",
+      "countries": "Countries"
+    },
+    "community": {
+      "title": "Community",
+      "community": "Community",
+      "shareStory": "Share Your Story",
+      "interaction": "Interaction",
+      "avatar": "Airen Avatar"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About Us",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy"
+    },
+    "contact": {
+      "email": "hello@airen.app",
+      "location": "Istanbul, Turkey"
+    },
+    "copyright": "© {year} Airen Global. All rights reserved.",
+    "tagline": "Made with ❤️ for travelers",
+    "poweredBy": "Powered by AI"
+  }
+  ,
+  "profile": {
+    "followButton": {
+      "follow": "Follow",
+      "following": "Following"
+    },
+    "public": {
+      "notFound": "User not found.",
+      "posts": "Posts",
+      "followers": "Followers",
+      "following": "Following",
+      "discover": "Discover people",
+      "mutualAndMore": "and {count} more",
+      "mutualDialogTitle": "Mutual connections",
+      "community": "Community",
+      "toProfile": "Go to my profile"
+    },
+    "private": {
+      "sessionMissingTitle": "Session not found",
+      "sessionMissingDesc": "Please sign in or create an account to continue.",
+      "login": "Sign In",
+      "register": "Sign Up",
+      "posts": "Posts",
+      "followers": "Followers",
+      "following": "Following",
+      "editProfile": "Edit Profile",
+      "shareProfile": "Share Profile",
+      "shareCopySuccess": "Profile link copied",
+      "shareCopyFail": "Failed to copy link",
+      "searchPlaceholder": "Search user, post or #hashtag",
+      "search": "Search",
+      "noResults": "No results.",
+      "tabs": { "posts": "Posts", "saved": "Saved", "comments": "Comments" },
+      "submitStoryAria": "Submit Story",
+      "backToCommunityAria": "Back to Community",
+      "searchCommunityAria": "Search in Community",
+      "noPosts": "No posts yet.",
+      "news": "News",
+      "noSavedNews": "No saved news.",
+      "countries": "Countries",
+      "noSavedCountries": "No saved countries.",
+      "noComments": "No comments.",
+      "followersAria": "Go to Followers page",
+      "followingAria": "Go to Following page",
+      "deleteConfirm": "Are you sure you want to delete the story?",
+      "deleteSuccess": "Story deleted",
+      "uploadFail": "Upload failed",
+      "avatarUpdated": "Profile photo updated"
+    }
+  }
+}
+

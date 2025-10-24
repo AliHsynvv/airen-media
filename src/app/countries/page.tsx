@@ -10,8 +10,10 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { useCountries } from '@/lib/hooks/useCountries'
 import { Search, TrendingUp, LayoutGrid, List, Star, ChevronDown } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function CountriesPage() {
+  const t = useTranslations('countries')
   const [query, setQuery] = useState('')
   const { data, loading } = useCountries()
   const list = useMemo(() => data || [], [data])
@@ -88,22 +90,22 @@ export default function CountriesPage() {
     <div className="container mx-auto px-4 py-12">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <h1 className="text-4xl font-bold text-gray-900">Explore Countries</h1>
-        <p className="text-gray-600 mt-3">Discover amazing destinations around the world</p>
+        <h1 className="text-4xl font-bold text-gray-900">{t('list.title')}</h1>
+        <p className="text-gray-600 mt-3">{t('list.subtitle')}</p>
 
         {/* Stats */}
         <div className="mt-6 grid grid-cols-3 gap-6">
           <div>
             <div className="text-xl font-semibold text-gray-900">{availableCount}</div>
-            <div className="text-xs text-gray-500">countries available</div>
+            <div className="text-xs text-gray-500">{t('list.stats.available')}</div>
           </div>
           <div>
             <div className="text-xl font-semibold text-gray-900">{featuredCount}</div>
-            <div className="text-xs text-gray-500">featured destinations</div>
+            <div className="text-xs text-gray-500">{t('list.stats.featured')}</div>
           </div>
           <div>
             <div className="text-xl font-semibold text-gray-900">{trendingCount}</div>
-            <div className="text-xs text-gray-500">trending now</div>
+            <div className="text-xs text-gray-500">{t('list.stats.trending')}</div>
           </div>
         </div>
 
@@ -111,7 +113,7 @@ export default function CountriesPage() {
         <div className="mt-6 flex flex-row gap-2 items-center w-full">
           <div className="w-1/2 min-w-0">
             <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
-              <Link href="/profile">Airen Social Media</Link>
+              <Link href="/profile">{t('list.socialMediaButton')}</Link>
             </Button>
           </div>
           <div className="w-1/2 min-w-0">
@@ -127,7 +129,7 @@ export default function CountriesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               className="pl-9 h-11 rounded-lg border-gray-200"
-              placeholder="Search countries..."
+              placeholder={t('list.controls.searchPlaceholder')}
               value={query}
               onChange={e => setQuery(e.target.value)}
             />
@@ -139,7 +141,7 @@ export default function CountriesPage() {
               onChange={e => setContinent(e.target.value as any)}
             >
               {continentOptions.map(opt => (
-                <option key={opt} value={opt}>{opt === 'All' ? 'Continent: All' : opt}</option>
+                <option key={opt} value={opt}>{opt === 'All' ? t('list.controls.continentAll') : opt}</option>
               ))}
             </select>
             <select
@@ -147,27 +149,27 @@ export default function CountriesPage() {
               value={budget}
               onChange={e => setBudget(e.target.value as any)}
             >
-              <option value="All">Budget Level: All</option>
-              <option value="Budget">Budget</option>
-              <option value="Mid-range">Mid-range</option>
-              <option value="Luxury">Luxury</option>
+              <option value="All">{t('list.controls.budgetAll')}</option>
+              <option value="Budget">{t('list.controls.budget')}</option>
+              <option value="Mid-range">{t('list.controls.midRange')}</option>
+              <option value="Luxury">{t('list.controls.luxury')}</option>
             </select>
             <button
               onClick={() => setFeaturedOnly(v => !v)}
               className={`inline-flex items-center gap-1 h-9 px-3 rounded-md border ${featuredOnly ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
             >
-              <Star className="h-4 w-4" /> Featured Only
+              <Star className="h-4 w-4" /> {t('list.controls.featuredOnly')}
             </button>
             <button
               onClick={() => setTrendingOnly(v => !v)}
               className={`inline-flex items-center gap-1 h-9 px-3 rounded-md border ${trendingOnly ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
             >
-              <TrendingUp className="h-4 w-4" /> Trending
+              <TrendingUp className="h-4 w-4" /> {t('list.controls.trending')}
             </button>
             <div className="ml-auto flex items-center gap-2">
               <select className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3">
-                <option>Name</option>
-                <option>Popular</option>
+                <option>{t('list.controls.sortName')}</option>
+                <option>{t('list.controls.sortPopular')}</option>
               </select>
               <button className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
                 <LayoutGrid className="h-4 w-4" />
@@ -189,7 +191,7 @@ export default function CountriesPage() {
       ) : (
         <>
           <div className="text-sm text-gray-500 mb-4">
-            Showing {filtered.length} of {list.length} countries
+            {t('list.showing', { filtered: filtered.length, total: list.length })}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -9,6 +9,7 @@ import { Users, User as UserIcon /*, Search*/ } from 'lucide-react'
 import UserSearchPopover from '@/components/profile/UserSearchPopover'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
 import MutualConnections from '@/components/profile/MutualConnections'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default async function PublicUserProfilePage(context: Props) {
+  const t = await getTranslations('profile.public')
   const { id } = await context.params
   let isSelf = false
   // If this is the current user's own id, redirect to private profile page
@@ -40,7 +42,7 @@ export default async function PublicUserProfilePage(context: Props) {
   if (!profile) {
     return (
       <div className="container mx-auto px-4 py-10">
-        <div className="text-gray-700">Kullanıcı bulunamadı.</div>
+        <div className="text-gray-700">{t('notFound')}</div>
       </div>
     )
   }
@@ -162,15 +164,15 @@ export default async function PublicUserProfilePage(context: Props) {
             <EnlargeableAvatar src={profile.avatar_url || undefined} alt="avatar" className="h-20 w-20 sm:h-24 sm:w-24" />
             <div className="flex-1 min-w-0 w-full">
               <div className="flex items-baseline gap-2 w-full min-w-0">
-                <div className="text-gray-900 font-semibold text-base sm:text-lg truncate">{profile.full_name || profile.username || 'Kullanıcı'}</div>
+                <div className="text-gray-900 font-semibold text-base sm:text-lg truncate">{profile.full_name || profile.username || 'User'}</div>
                 <div className="text-gray-500 text-xs sm:text-sm truncate">@{profile.username || profile.id.slice(0,6)}</div>
                 {/* Hide follow button for own profile */}
                 {!isSelf && <FollowButton profileId={profile.id} className="ml-auto" />}
               </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:text-left sm:flex sm:items-center sm:gap-6">
-                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{stories.length}</span> Gönderi</div>
-                <Link href={`/u/${profile.id}/followers`} className="text-xs sm:text-sm text-gray-600 hover:underline"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followers}</span> Takipçi</Link>
-                <Link href={`/u/${profile.id}/following`} className="text-xs sm:text-sm text-gray-600 hover:underline"><span className="text-gray-900 font-semibold text-sm sm:text-base">{following}</span> Takip</Link>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:text-left sm:flex sm:items-center sm:gap-6">
+                <div className="text-xs sm:text-sm text-gray-600"><span className="text-gray-900 font-semibold text-sm sm:text-base">{stories.length}</span> {t('posts')}</div>
+                <Link href={`/u/${profile.id}/followers`} className="text-xs sm:text-sm text-gray-600 hover:underline"><span className="text-gray-900 font-semibold text-sm sm:text-base">{followers}</span> {t('followers')}</Link>
+                <Link href={`/u/${profile.id}/following`} className="text-xs sm:text-sm text-gray-600 hover:underline"><span className="text-gray-900 font-semibold text-sm sm:text-base">{following}</span> {t('following')}</Link>
               </div>
               {profile.bio?.trim() ? (
                 <div className="mt-3 text-sm text-gray-800 whitespace-pre-wrap">
@@ -191,14 +193,14 @@ export default async function PublicUserProfilePage(context: Props) {
       {/* Discover people */}
       {suggestions.length > 0 && (
         <div className="px-4 sm:px-6 py-3">
-          <div className="text-sm font-medium text-gray-900 mb-2">Discover people</div>
+          <div className="text-sm font-medium text-gray-900 mb-2">{t('discover')}</div>
           <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar">
             {suggestions.slice(0, 12).map((p) => (
               <div key={p.id} className="shrink-0 w-[200px] sm:w-[220px] rounded-2xl border border-blue-100 bg-blue-50/30 p-4 text-center">
                 { }
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.avatar_url || '/default-avatar.svg'} alt="avatar" className="mx-auto h-16 w-16 rounded-full object-cover" />
-                <Link href={`/u/${p.id}`} className="block mt-3 text-sm font-semibold text-gray-900 hover:underline truncate">{p.full_name || p.username || 'Kullanıcı'}</Link>
+                <Link href={`/u/${p.id}`} className="block mt-3 text-sm font-semibold text-gray-900 hover:underline truncate">{p.full_name || p.username || 'User'}</Link>
                 <div className="text-xs text-gray-600 mt-0.5">{p.mutual_count ? `${p.mutual_count} mutual friends` : 'Suggested for you'}</div>
                 <div className="mt-3">
                   <FollowButton profileId={p.id} className="w-full bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200" />
@@ -212,14 +214,14 @@ export default async function PublicUserProfilePage(context: Props) {
       {/* Quick actions: Community, Search, and My Profile (same style as user profile icons) */}
       <div className="mb-3 flex items-center justify-center gap-3">
         <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-          <Link href="/community" aria-label="Topluluk">
+          <Link href="/community" aria-label={t('community')}>
             <Users className="h-6 w-6" />
           </Link>
         </Button>
         {/* Search popover (same behavior as own profile) */}
         <UserSearchPopover />
         <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-          <Link href="/profile" aria-label="Profilime dön">
+          <Link href="/profile" aria-label={t('toProfile')}>
             <UserIcon className="h-6 w-6" />
           </Link>
         </Button>

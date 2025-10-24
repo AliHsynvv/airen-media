@@ -1,0 +1,390 @@
+{
+  "header": {
+    "navigation": {
+      "home": "Ana Sayfa",
+      "news": "Haberler",
+      "countries": "Ülkeler",
+      "community": "Topluluk",
+      "interaction": "Etkileşim"
+    },
+    "auth": {
+      "login": "Giriş",
+      "register": "Kayıt Ol",
+      "logout": "Çıkış Yap",
+      "profile": "Profil"
+    },
+    "notifications": {
+      "label": "Bildirimler",
+      "unread": "{count} okunmamış"
+    },
+    "search": "Ara",
+    "menu": {
+      "open": "Menüyü aç",
+      "close": "Menüyü kapat"
+    },
+    "user": "Kullanıcı"
+  },
+  "home": {
+    "hero": {
+      "title": "Dünyayı Yapay Zeka ile Keşfet",
+      "description": "Kişiselleştirilmiş öneriler ve sürükleyici içeriklerle harika destinasyonları keşfetmenize yardımcı olan yapay zeka seyahat arkadaşınız Airen ile tanışın.",
+      "socialMediaButton": "Airen Sosyal Medya",
+      "meetAirenButton": "Airen ile Tanış",
+      "liveStats": {
+        "users": "kullanıcı",
+        "online": "çevrimiçi"
+      },
+      "search": {
+        "placeholder": "Ara...",
+        "button": "Ara",
+        "popularSuggestions": "Popüler sorgular AI tarafından önerilir",
+        "phrases": [
+          "Azerbaycan'dan vizesiz gidilebilen ülkeler",
+          "2025'in en ucuz turizm destinasyonları",
+          "Azerbaycan yakınındaki gezilecek gizli mekanlar",
+          "Bütçeye uygun 1 haftalık Avrupa seyahati",
+          "Sevgililer için romantik şehirler 💕",
+          "AI ile planlanmış ideal tur",
+          "En iyi dağ yürüyüşü rotaları 🏔️",
+          "Türkiye'de en çok ziyaret edilen 5 şehir",
+          "Japonya'da teknoloji turizmi nedir?",
+          "2025'te trend olacak ülkeler ✈️"
+        ]
+      },
+      "meetAiren": {
+        "buttonLabel": "AIREN AI İLE TANIŞIN",
+        "dialogTitle": "Airen AI ile Tanışın",
+        "dialogDescription": "Kişisel Seyahat Asistanınız",
+        "avatarTitle": "Airen AI Avatar",
+        "avatarDescription": "Heygen entegrasyonu yapılandırıldığında AI avatar burada gömülü olacak.",
+        "features": [
+          "Kişiselleştirilmiş seyahat önerileri",
+          "İnteraktif soru-cevap oturumları",
+          "Çok dilli destek"
+        ],
+        "mainDescription": "Seyahat destinasyonları hakkında her şeyi sorun, kişiselleştirilmiş öneriler alın veya seyahat planlarınız hakkında sohbet edin!",
+        "detailedFeatures": [
+          "Kişiselleştirilmiş destinasyon önerileri",
+          "Gerçek zamanlı seyahat tavsiyeleri ve ipuçları",
+          "Çok dilli konuşma desteği",
+          "İnteraktif seyahat planlama yardımı"
+        ],
+        "tryAsking": "Bana şunları sorun:",
+        "prompts": [
+          "İtalya'yı ziyaret etmek için en iyi zaman ne?",
+          "Floransa'da gizli mücevherleri önerin",
+          "7 günlük İtalya güzergahı planlayın",
+          "Hangi yerel yemekleri denemeli miyim?"
+        ],
+        "startConversation": "Konuşmaya Başla",
+        "close": "Kapat"
+      }
+    },
+    "stats": {
+      "news": "Haber",
+      "stories": "Hikaye",
+      "countries": "Ülke",
+      "travelers": "Gezgin"
+    },
+    "latestNews": {
+      "title": "Son Haberler",
+      "badge": "Gündemdeki 4 içerik",
+      "viewMore": "Daha fazla"
+    },
+    "community": {
+      "title": "Topluluk",
+      "subtitle": "Son 4 hikaye",
+      "viewMore": "Daha fazla"
+    },
+    "whyAiren": {
+      "title": "Neden Airen?",
+      "subtitle": "Seyahat deneyiminizi yükselten özellikleri keşfedin.",
+      "features": {
+        "aiInfluencer": {
+          "title": "Yapay Zeka İnfluencer",
+          "description": "Airen ile gerçek zamanlı sohbet edin, kişiselleştirilmiş öneriler alın."
+        },
+        "detailedGuides": {
+          "title": "Detaylı Rehberler",
+          "description": "Kapsamlı ülke rehberleri ve pratik ipuçları."
+        },
+        "community": {
+          "title": "Topluluk",
+          "description": "Canlı bir seyahat topluluğuyla deneyimleri paylaşın."
+        },
+        "articlesNews": {
+          "title": "Makaleler ve Haberler",
+          "description": "Özenle seçilmiş seyahat haberleri ve görüşlerle güncel kalın."
+        },
+        "videoContent": {
+          "title": "Video İçerik",
+          "description": "Şehir genel bakışları ve ilgi çekici seyahat hikayelerini izleyin."
+        },
+        "interactive": {
+          "title": "Etkileşimli",
+          "description": "Sosyal entegrasyonlar ve gerçek zamanlı etkileşimler."
+        }
+      }
+    },
+    "cta": {
+      "title": "Yolculuğunuza başlayın",
+      "description": "Airen ile bir sonraki seyahatinizi planlayın ve dünya çapında gezginlerle bağlantı kurun.",
+      "getStarted": "Başlayın",
+      "learnMore": "Daha Fazla Bilgi"
+    }
+  },
+  "community": {
+    "storyCard": {
+      "user": "Kullanıcı",
+      "viewAllComments": "Tüm yorumları görüntüle"
+    },
+    "page": {
+      "title": "Topluluk",
+      "subtitle": "Kullanıcı hikayeleri ve deneyimler",
+      "searchPlaceholder": "Hikaye ara...",
+      "featured": "Öne Çıkanlar",
+      "categories": {
+        "all": "Tümü",
+        "culture": "Kültür",
+        "gastronomy": "Gastronomi",
+        "adventure": "Macera",
+        "budget": "Bütçe",
+        "luxury": "Lüks"
+      },
+      "loading": "Yükleniyor…",
+      "storiesCount": "{count} hikaye",
+      "business": "İşletme",
+      "aria": {
+        "submitStory": "Hikaye Paylaş",
+        "backToCommunity": "Topluluğa Dön",
+        "profile": "Profil"
+      }
+    },
+    "actions": {
+      "loginRequiredLike": "Beğenmek için lütfen giriş yapın.",
+      "linkCopied": "Link panoya kopyalandı"
+    },
+    "comments": {
+      "heading": "Yorumlar",
+      "close": "Kapat",
+      "reply": "Yanıtla",
+      "liked": "Beğenildi",
+      "like": "Beğen",
+      "placeholder": "Yorum yaz…",
+      "placeholderReply": "Yanıt yaz…",
+      "replyingTo": "Yanıtlanan: #{id}",
+      "cancel": "iptal",
+      "send": "Gönder"
+    },
+    "detail": {
+      "backAria": "Hikayelere dön",
+      "back": "Hikayelere Dön",
+      "moreFromUser": "Bu kullanıcının diğer gönderileri"
+    }
+  },
+  "countries": {
+    "list": {
+      "title": "Ülkeleri Keşfet",
+      "subtitle": "Dünyanın dört bir yanındaki harika destinasyonları keşfedin",
+      "stats": {
+        "available": "mevcut ülke",
+        "featured": "öne çıkan destinasyon",
+        "trending": "trend olan"
+      },
+      "controls": {
+        "searchPlaceholder": "Ülkelerde ara...",
+        "continentAll": "Kıta: Tümü",
+        "budgetAll": "Bütçe Seviyesi: Tümü",
+        "budget": "Ekonomik",
+        "midRange": "Orta",
+        "luxury": "Lüks",
+        "featuredOnly": "Sadece Öne Çıkanlar",
+        "trending": "Trend",
+        "sortName": "İsim",
+        "sortPopular": "Popüler"
+      },
+      "showing": "{total} ülkeden {filtered} gösteriliyor",
+      "socialMediaButton": "Airen Sosyal Medya"
+    },
+    "card": {
+      "trending": "Trend",
+      "featured": "Öne Çıkan",
+      "fallbackDescription": "Benzersiz kültür, mutfak ve tarihi keşfedin.",
+      "allYear": "Tüm yıl",
+      "temperate": "Ilıman",
+      "budget": {
+        "budget": "Ekonomik",
+        "midRange": "Orta",
+        "luxury": "Lüks"
+      },
+      "explore": "Keşfet"
+    },
+    "cardReview": {
+      "reviewsLabel": "{count} yorum",
+      "starsLabel": "{count} yıldız"
+    },
+    "actions": {
+      "bookmark": "Kaydet",
+      "bookmarked": "Kaydedildi",
+      "addToFavorites": "Favorilere Ekle",
+      "favorited": "Favorilere Eklendi",
+      "shareCountry": "Ülkeyi Paylaş",
+      "demoData": "Bu ülke demo verisi. Girişimler Supabase üzerinde kaydedilmez.",
+      "linkCopied": "Bağlantı kopyalandı!"
+    },
+    "tabs": {
+      "overview": "Genel Bakış",
+      "reviews": "Yorumlar",
+      "reviewsHeading": "Yorumlar"
+    },
+    "detail": {
+      "back": "Ülkelere Dön",
+      "featured": "Öne Çıkan",
+      "planTrip": "Seyahati Planla",
+      "visitorsPerYear": "Yılda {count} milyon ziyaretçi",
+      "fallbackDescription": "Eşsiz kültür, mutfak ve tarihi deneyimleyin.",
+      "quickFacts": "Hızlı Bilgiler",
+      "highlights": "Öne Çıkanlar",
+      "travelStats": "Seyahat İstatistikleri",
+      "annualVisitors": "Yıllık Ziyaretçi",
+      "averageRating": "Ortalama Puan",
+      "reviews": "Yorumlar",
+      "facts": {
+        "capital": "Başkent",
+        "population": "Nüfus",
+        "currency": "Para Birimi",
+        "language": "Dil",
+        "timeZone": "Saat Dilimi",
+        "bestTime": "Ziyaret İçin En İyi Zaman",
+        "climate": "İklim",
+        "visaRequired": "Vize Gerekli",
+        "yes": "Evet",
+        "no": "Hayır",
+        "populationValue": "{value} milyon"
+      }
+    }
+  },
+  "news": {
+    "title": "Seyahat Haberleri ve Makaleleri",
+    "subtitle": "En son seyahat içgörüleri, destinasyon rehberleri ve kültürel keşiflerle güncel kalın",
+    "socialMediaButton": "Airen Sosyal Medya",
+    "searchPlaceholder": "Makalelerde ara...",
+    "categories": {
+      "all": "Tümü"
+    },
+    "sort": {
+      "latest": "En Yeni",
+      "popular": "Popüler"
+    },
+    "noResults": "Sonuç bulunamadı",
+    "article": {
+      "news": "Haber",
+      "article": "Makale",
+      "minutes": "dk",
+      "readingTime": "{time} dk"
+    }
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "search": "Ara",
+    "new": "Yeni",
+    "earlier": "Daha önce",
+    "viewStory": "Hikayeyi gör",
+    "generic": "Bildirim",
+    "empty": "Bildirim yok.",
+    "aUser": "Bir kullanıcı",
+    "messages": {
+      "comment_like": "yorumunu beğendi.",
+      "story_like": "hikayeni beğendi.",
+      "story_comment": "hikayene yorum yaptı.",
+      "comment_reply": "yorumuna yanıt verdi.",
+      "follow": "seni takip etmeye başladı."
+    }
+  },
+  "footer": {
+    "brand": {
+      "description": "Yapay zekâ destekli kişiselleştirilmiş turizm deneyimleri sunan dünya çapında lider platform."
+    },
+    "platform": {
+      "title": "Platform",
+      "home": "Ana Sayfa",
+      "news": "Haberler",
+      "articles": "Makaleler",
+      "media": "Medya",
+      "countries": "Ülkeler"
+    },
+    "community": {
+      "title": "Topluluk",
+      "community": "Topluluk",
+      "shareStory": "Hikayeni Paylaş",
+      "interaction": "Etkileşim",
+      "avatar": "Airen Avatar"
+    },
+    "company": {
+      "title": "Şirket",
+      "about": "Hakkımızda",
+      "contact": "İletişim",
+      "privacy": "Gizlilik Politikası",
+      "terms": "Kullanım Şartları",
+      "cookies": "Çerez Politikası"
+    },
+    "contact": {
+      "email": "hello@airen.app",
+      "location": "İstanbul, Türkiye"
+    },
+    "copyright": "© {year} Airen Global. Tüm hakları saklıdır.",
+    "tagline": "Gezginler için ❤️ ile yapıldı",
+    "poweredBy": "Yapay zeka destekli"
+  }
+  ,
+  "profile": {
+    "followButton": {
+      "follow": "Takip Et",
+      "following": "Takiptesin"
+    },
+    "public": {
+      "notFound": "Kullanıcı bulunamadı.",
+      "posts": "Gönderi",
+      "followers": "Takipçi",
+      "following": "Takip",
+      "discover": "Kişileri keşfet",
+      "mutualAndMore": "ve {count} kişi",
+      "mutualDialogTitle": "Ortak bağlantılar",
+      "community": "Topluluk",
+      "toProfile": "Profilime dön"
+    },
+    "private": {
+      "sessionMissingTitle": "Oturum bulunamadı",
+      "sessionMissingDesc": "Devam etmek için lütfen giriş yapın veya yeni bir hesap oluşturun.",
+      "login": "Giriş Yap",
+      "register": "Kayıt Ol",
+      "posts": "Gönderi",
+      "followers": "Takipçi",
+      "following": "Takip",
+      "editProfile": "Profili Düzenle",
+      "shareProfile": "Profili Paylaş",
+      "shareCopySuccess": "Profil bağlantısı kopyalandı",
+      "shareCopyFail": "Bağlantı kopyalanamadı",
+      "searchPlaceholder": "Kullanıcı, gönderi veya #etiket ara",
+      "search": "Ara",
+      "noResults": "Sonuç yok.",
+      "tabs": { "posts": "Gönderiler", "saved": "Kaydedilenler", "comments": "Yorumlar" },
+      "submitStoryAria": "Hikaye Paylaş",
+      "backToCommunityAria": "Topluluğa Dön",
+      "searchCommunityAria": "Toplulukta Ara",
+      "noPosts": "Henüz gönderi yok.",
+      "news": "Haberler",
+      "noSavedNews": "Kayıtlı haber yok.",
+      "countries": "Ülkeler",
+      "noSavedCountries": "Kayıtlı ülke yok.",
+      "noComments": "Yorum yok.",
+      "followersAria": "Followers sayfasına git",
+      "followingAria": "Following sayfasına git",
+      "deleteConfirm": "Hikayeyi silmek istediğinize emin misiniz?",
+      "deleteSuccess": "Hikaye silindi",
+      "uploadFail": "Yükleme başarısız",
+      "avatarUpdated": "Profil fotoğrafı güncellendi"
+    }
+  }
+}
+

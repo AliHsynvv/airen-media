@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { MapPin, Calendar, Thermometer, Wallet, ArrowRight } from 'lucide-react'
 import CountryCardReview from '@/components/countries/CountryCardReview'
 import CountryCardActions from '@/components/countries/CountryCardActions'
+import { useTranslations } from 'next-intl'
 
 interface CountryCardProps {
   country: Country
@@ -14,9 +15,10 @@ interface CountryCardProps {
 }
 
 export function CountryCard({ country, className }: CountryCardProps) {
+  const t = useTranslations('countries')
   const hasImage = Boolean(country.featured_image)
   const budgetDaily = country.average_budget?.daily ?? 80
-  const budgetLabel = budgetDaily >= 120 ? 'Luxury' : budgetDaily >= 70 ? 'Mid-range' : 'Budget'
+  const budgetLabel = budgetDaily >= 120 ? t('card.budget.luxury') : budgetDaily >= 70 ? t('card.budget.midRange') : t('card.budget.budget')
   const rating = 4.6 + (country.name.length % 3) * 0.1
   const trending = (country.popular_activities || []).length >= 3
   const featured = (country.top_places || []).length >= 2
@@ -49,10 +51,10 @@ export function CountryCard({ country, className }: CountryCardProps) {
           {/* badges */}
           <div className="absolute top-2 left-2 flex items-center gap-2">
             {trending && (
-              <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 text-xs font-medium">Trending</span>
+              <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 text-xs font-medium">{t('card.trending')}</span>
             )}
             {featured && (
-              <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">Featured</span>
+              <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">{t('card.featured')}</span>
             )}
           </div>
           <CountryCardReview countryId={country.id} countrySlug={country.slug} variant="badge" fallbackRating={rating} />
@@ -72,18 +74,18 @@ export function CountryCard({ country, className }: CountryCardProps) {
 
           {/* description */}
           <p className="mt-3 text-sm text-gray-600">
-            {country.culture_description || country.food_description || 'Discover unique culture, food and history.'}
+            {country.culture_description || country.food_description || t('card.fallbackDescription')}
           </p>
 
           {/* meta */}
           <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-gray-600">
             <div className="inline-flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5 text-gray-400" />
-              <span className="truncate">{country.best_time_to_visit || 'All year'}</span>
+              <span className="truncate">{country.best_time_to_visit || t('card.allYear')}</span>
             </div>
             <div className="inline-flex items-center gap-1">
               <Thermometer className="h-3.5 w-3.5 text-gray-400" />
-              <span className="truncate">{country.climate_info || 'Temperate'}</span>
+              <span className="truncate">{country.climate_info || t('card.temperate')}</span>
             </div>
             <div className="inline-flex items-center gap-1">
               <Wallet className="h-3.5 w-3.5 text-gray-400" />
@@ -114,7 +116,7 @@ export function CountryCard({ country, className }: CountryCardProps) {
                 <CountryCardReview countryId={country.id} countrySlug={country.slug} fallbackRating={rating} />
               </div>
               <span className="inline-flex items-center gap-1 text-gray-700 group-hover:text-gray-900">
-                Explore <ArrowRight className="h-3.5 w-3.5" />
+                {t('card.explore')} <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </div>
             <CountryCardActions countryId={country.id} countrySlug={country.slug} />

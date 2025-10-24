@@ -1,6 +1,7 @@
 import ProfileClient from './ProfileClient'
 import { redirect } from 'next/navigation'
 import { getServerSupabase } from '@/lib/supabase/server-ssr'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -15,6 +16,7 @@ interface MyStoryRow {
 }
 
 export default async function ProfilePage() {
+  const t = await getTranslations('profile.private')
   const supabase = await getServerSupabase()
   const { data: userRes } = await supabase.auth.getUser()
   const u = userRes.user
@@ -24,11 +26,11 @@ export default async function ProfilePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm p-6 text-center mt-8">
           <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center" />
-          <h1 className="mt-4 text-2xl font-semibold text-gray-900">Oturum bulunamadı</h1>
-          <p className="mt-1 text-sm text-gray-600">Devam etmek için lütfen hesabınıza giriş yapın veya yeni bir hesap oluşturun.</p>
+          <h1 className="mt-4 text-2xl font-semibold text-gray-900">{t('sessionMissingTitle')}</h1>
+          <p className="mt-1 text-sm text-gray-600">{t('sessionMissingDesc')}</p>
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <a href="/auth/login" className="h-10 rounded-full bg-black text-white hover:bg-black/90 flex items-center justify-center">Giriş Yap</a>
-            <a href="/auth/register" className="h-10 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50 flex items-center justify-center">Kayıt Ol</a>
+            <a href="/auth/login" className="h-10 rounded-full bg-black text-white hover:bg-black/90 flex items-center justify-center">{t('login')}</a>
+            <a href="/auth/register" className="h-10 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50 flex items-center justify-center">{t('register')}</a>
           </div>
         </div>
       </div>

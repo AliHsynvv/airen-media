@@ -6,12 +6,14 @@ import dynamic from 'next/dynamic'
 const StoryComments = dynamic(() => import('@/components/community/StoryComments.lazy'))
 import { Card } from '@/components/ui/card'
 import StoryCard from '@/components/community/StoryCard'
+import { getTranslations } from 'next-intl/server'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
 export default async function CommunityStoryDetailPage(context: Props) {
+  const t = await getTranslations('community.detail')
   const { slug } = await context.params
   const { data: story } = await supabaseAdmin
     .from('user_stories')
@@ -40,9 +42,9 @@ export default async function CommunityStoryDetailPage(context: Props) {
           <Link
             href="/community"
             className="inline-flex items-center h-9 px-3 rounded-full border border-gray-200/80 bg-white text-gray-800 hover:bg-gray-50 hover:text-gray-900 shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
-            aria-label="Hikayelere dön"
+            aria-label={t('backAria')}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" /> Hikayelere Dön
+            <ArrowLeft className="h-4 w-4 mr-2" /> {t('back')}
           </Link>
         </div>
 
@@ -52,7 +54,7 @@ export default async function CommunityStoryDetailPage(context: Props) {
         {/* More from this user - use the same StoryCard design, vertical list */}
         {moreStories.length > 0 && (
           <div className="px-4 sm:px-0">
-            <div className="mt-2 mb-3 text-sm text-gray-600">Bu kullanıcının diğer gönderileri</div>
+            <div className="mt-2 mb-3 text-sm text-gray-600">{t('moreFromUser')}</div>
             <div className="space-y-4">
               {moreStories.map((s: any) => (
                 <StoryCard key={s.id} story={s as any} variant="responsive" />

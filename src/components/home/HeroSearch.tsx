@@ -4,21 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-
-const PHRASES = [
-  'İtaliyaya vizasız gedilə bilən ölkələr',
-  '2025-ci ilin ən ucuz turizm istiqamətləri',
-  'Azərbaycan yaxınlığında gəziləcək gizli məkanlar',
-  'Büdcəyə uyğun 1 həftəlik Avropa səyahəti',
-  'Sevgililər üçün romantik şəhərlər 💕',
-  'AI ilə planlaşdırılmış ideal tur',
-  'Ən yaxşı dağ yürüşü marşrutları 🏔️',
-  'Türkiyədə ən çox ziyarət edilən 5 şəhər',
-  'Yaponiyada texnologiya turizmi nədir?',
-  '2025-də trend olacaq ölkələr ✈️',
-]
+import { useTranslations } from 'next-intl'
 
 export default function HeroSearch() {
+  const t = useTranslations('home.hero.search')
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
@@ -26,7 +15,12 @@ export default function HeroSearch() {
   const [deleting, setDeleting] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const current = useMemo(() => PHRASES[index % PHRASES.length], [index])
+  const phrases = useMemo(() => {
+    const rawPhrases = t.raw('phrases')
+    return Array.isArray(rawPhrases) ? rawPhrases : []
+  }, [t])
+
+  const current = useMemo(() => phrases[index % phrases.length] || '', [phrases, index])
 
   useEffect(() => {
     // typewriter effect on placeholder
@@ -44,14 +38,14 @@ export default function HeroSearch() {
           const next = prev.slice(0, -1)
           if (next.length === 0) {
             setDeleting(false)
-            setIndex(i => (i + 1) % PHRASES.length)
+            setIndex(i => (i + 1) % phrases.length)
           }
           return next
         }
       })
     }, deleting ? 24 : 36)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [current, deleting])
+  }, [current, deleting, phrases])
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,22 +62,22 @@ export default function HeroSearch() {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder={typed || 'Axtar...'}
+          placeholder={typed || t('placeholder')}
           className={cn(
             'ml-3 w-full bg-transparent placeholder-gray-400 text-gray-900',
             'focus:outline-none h-9'
           )}
-          aria-label="Search"
+          aria-label={t('button')}
         />
         <button
           type="submit"
           className="ml-3 inline-flex items-center rounded-[9999px] bg-black text-white px-3 py-1.5 text-xs sm:text-sm font-medium hover:bg-black/90"
         >
-          Axtar
+          {t('button')}
         </button>
       </div>
       <div className="mt-2 text-xs text-gray-500">
-        Populyar sorğular AI tərəfindən təklif olunur
+        {t('popularSuggestions')}
       </div>
     </form>
   )

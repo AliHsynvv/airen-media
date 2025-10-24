@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import CountryReviews from '@/components/countries/CountryReviews'
+import { useTranslations } from 'next-intl'
 
 interface CountryTabsProps {
   countryId?: string
@@ -14,6 +15,7 @@ type TabKey = 'overview' | 'reviews'
 
 export default function CountryTabs({ countryId, countrySlug, overview }: CountryTabsProps) {
   const [tab, setTab] = useState<TabKey>('overview')
+  const t = useTranslations('countries.tabs')
 
   return (
     <div className="mt-8">
@@ -24,13 +26,13 @@ export default function CountryTabs({ countryId, countrySlug, overview }: Countr
             className={`px-1 py-3 ${tab === 'overview' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
             onClick={() => setTab('overview')}
           >
-            Overview
+            {t('overview')}
           </button>
           <button
             className={`px-1 py-3 ${tab === 'reviews' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
             onClick={() => setTab('reviews')}
           >
-            Reviews
+            {t('reviews')}
           </button>
         </div>
       </div>
@@ -42,7 +44,7 @@ export default function CountryTabs({ countryId, countrySlug, overview }: Countr
         )}
         {tab === 'reviews' && (
           <Card className="bg-white border border-gray-200 rounded-xl p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">Reviews</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-4">{t('reviewsHeading')}</h3>
             <CountryReviews countryId={countryId} countrySlug={countrySlug} />
           </Card>
         )}

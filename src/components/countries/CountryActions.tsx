@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Bookmark, BookmarkCheck, Heart, Share2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface CountryActionsProps {
   countryId: string
@@ -11,6 +12,7 @@ interface CountryActionsProps {
 }
 
 export default function CountryActions({ countryId, countryName, className }: CountryActionsProps) {
+  const t = useTranslations('countries.actions')
   const [userId, setUserId] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
   const [favorited, setFavorited] = useState(false)
@@ -66,7 +68,7 @@ export default function CountryActions({ countryId, countryName, className }: Co
   }
 
   const toggleBookmark = async () => {
-    if (!isUuid) { alert('Bu ülke demo verisi. Girişimler Supabase üzerinde kaydedilmez.'); return }
+    if (!isUuid) { alert(t('demoData')); return }
     if (!(await ensureAuthOrRedirect())) return
     setBusy(true)
     try {
@@ -89,7 +91,7 @@ export default function CountryActions({ countryId, countryName, className }: Co
   }
 
   const toggleFavorite = async () => {
-    if (!isUuid) { alert('Bu ülke demo verisi. Girişimler Supabase üzerinde kaydedilmez.'); return }
+    if (!isUuid) { alert(t('demoData')); return }
     if (!(await ensureAuthOrRedirect())) return
     setBusy(true)
     try {
@@ -118,7 +120,7 @@ export default function CountryActions({ countryId, countryName, className }: Co
         await navigator.share({ title: countryName || 'Airen', url })
       } else {
         await navigator.clipboard.writeText(url)
-        alert('Bağlantı kopyalandı!')
+        alert(t('linkCopied'))
       }
     } catch (_) {}
   }
@@ -132,7 +134,7 @@ export default function CountryActions({ countryId, countryName, className }: Co
           className="h-9 px-3 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1"
         >
           {bookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          {bookmarked ? 'Kaydedildi' : 'Kaydet'}
+          {bookmarked ? t('bookmarked') : t('bookmark')}
         </button>
         <button
           onClick={toggleFavorite}
@@ -140,13 +142,13 @@ export default function CountryActions({ countryId, countryName, className }: Co
           className={`h-9 px-3 rounded-md border border-gray-200 bg-white hover:bg-gray-50 inline-flex items-center gap-1 ${favorited ? 'text-red-600 border-red-200 bg-red-50' : 'text-gray-700'}`}
         >
           <Heart className={`h-4 w-4 ${favorited ? 'fill-red-500 text-red-500' : ''}`} />
-          {favorited ? 'Favorited' : 'Add to Favorites'}
+          {favorited ? t('favorited') : t('addToFavorites')}
         </button>
         <button
           onClick={share}
           className="h-9 px-3 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1"
         >
-          <Share2 className="h-4 w-4" /> Share Country
+          <Share2 className="h-4 w-4" /> {t('shareCountry')}
         </button>
       </div>
     </div>

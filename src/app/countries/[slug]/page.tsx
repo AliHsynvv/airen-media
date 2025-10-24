@@ -7,6 +7,7 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 import { MapPin, Star, Users, ArrowLeft } from 'lucide-react'
 import dynamic from 'next/dynamic'
 const CountryActions = dynamic(() => import('@/components/countries/CountryActions'))
+import { getTranslations } from 'next-intl/server'
 const CountryReviews = dynamic(() => import('@/components/countries/CountryReviews'))
 const CountryTabs = dynamic(() => import('@/components/countries/CountryTabs'))
 const CountryCardReview = dynamic(() => import('@/components/countries/CountryCardReview'))
@@ -17,6 +18,7 @@ interface CountryPageProps {
 }
 
 export default async function CountryDetailPage(context: CountryPageProps) {
+  const t = await getTranslations('countries')
   const { slug } = await context.params
   const { data: live } = await supabaseAdmin
     .from('countries')
@@ -32,7 +34,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
   const articles = 203
   const media = 145
   const budgetDaily = country.average_budget?.daily ?? 80
-  const budgetLabel = budgetDaily >= 120 ? 'Luxury' : budgetDaily >= 70 ? 'Mid-range' : 'Budget'
+  const budgetLabel = budgetDaily >= 120 ? t('card.budget.luxury') : budgetDaily >= 70 ? t('card.budget.midRange') : t('card.budget.budget')
   const hasImage = Boolean(country.featured_image)
 
   return (
@@ -40,7 +42,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
       {/* Back link */}
       <div className="mb-4">
         <Link href="/countries" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" /> Back to Countries
+          <ArrowLeft className="h-4 w-4" /> {t('detail.back')}
         </Link>
       </div>
 
@@ -48,7 +50,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">Featured</span>
+            <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">{t('detail.featured')}</span>
             <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-800 border border-gray-200 px-2 py-0.5 text-xs font-medium">{budgetLabel}</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 flex items-baseline gap-2">
@@ -61,16 +63,16 @@ export default async function CountryDetailPage(context: CountryPageProps) {
             </div>
           )}
           <p className="text-gray-600 max-w-xl">
-            {country.culture_description || 'Experience unique culture, cuisine and history.'}
+            {country.culture_description || t('detail.fallbackDescription')}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
             <CountryCardReview countryId={country.id} countrySlug={country.slug} withReviewsLabel />
-            <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" /> {visitors} million visitors/year</span>
+            <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" /> {t('detail.visitorsPerYear', { count: visitors })}</span>
           </div>
 
           <div className="flex flex-wrap gap-2 pt-1">
-            <button className="h-9 px-3 rounded-md bg-black text-white hover:bg-black/90">Plan Your Trip</button>
+            <button className="h-9 px-3 rounded-md bg-black text-white hover:bg-black/90">{t('detail.planTrip')}</button>
             <CountryActions countryId={country.id} countryName={country.name} />
           </div>
         </div>
@@ -92,28 +94,28 @@ export default async function CountryDetailPage(context: CountryPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Card className="bg-white border border-gray-200 rounded-xl p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-4">Quick Facts</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-4">{t('detail.quickFacts')}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                  <div className="text-gray-500">Capital:</div>
+                  <div className="text-gray-500">{t('detail.facts.capital')}:</div>
                   <div className="text-gray-900">{country.capital || '-'}</div>
-                  <div className="text-gray-500">Population:</div>
-                  <div className="text-gray-900">{country.population ? `${Math.round(country.population/1_000_000)}.0 million` : '-'}</div>
-                  <div className="text-gray-500">Currency:</div>
+                  <div className="text-gray-500">{t('detail.facts.population')}:</div>
+                  <div className="text-gray-900">{country.population ? t('detail.facts.populationValue', { value: Math.round(country.population/1_000_000) }) : '-'}</div>
+                  <div className="text-gray-500">{t('detail.facts.currency')}:</div>
                   <div className="text-gray-900">{country.currency || '-'}</div>
-                  <div className="text-gray-500">Language:</div>
+                  <div className="text-gray-500">{t('detail.facts.language')}:</div>
                   <div className="text-gray-900">{country.official_language || '-'}</div>
-                  <div className="text-gray-500">Time Zone:</div>
+                  <div className="text-gray-500">{t('detail.facts.timeZone')}:</div>
                   <div className="text-gray-900">{country.timezone || '-'}</div>
-                  <div className="text-gray-500">Best Time to Visit:</div>
-                  <div className="text-gray-900">{country.best_time_to_visit || 'All year'}</div>
-                  <div className="text-gray-500">Climate:</div>
-                  <div className="text-gray-900">{country.climate_info || 'Temperate'}</div>
-                  <div className="text-gray-500">Visa Required:</div>
-                  <div className="text-gray-900">{country.visa_info ? 'Yes' : 'No'}</div>
+                  <div className="text-gray-500">{t('detail.facts.bestTime')}:</div>
+                  <div className="text-gray-900">{country.best_time_to_visit || t('card.allYear')}</div>
+                  <div className="text-gray-500">{t('detail.facts.climate')}:</div>
+                  <div className="text-gray-900">{country.climate_info || t('card.temperate')}</div>
+                  <div className="text-gray-500">{t('detail.facts.visaRequired')}:</div>
+                  <div className="text-gray-900">{country.visa_info ? t('detail.facts.yes') : t('detail.facts.no')}</div>
                 </div>
               </Card>
               <Card className="bg-white border border-gray-200 rounded-xl p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-4">Top Highlights</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-4">{t('detail.highlights')}</h3>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {country.top_places?.map((place: { name: string }) => (
                     <div key={place.name} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2">
@@ -126,19 +128,19 @@ export default async function CountryDetailPage(context: CountryPageProps) {
             </div>
             <div className="space-y-6">
               <Card className="bg-white border border-gray-200 rounded-xl p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-4">Travel Statistics</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-4">{t('detail.travelStats')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-semibold text-gray-900">{visitors} million</div>
-                    <div className="text-xs text-gray-500">Annual Visitors</div>
+                    <div className="text-xs text-gray-500">{t('detail.annualVisitors')}</div>
                   </div>
                   <div>
                     <div className="text-2xl font-semibold text-gray-900"><CountryReviewKPI countryId={country.id} countrySlug={country.slug} metric="avg" /></div>
-                    <div className="text-xs text-gray-500">Average Rating</div>
+                    <div className="text-xs text-gray-500">{t('detail.averageRating')}</div>
                   </div>
                   <div>
                     <div className="text-2xl font-semibold text-gray-900"><CountryReviewKPI countryId={country.id} countrySlug={country.slug} metric="count" /></div>
-                    <div className="text-xs text-gray-500">Reviews</div>
+                    <div className="text-xs text-gray-500">{t('detail.reviews')}</div>
                   </div>
                 </div>
               </Card>

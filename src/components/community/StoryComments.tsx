@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'next-intl'
 
 interface StoryCommentsProps {
   storyId: string
@@ -26,6 +27,7 @@ interface CommentRow {
 type ProfileRow = { id: string; full_name: string | null; username: string | null; avatar_url: string | null }
 
 export default function StoryComments({ storyId, variant = 'default', onSubmitted }: StoryCommentsProps) {
+  const t = useTranslations('community.comments')
   const [userId, setUserId] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
   const [content, setContent] = useState('')
@@ -159,9 +161,9 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
         <div className="text-sm text-gray-900 font-medium">{c.user?.full_name || c.user?.username || 'Kullanıcı'}</div>
         <div className="text-sm text-gray-700 whitespace-pre-wrap">{c.content}</div>
         <div className="mt-1 flex items-center gap-3">
-          <button className="text-xs text-gray-600 hover:text-black" onClick={() => { setReplyTo(c.id); textareaRef.current?.focus() }}>Yanıtla</button>
+          <button className="text-xs text-gray-600 hover:text-black" onClick={() => { setReplyTo(c.id); textareaRef.current?.focus() }}>{t('reply')}</button>
           <button className={`text-xs ${c.liked_by_me ? 'text-red-600' : 'text-gray-600 hover:text-black'}`} onClick={() => toggleLike(c)}>
-            {c.liked_by_me ? 'Beğenildi' : 'Beğen'} ({c.like_count || 0})
+            {c.liked_by_me ? t('liked') : t('like')} ({c.like_count || 0})
           </button>
         </div>
         {tree[c.id]?.length ? (
@@ -177,24 +179,30 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
 
   return (
     <div id="comments" className={isMinimal ? 'p-0' : 'rounded-xl border border-gray-200 bg-white p-4'}>
-      {!isMinimal && <h3 className="text-black font-semibold mb-3">Yorumlar</h3>}
+      {!isMinimal && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-gray-700">{t('heading')}</div>
+          <button onClick={() => setOpen(false)} className="text-sm text-gray-500 hover:text-gray-800">{t('close')}</button>
+        </div>
+      )}
       <div>
         {(tree['root'] || []).map(c => <Item key={c.id} c={c} />)}
       </div>
       <div className={isMinimal ? 'mt-3 sticky bottom-0 bg-white pt-2 pb-3' : 'mt-4'}>
+        {!isMinimal && <h3 className="text-black font-semibold mb-3">{t('heading')}</h3>}
         <textarea
           ref={textareaRef}
           value={content}
           onChange={e => setContent(e.target.value)}
-          placeholder={replyTo ? 'Yanıt yaz…' : 'Yorum yaz…'}
+          placeholder={replyTo ? t('placeholderReply') : t('placeholder')}
           className={isMinimal ? 'w-full h-24 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 p-3 focus:outline-none focus:ring-2 focus:ring-black/10' : 'w-full h-24 rounded-md border border-gray-200 bg-white text-gray-900 p-2'}
         />
         {replyTo && (
-          <div className="text-xs text-gray-500 mt-1">Yanıtlanan: #{replyTo.slice(0,6)} <button className="ml-2 underline" onClick={() => setReplyTo(null)}>iptal</button></div>
+          <div className="text-xs text-gray-500 mt-1">{t('replyingTo', { id: replyTo.slice(0,6) })} <button className="ml-2 underline" onClick={() => setReplyTo(null)}>{t('cancel')}</button></div>
         )}
         <div className="mt-2 flex justify-end">
           <Button onClick={submit} disabled={busy || !content.trim()} className={isMinimal ? 'rounded-full bg-black text-white hover:bg-black/90 px-5' : 'bg-black text-white hover:bg-black/90'}>
-            Gönder
+            {t('send')}
           </Button>
         </div>
       </div>

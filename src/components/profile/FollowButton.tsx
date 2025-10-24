@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   profileId: string
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function FollowButton({ profileId, className }: Props) {
+  const t = useTranslations('profile.followButton')
   const [userId, setUserId] = useState<string | null>(null)
   const [following, setFollowing] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -81,7 +83,7 @@ export default function FollowButton({ profileId, className }: Props) {
   return (
     <Button
       variant="secondary"
-      aria-label={following ? 'Takiptesin' : 'Takip Et'}
+      aria-label={following ? t('following') : t('follow')}
       className={[
         'h-8 sm:h-9 px-3 sm:px-4 text-sm rounded-full transition-colors',
         'border shadow-none',
@@ -93,7 +95,7 @@ export default function FollowButton({ profileId, className }: Props) {
       disabled={busy}
       onClick={toggle}
     >
-      {following ? 'Takiptesin' : 'Takip Et'}
+      {following ? t('following') : t('follow')}
     </Button>
   )
 }

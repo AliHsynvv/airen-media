@@ -1,13 +1,19 @@
-import { format, formatDistanceToNow, parseISO } from 'date-fns'
+import { format, formatDistanceToNow, parseISO, type Locale } from 'date-fns'
+import { tr, enUS } from 'date-fns/locale'
 
-export function formatDate(date: string | Date, formatStr: string = 'PPP') {
-  const dateObj = typeof date === 'string' ? parseISO(date) : date
-  return format(dateObj, formatStr)
+const locales: Record<string, Locale> = {
+  en: enUS,
+  tr: tr,
 }
 
-export function formatRelativeTime(date: string | Date) {
+export function formatDate(date: string | Date, formatStr: string = 'PPP', locale: string = 'en') {
   const dateObj = typeof date === 'string' ? parseISO(date) : date
-  return formatDistanceToNow(dateObj, { addSuffix: true })
+  return format(dateObj, formatStr, { locale: locales[locale] || enUS })
+}
+
+export function formatRelativeTime(date: string | Date, locale: string = 'en') {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date
+  return formatDistanceToNow(dateObj, { addSuffix: true, locale: locales[locale] || enUS })
 }
 
 export function formatNumber(num: number, compact = false) {

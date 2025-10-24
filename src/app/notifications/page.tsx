@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bell, Heart, MessageCircle, Search } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/formatters'
+import { useTranslations, useLocale } from 'next-intl'
 
 type Notif = {
   id: string
@@ -20,6 +21,8 @@ type Notif = {
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications')
+  const locale = useLocale()
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<Notif[]>([])
@@ -110,10 +113,10 @@ export default function NotificationsPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Notifications</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('title')}</h1>
         <button className="h-9 w-9 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
           <Search className="h-5 w-5" />
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t('search')}</span>
         </button>
       </div>
 
@@ -127,7 +130,7 @@ export default function NotificationsPage() {
         <div className="bg-white rounded-lg border border-gray-200">
           {!!unread.length && (
             <div className="px-4 py-3">
-              <div className="text-sm font-semibold text-gray-900 mb-2">New</div>
+              <div className="text-sm font-semibold text-gray-900 mb-2">{t('new')}</div>
               <ul className="space-y-3">
                 {unread.map(n => (
                   <li key={n.id} className="">
@@ -144,32 +147,32 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
                         {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || 'Bir kullanıcı'}</Link> yorumunu beğendi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || t('aUser')}</Link> {t('messages.comment_like')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'story_like' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayeni beğendi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.story_like')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'story_comment' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayene yorum yaptı.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.story_comment')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'comment_reply' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> yorumuna yanıt verdi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.comment_reply')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'follow' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> seni takip etmeye başladı.
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.follow')}
                           </div>
                         ) : (
-                          <div className="text-sm text-gray-900">Bildirim</div>
+                          <div className="text-sm text-gray-900">{t('generic')}</div>
                         )}
-                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at, locale)}</div>
                       </div>
                     </div>
                   </li>
@@ -179,7 +182,7 @@ export default function NotificationsPage() {
           )}
           {!!earlier.length && (
             <div className="px-4 py-3 border-t border-gray-200">
-              <div className="text-sm font-semibold text-gray-900 mb-2">Earlier</div>
+              <div className="text-sm font-semibold text-gray-900 mb-2">{t('earlier')}</div>
               <ul className="space-y-3">
                 {earlier.map(n => (
                   <li key={n.id} className="">
@@ -196,32 +199,32 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
                         {n.type === 'comment_like' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || 'Bir kullanıcı'}</Link> yorumunu beğendi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${(n.liker || n.actor)?.id || ''}`} className="font-semibold hover:underline">{(n.liker || n.actor)?.full_name || (n.liker || n.actor)?.username || t('aUser')}</Link> {t('messages.comment_like')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'story_like' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayeni beğendi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.story_like')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'story_comment' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> hikayene yorum yaptı.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.story_comment')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'comment_reply' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> yorumuna yanıt verdi.
-                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">Hikayeyi gör</Link></>)}
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.comment_reply')}
+                            {n.story?.slug && (<><Link href={`/community/stories/${n.story.slug}`} className="underline ml-1">{t('viewStory')}</Link></>)}
                           </div>
                         ) : n.type === 'follow' ? (
                           <div className="text-sm text-gray-900">
-                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || 'Bir kullanıcı'}</Link> seni takip etmeye başladı.
+                            <Link href={`/u/${n.actor?.id || ''}`} className="font-semibold hover:underline">{n.actor?.full_name || n.actor?.username || t('aUser')}</Link> {t('messages.follow')}
                           </div>
                         ) : (
-                          <div className="text-sm text-gray-900">Bildirim</div>
+                          <div className="text-sm text-gray-900">{t('generic')}</div>
                         )}
-                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at)}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(n.created_at, locale)}</div>
                       </div>
                     </div>
                   </li>
@@ -231,7 +234,7 @@ export default function NotificationsPage() {
           )}
         </div>
       ) : (
-        <div className="text-center text-gray-600">Bildirim yok.</div>
+        <div className="text-center text-gray-600">{t('empty')}</div>
       )}
     </div>
   )

@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 import { fitTextToContainer } from '@/lib/utils/fitTextToContainer'
+import { useTranslations } from 'next-intl'
 
 export default function HeroTitle() {
+  const t = useTranslations('home.hero')
   const ref = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function HeroTitle() {
       ref={ref}
       className="whitespace-nowrap font-bold leading-none tracking-tight text-gray-900 text-[clamp(14px,5vw,36px)] sm:text-4xl lg:text-6xl"
     >
-      Discover the World with AI
+      {t('title')}
     </h1>
   )
 }

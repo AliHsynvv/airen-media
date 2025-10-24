@@ -27,7 +27,8 @@
       "@/app/*": ["./src/app/*"],
       "@/hooks/*": ["./src/lib/hooks/*"],
       "@/utils/*": ["./src/lib/utils/*"],
-      "@/stores/*": ["./src/lib/stores/*"]
+      "@/stores/*": ["./src/lib/stores/*"],
+      "@/i18n/*": ["./src/i18n/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.d.ts", ".next/types/**/*.ts"],

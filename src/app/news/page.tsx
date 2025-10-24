@@ -11,6 +11,7 @@ import { useArticles } from '@/lib/hooks/useArticles'
 import { supabase } from '@/lib/supabase/client'
 const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 type SortKey = 'latest' | 'popular'
 type ViewKey = 'grid' | 'list'
@@ -18,9 +19,10 @@ type ViewKey = 'grid' | 'list'
 type UiCategory = { key: string; label: string }
 
 export default function NewsPage() {
+  const t = useTranslations('news')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('all')
-  const [categories, setCategories] = useState<UiCategory[]>([{ key: 'all', label: 'All' }])
+  const [categories, setCategories] = useState<UiCategory[]>([{ key: 'all', label: t('categories.all') }])
   const [sortBy, setSortBy] = useState<SortKey>('latest')
   const [view, setView] = useState<ViewKey>('grid')
 
@@ -34,15 +36,15 @@ export default function NewsPage() {
       const json = await res.json()
       if (!mounted) return
       if (json.success) {
-        const ui: UiCategory[] = [{ key: 'all', label: 'All' }].concat((json.data || []).map((c: any) => ({ key: c.id, label: c.name })))
+        const ui: UiCategory[] = [{ key: 'all', label: t('categories.all') }].concat((json.data || []).map((c: any) => ({ key: c.id, label: c.name })))
         setCategories(ui)
       } else {
-        setCategories([{ key: 'all', label: 'All' }])
+        setCategories([{ key: 'all', label: t('categories.all') }])
       }
     }
     loadCats()
     return () => { mounted = false }
-  }, [])
+  }, [t])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
@@ -67,12 +69,12 @@ export default function NewsPage() {
     <div className="container mx-auto px-4 py-12">
       {/* Hero */}
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <h1 className="text-4xl font-bold text-gray-900">Travel News & Articles</h1>
-        <p className="text-gray-600 mt-3">Stay updated with the latest travel insights, destination guides, and cultural discoveries</p>
+        <h1 className="text-4xl font-bold text-gray-900">{t('title')}</h1>
+        <p className="text-gray-600 mt-3">{t('subtitle')}</p>
         <div className="mt-6 flex flex-row gap-2 items-center w-full">
           <div className="w-1/2 min-w-0">
             <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
-              <Link href="/profile">Airen Social Media</Link>
+              <Link href="/profile">{t('socialMediaButton')}</Link>
             </Button>
           </div>
           <div className="w-1/2 min-w-0">
@@ -84,7 +86,7 @@ export default function NewsPage() {
       {/* Search */}
       <div className="max-w-2xl mx-auto mb-6 relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input className="pl-9 h-11 rounded-lg border-gray-200" placeholder="Search articles..." value={query} onChange={e => setQuery(e.target.value)} />
+        <Input className="pl-9 h-11 rounded-lg border-gray-200" placeholder={t('searchPlaceholder')} value={query} onChange={e => setQuery(e.target.value)} />
       </div>
 
       {/* Categories + controls */}
@@ -101,8 +103,8 @@ export default function NewsPage() {
 
         <div className="ml-auto inline-flex items-center gap-2">
           <select className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3" value={sortBy} onChange={e => setSortBy(e.target.value as SortKey)}>
-            <option value="latest">Latest</option>
-            <option value="popular">Popular</option>
+            <option value="latest">{t('sort.latest')}</option>
+            <option value="popular">{t('sort.popular')}</option>
           </select>
           <button className={`h-9 w-9 inline-flex items-center justify-center rounded-md border ${view === 'grid' ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`} onClick={() => setView('grid')}>
             <LayoutGrid className="h-4 w-4" />
@@ -121,7 +123,7 @@ export default function NewsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center text-gray-500">No results</div>
+        <div className="text-center text-gray-500">{t('noResults')}</div>
       ) : view === 'list' ? (
         <div className="space-y-4">
           {filtered.map(a => (

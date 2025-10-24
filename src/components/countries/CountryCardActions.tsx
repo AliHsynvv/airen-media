@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Bookmark, BookmarkCheck, Heart, MessageCircle, Share2, Eye } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   countryId: string
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function CountryCardActions({ countryId, countrySlug, className }: Props) {
+  const t = useTranslations('countries.actions')
   const [userId, setUserId] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
   const [favorited, setFavorited] = useState(false)
@@ -71,7 +73,7 @@ export default function CountryCardActions({ countryId, countrySlug, className }
   }
 
   const toggleBookmark = async () => {
-    if (!isUuid) { alert('Bu ülke demo verisi.'); return }
+    if (!isUuid) { alert(t('demoData')); return }
     if (!(await ensureAuthOrRedirect())) return
     setBusy(true)
     try {
@@ -90,7 +92,7 @@ export default function CountryCardActions({ countryId, countrySlug, className }
   }
 
   const toggleFavorite = async () => {
-    if (!isUuid) { alert('Bu ülke demo verisi.'); return }
+    if (!isUuid) { alert(t('demoData')); return }
     if (!(await ensureAuthOrRedirect())) return
     setBusy(true)
     try {
@@ -115,7 +117,7 @@ export default function CountryCardActions({ countryId, countrySlug, className }
         await navigator.share({ title: 'Airen', url })
       } else {
         await navigator.clipboard.writeText(url)
-        alert('Bağlantı kopyalandı!')
+        alert(t('linkCopied'))
       }
     } catch {}
   }
@@ -144,7 +146,7 @@ export default function CountryCardActions({ countryId, countrySlug, className }
           </div>
           <button onClick={share} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
             <Share2 className="h-3.5 w-3.5" />
-            <span>Paylaş</span>
+            <span>{t('shareCountry')}</span>
           </button>
         </div>
       </div>

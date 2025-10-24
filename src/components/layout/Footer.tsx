@@ -1,30 +1,34 @@
+'use client'
+
 import Link from 'next/link'
 import { Globe, Instagram, Twitter, Youtube, Mail, MapPin } from 'lucide-react'
 import { ROUTES, SITE_CONFIG } from '@/lib/utils/constants'
+import { useTranslations } from 'next-intl'
 
 export function Footer() {
+  const t = useTranslations('footer')
   const currentYear = new Date().getFullYear()
 
   const footerLinks = {
     platform: [
-      { name: 'Ana Sayfa', href: ROUTES.HOME },
-      { name: 'Haberler', href: ROUTES.NEWS },
-      { name: 'Makaleler', href: ROUTES.ARTICLES },
-      { name: 'Medya', href: ROUTES.MEDIA },
-      { name: 'Ülkeler', href: ROUTES.COUNTRIES },
+      { name: t('platform.home'), href: ROUTES.HOME },
+      { name: t('platform.news'), href: ROUTES.NEWS },
+      { name: t('platform.articles'), href: ROUTES.ARTICLES },
+      { name: t('platform.media'), href: ROUTES.MEDIA },
+      { name: t('platform.countries'), href: ROUTES.COUNTRIES },
     ],
     community: [
-      { name: 'Topluluk', href: ROUTES.COMMUNITY },
-      { name: 'Hikayeni Paylaş', href: `${ROUTES.COMMUNITY}/stories/submit` },
-      { name: 'Etkileşim', href: ROUTES.INTERACTION },
-      { name: 'Airen Avatar', href: `${ROUTES.INTERACTION}/avatar` },
+      { name: t('community.community'), href: ROUTES.COMMUNITY },
+      { name: t('community.shareStory'), href: `${ROUTES.COMMUNITY}/stories/submit` },
+      { name: t('community.interaction'), href: ROUTES.INTERACTION },
+      { name: t('community.avatar'), href: `${ROUTES.INTERACTION}/avatar` },
     ],
     company: [
-      { name: 'Hakkımızda', href: ROUTES.ABOUT },
-      { name: 'İletişim', href: ROUTES.CONTACT },
-      { name: 'Gizlilik Politikası', href: '/privacy' },
-      { name: 'Kullanım Şartları', href: '/terms' },
-      { name: 'Çerez Politikası', href: '/cookies' },
+      { name: t('company.about'), href: ROUTES.ABOUT },
+      { name: t('company.contact'), href: ROUTES.CONTACT },
+      { name: t('company.privacy'), href: '/privacy' },
+      { name: t('company.terms'), href: '/terms' },
+      { name: t('company.cookies'), href: '/cookies' },
     ],
   }
 
@@ -62,8 +66,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Yapay zekâ destekli kişiselleştirilmiş turizm deneyimleri sunan 
-              dünya çapında lider platform.
+              {t('brand.description')}
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => {
@@ -85,7 +88,7 @@ export function Footer() {
 
           {/* Platform Links */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Platform</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('platform.title')}</h3>
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.name}>
@@ -102,7 +105,7 @@ export function Footer() {
 
           {/* Community Links */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Topluluk</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('community.title')}</h3>
             <ul className="space-y-3">
               {footerLinks.community.map((link) => (
                 <li key={link.name}>
@@ -119,7 +122,7 @@ export function Footer() {
 
           {/* Company Links & Contact */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Şirket</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('company.title')}</h3>
             <ul className="space-y-3 mb-6">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
@@ -137,11 +140,11 @@ export function Footer() {
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-gray-500" />
-                <span>hello@airen.app</span>
+                <span>{t('contact.email')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-gray-500" />
-                <span>İstanbul, Türkiye</span>
+                <span>{t('contact.location')}</span>
               </div>
             </div>
           </div>
@@ -151,12 +154,12 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-500">
-              © {currentYear} Airen Global. Tüm hakları saklıdır.
+              {t('copyright', { year: currentYear })}
             </div>
             <div className="flex items-center space-x-6 text-xs text-gray-500">
-              <span>Made with ❤️ for travelers</span>
+              <span>{t('tagline')}</span>
               <span>•</span>
-              <span>Powered by AI</span>
+              <span>{t('poweredBy')}</span>
             </div>
           </div>
         </div>

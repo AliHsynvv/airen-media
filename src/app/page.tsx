@@ -3,19 +3,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Globe, MapPin, Users, Video, BookOpen, MessageCircle, Play, ArrowRight, Newspaper } from "lucide-react"
 import { supabaseAdmin } from "@/lib/supabase/server"
 import Link from "next/link"
-import { ArticleCard } from "@/components/articles/ArticleCard"
 import nextDynamic from "next/dynamic"
-const MeetAirenButton = nextDynamic(() => import("@/components/home/MeetAirenButton"))
-const HeroSearch = nextDynamic(() => import("@/components/home/HeroSearch"))
-const HeroLiveStats = nextDynamic(() => import("@/components/home/HeroLiveStats"))
-const HomeStoriesGridLazy = nextDynamic(() => import("@/components/home/HomeStoriesGrid.lazy"))
+import { getTranslations } from 'next-intl/server'
+const ArticleCard = nextDynamic(() => import("@/components/articles/ArticleCard"))
+const MeetAirenButton = nextDynamic(() => import("@/components/home/MeetAirenButton").then(mod => mod.default))
+const HeroSearch = nextDynamic(() => import("@/components/home/HeroSearch").then(mod => mod.default))
+const HeroLiveStats = nextDynamic(() => import("@/components/home/HeroLiveStats").then(mod => mod.default))
+const HomeStoriesGridLazy = nextDynamic(() => import("@/components/home/HomeStoriesGrid.lazy").then(mod => mod.default))
 import HeroTitle from "@/components/home/HeroTitle"
-const StoryCard = nextDynamic(() => import("@/components/community/StoryCard"))
-const AnimatedNumber = nextDynamic(() => import("@/components/common/AnimatedNumber"))
+const StoryCard = nextDynamic(() => import("@/components/community/StoryCard").then(mod => mod.default))
+const AnimatedNumber = nextDynamic(() => import("@/components/common/AnimatedNumber").then(mod => mod.default))
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
+  const t = await getTranslations('home')
   const [countriesRes, usersRes, storiesRes, newsCountRes] = await Promise.all([
     supabaseAdmin.from('countries').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('users_profiles').select('id', { count: 'exact', head: true }),
@@ -60,8 +62,7 @@ export default async function Home() {
               <div className="space-y-6">
                 <HeroTitle />
                 <p className="text-lg lg:text-xl text-gray-600 max-w-xl">
-                  Meet Airen, your AI travel companion who helps you explore amazing
-                  destinations through personalized recommendations and immersive content.
+                  {t('hero.description')}
                 </p>
               </div>
 
@@ -73,7 +74,7 @@ export default async function Home() {
                   <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
                     <Link href="/profile">
                       <span className="inline-flex items-center justify-center">
-                        Airen Social Media
+                        {t('hero.socialMediaButton')}
                         <span className="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-white/10">
                           <ArrowRight className="h-4 w-4" />
                         </span>
@@ -96,7 +97,7 @@ export default async function Home() {
                     </span>
                     <AnimatedNumber value={stats.news} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">News</div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">{t('stats.news')}</div>
                 </Link>
 
                 {/* 2. Stories */}
@@ -107,7 +108,7 @@ export default async function Home() {
                     </span>
                     <AnimatedNumber value={stats.stories} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Stories</div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">{t('stats.stories')}</div>
                 </Link>
 
                 {/* 3. Countries */}
@@ -118,7 +119,7 @@ export default async function Home() {
                     </span>
                     <AnimatedNumber value={stats.countries} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Countries</div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">{t('stats.countries')}</div>
                 </Link>
 
                 {/* 4. Travelers */}
@@ -129,7 +130,7 @@ export default async function Home() {
                     </span>
                     <AnimatedNumber value={stats.travelers} className="text-2xl sm:text-3xl font-bold text-gray-900" />
                   </div>
-                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">Travelers</div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-gray-600 group-hover:text-gray-900 uppercase tracking-wide">{t('stats.travelers')}</div>
                 </Link>
               </div>
             </div>
@@ -165,19 +166,19 @@ export default async function Home() {
       <section className="w-full px-0 sm:px-4">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Son Haberler</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">{t('latestNews.title')}</h2>
             <p className="mt-1">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] sm:text-xs text-gray-700 shadow-sm">
                 <Newspaper className="h-3.5 w-3.5" />
-                Gündemdeki 4 içerik
+                {t('latestNews.badge')}
               </span>
             </p>
           </div>
           <Link href="/news" className="sm:hidden inline-flex items-center gap-2 h-9 px-3 rounded-full border border-gray-200 bg-white text-gray-900 shadow-sm">
-            Daha fazla
+            {t('latestNews.viewMore')}
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/news" className="hidden sm:inline text-sm text-gray-700 hover:underline">Daha fazla</Link>
+          <Link href="/news" className="hidden sm:inline text-sm text-gray-700 hover:underline">{t('latestNews.viewMore')}</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {latestNews.map((a: any, i: number) => (
@@ -192,13 +193,13 @@ export default async function Home() {
       <section className="container mx-auto px-0 sm:px-4">
         <div className="flex items-end justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Topluluk</h2>
-            <p className="text-gray-600 text-sm">Son 4 hikaye</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('community.title')}</h2>
+            <p className="text-gray-600 text-sm">{t('community.subtitle')}</p>
           </div>
-          <Link href="/community" className="text-sm text-gray-700 hover:underline hidden sm:inline">Daha fazla</Link>
+          <Link href="/community" className="text-sm text-gray-700 hover:underline hidden sm:inline">{t('community.viewMore')}</Link>
         </div>
         <div className="sm:hidden mb-4">
-          <Link href="/community" className="inline-block text-sm px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900">Daha fazla</Link>
+          <Link href="/community" className="inline-block text-sm px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900">{t('community.viewMore')}</Link>
         </div>
         <HomeStoriesGridLazy stories={latestStories} />
       </section>
@@ -207,10 +208,10 @@ export default async function Home() {
       <section className="container mx-auto px-4">
         <div className="text-left mb-10">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
-            Why Airen?
+            {t('whyAiren.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl">
-            Explore the features that elevate your travel experience.
+            {t('whyAiren.subtitle')}
           </p>
         </div>
 
@@ -220,9 +221,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <Video className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">AI Influencer</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.aiInfluencer.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Real-time chat with Airen, get personalized suggestions.
+                {t('whyAiren.features.aiInfluencer.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -232,9 +233,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <MapPin className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">Detailed Guides</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.detailedGuides.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Comprehensive country guides and practical tips.
+                {t('whyAiren.features.detailedGuides.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -244,9 +245,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <Users className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">Community</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.community.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Share experiences with a vibrant travel community.
+                {t('whyAiren.features.community.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -256,9 +257,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <BookOpen className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">Articles & News</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.articlesNews.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Stay up to date with curated travel news and insights.
+                {t('whyAiren.features.articlesNews.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -268,9 +269,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <Video className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">Video Content</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.videoContent.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Watch city overviews and engaging travel stories.
+                {t('whyAiren.features.videoContent.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -280,9 +281,9 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <MessageCircle className="h-5 w-5 text-gray-600" />
               </div>
-              <CardTitle className="text-gray-900">Interactive</CardTitle>
+              <CardTitle className="text-gray-900">{t('whyAiren.features.interactive.title')}</CardTitle>
               <CardDescription className="text-gray-600">
-                Social integrations and real-time interactions.
+                {t('whyAiren.features.interactive.description')}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -295,17 +296,17 @@ export default async function Home() {
           <CardContent className="p-10">
             <div className="text-center space-y-5">
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-                Start your journey
+                {t('cta.title')}
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Plan your next trip with Airen and connect with travelers worldwide.
+                {t('cta.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button size="lg" className="h-11 px-6 rounded-md bg-black text-white hover:bg-black/90">
-                  Get Started
+                  {t('cta.getStarted')}
                 </Button>
                 <Button size="lg" variant="outline" className="h-11 rounded-md border-gray-200 bg-white text-gray-900 hover:bg-gray-50">
-                  Learn More
+                  {t('cta.learnMore')}
                 </Button>
               </div>
             </div>

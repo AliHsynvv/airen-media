@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Star } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface CountryCardReviewProps {
   countryId?: string
@@ -20,6 +21,7 @@ function formatCount(n: number): string {
 }
 
 export default function CountryCardReview({ countryId, countrySlug, variant = 'inline', fallbackRating, className, withReviewsLabel }: CountryCardReviewProps) {
+  const t = useTranslations('countries.cardReview')
   const [avgRating, setAvgRating] = useState<number | null>(null)
   const [count, setCount] = useState<number | null>(null)
   const [totalStars, setTotalStars] = useState<number | null>(null)
@@ -95,7 +97,18 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
         <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" /> {ratingToShow ? ratingToShow.toFixed(1) : '—'}
       </span>
       <span className="text-gray-400">
-        ({formatCount(countToShow)}{withReviewsLabel ? ' reviews' : ''}{typeof totalStars === 'number' ? `, ${formatCount(totalStars)} stars` : ''})
+        {(() => {
+          const parts: string[] = []
+          if (withReviewsLabel) {
+            parts.push(t('reviewsLabel', { count: formatCount(countToShow) }))
+          } else {
+            parts.push(formatCount(countToShow))
+          }
+          if (typeof totalStars === 'number') {
+            parts.push(t('starsLabel', { count: formatCount(totalStars) }))
+          }
+          return `(${parts.join(', ')})`
+        })()}
       </span>
     </span>
   )

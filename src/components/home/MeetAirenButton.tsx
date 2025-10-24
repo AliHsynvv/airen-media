@@ -6,9 +6,11 @@ import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useTranslations } from 'next-intl'
 const ChatInterface = dynamic(() => import('@/components/interaction/ChatInterface'), { ssr: false })
 
 export default function MeetAirenButton({ className, fullWidth = false }: { className?: string; fullWidth?: boolean }) {
+  const t = useTranslations('home.hero.meetAiren')
   const [open, setOpen] = useState(false)
   const [started, setStarted] = useState(false)
   const pathname = usePathname()
@@ -25,12 +27,9 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
     document.body.appendChild(script)
   }, [open, isHome])
 
-  const prompts = [
-    "What's the best time to visit Italy?",
-    'Recommend hidden gems in Florence',
-    'Plan a 7-day Italian itinerary',
-    'What local dishes should I try?',
-  ]
+  const prompts = t.raw('prompts') as string[]
+  const features = t.raw('features') as string[]
+  const detailedFeatures = t.raw('detailedFeatures') as string[]
 
   const onOpen = (v: boolean) => {
     setOpen(v)
@@ -49,7 +48,7 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
           'transition-transform',
           className
         )}
-        aria-label="Meet Airen AI"
+        aria-label={t('dialogTitle')}
         onClick={() => setOpen(true)}
       >
         <span className="relative mr-3 inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 ease-out hover:scale-110">
@@ -74,7 +73,7 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
             <span className="h-1.5 w-1.5 rounded-full bg-white/90 animate-pulse" />
           </span>
         </span>
-        MEET AIREN AI
+        {t('buttonLabel')}
       </Button>
       <style jsx>{`
         @keyframes gradient-x { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
@@ -97,8 +96,8 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
       <Dialog open={open} onOpenChange={onOpen}>
         <DialogContent className="max-w-5xl w-[96vw]">
           <DialogHeader>
-            <DialogTitle className="text-xl">Meet Airen AI</DialogTitle>
-            <DialogDescription>Your Personal Travel Assistant</DialogDescription>
+            <DialogTitle className="text-xl">{t('dialogTitle')}</DialogTitle>
+            <DialogDescription>{t('dialogDescription')}</DialogDescription>
           </DialogHeader>
 
           {/* Body */}
@@ -109,14 +108,14 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
                 {!started ? (
                   <div className="flex flex-col items-center justify-center text-center p-6">
                     <div className="h-20 w-20 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-2xl font-semibold mb-4">A</div>
-                    <div className="text-gray-900 font-medium">Airen AI Avatar</div>
+                    <div className="text-gray-900 font-medium">{t('avatarTitle')}</div>
                     <div className="text-sm text-gray-500 mt-1 max-w-xs">
-                      AI avatar will be embedded here once Heygen integration is configured.
+                      {t('avatarDescription')}
                     </div>
                     <ul className="text-sm text-gray-600 mt-4 space-y-1">
-                      <li>• Personalized travel recommendations</li>
-                      <li>• Interactive Q&A sessions</li>
-                      <li>• Multi-language support</li>
+                      {features.map((feature, i) => (
+                        <li key={i}>• {feature}</li>
+                      ))}
                     </ul>
                   </div>
                 ) : isHome ? (
@@ -144,18 +143,19 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
             <div className="flex flex-col">
               <div className="space-y-3">
                 <div className="text-lg font-semibold text-gray-900">
-                  Ask me anything about travel destinations, get personalized recommendations, or chat about your travel plans!
+                  {t('mainDescription')}
                 </div>
                 <ul className="text-sm text-gray-700 space-y-2">
-                  <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-gray-400 inline-block"></span> Personalized destination recommendations</li>
-                  <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-gray-400 inline-block"></span> Real-time travel advice and tips</li>
-                  <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-gray-400 inline-block"></span> Multi-language conversation support</li>
-                  <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-gray-400 inline-block"></span> Interactive travel planning assistance</li>
+                  {detailedFeatures.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="mt-1 h-2 w-2 rounded-full bg-gray-400 inline-block"></span> {feature}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <div className="mt-6">
-                <div className="text-sm font-medium text-gray-900 mb-2">Try asking me:</div>
+                <div className="text-sm font-medium text-gray-900 mb-2">{t('tryAsking')}</div>
                 <div className="space-y-2">
                   {prompts.map((p, i) => (
                     <button
@@ -174,8 +174,8 @@ export default function MeetAirenButton({ className, fullWidth = false }: { clas
 
           {/* Footer actions */}
           <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-between">
-            <Button className="h-11 px-6 bg-gray-900 text-white hover:bg-black/90" onClick={() => setStarted(true)}>Start Conversation</Button>
-            <Button variant="secondary" className="h-11 px-6 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => onOpen(false)}>Close</Button>
+            <Button className="h-11 px-6 bg-gray-900 text-white hover:bg-black/90" onClick={() => setStarted(true)}>{t('startConversation')}</Button>
+            <Button variant="secondary" className="h-11 px-6 border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => onOpen(false)}>{t('close')}</Button>
           </div>
         </DialogContent>
       </Dialog>

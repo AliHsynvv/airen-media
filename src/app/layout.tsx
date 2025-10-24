@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/layout/SiteShell";
 import { SITE_CONFIG } from "@/lib/utils/constants";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getLocale } from 'next-intl/server';
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -65,17 +67,22 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+  
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang={locale} className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased overflow-x-hidden">
-        <SiteShell>
-          {children}
-        </SiteShell>
+        <NextIntlClientProvider messages={messages}>
+          <SiteShell>
+            {children}
+          </SiteShell>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

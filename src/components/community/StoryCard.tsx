@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
@@ -10,6 +12,7 @@ import { formatRelativeTime } from '@/lib/utils/formatters'
 // import FollowButton from '@/components/profile/FollowButton'
 import StoryCardHeaderClient from '@/components/community/StoryCardHeaderClient'
 import StoryCardOwnerMenu from '@/components/community/StoryCardOwnerMenu'
+import { useTranslations, useLocale } from 'next-intl'
 
 type StoryWithAggregates = UserStory & {
   users_profiles?: {
@@ -29,6 +32,8 @@ interface StoryCardProps {
 }
 
 export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProps) {
+  const t = useTranslations('community.storyCard')
+  const locale = useLocale()
   const s = story as StoryWithAggregates
   const href = story.slug ? `/community/stories/${story.slug}` : '#'
   if (variant === 'grid') {
@@ -87,7 +92,7 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
           {/* Post description line: bold username + real content; align to page-left on mobile */}
           <Link href={href} className="block -ml-4 sm:ml-0 pr-4 -mt-1">
             <div className="text-[16px] min-[430px]:text-[17px] sm:text-[17px] text-black leading-6 flex items-baseline gap-2">
-              <span className="font-semibold shrink-0 text-black">{s.users_profiles?.username || s.users_profiles?.full_name || 'Kullanıcı'}</span>
+              <span className="font-semibold shrink-0 text-black">{s.users_profiles?.username || s.users_profiles?.full_name || t('user')}</span>
               <span className="font-normal truncate flex-1 min-w-0 whitespace-nowrap text-black">
                 {story.content}
               </span>
@@ -96,12 +101,12 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
 
           {/* Timestamp under description; align to page left using negative margin on mobile */}
           <div className="text-[12px] font-normal text-gray-500 text-left -ml-4 sm:ml-0 -mt-1">
-            {formatRelativeTime(story.created_at)}
+            {formatRelativeTime(story.created_at, locale)}
           </div>
 
           {/* Meta link (desktop) */}
           <div className="hidden sm:block text-xs text-gray-500">
-            <Link href={href + '#comments'} className="hover:underline">Tüm yorumları görüntüle</Link>
+            <Link href={href + '#comments'} className="hover:underline">{t('viewAllComments')}</Link>
           </div>
         </div>
       </Card>

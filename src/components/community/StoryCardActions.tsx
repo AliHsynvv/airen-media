@@ -3,6 +3,7 @@
 import { useEffect, /* useMemo, */ useState, useRef } from 'react'
 import { Bookmark, Heart, MessageSquare, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import { supabase } from '@/lib/supabase/client'
 
 export type StoryCardActionsProps = {
@@ -17,6 +18,7 @@ export type StoryCardActionsProps = {
 }
 
 export default function StoryCardActions({ storyId, initialLikes, initialComments = 0, storySlug, storyTitle, className, initialShares = 0, onComment }: StoryCardActionsProps) {
+  const tActions = useTranslations('community.actions')
   const [liked, setLiked] = useState(false)
   const [likes, setLikes] = useState(initialLikes)
   const [saved, setSaved] = useState(false)
@@ -97,7 +99,7 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
       const { data: u } = await supabase.auth.getUser()
       const userId = u.user?.id
       if (!userId) {
-        alert('Beğenmek için lütfen giriş yapın.')
+        alert(tActions('loginRequiredLike'))
         window.location.href = '/auth/login'
         return
       }
@@ -146,7 +148,7 @@ export default function StoryCardActions({ storyId, initialLikes, initialComment
         await navigator.share({ title, url })
       } else {
         await navigator.clipboard.writeText(url)
-        alert('Link panoya kopyalandı')
+        alert(tActions('linkCopied'))
       }
       // optimistic UI update for share count
       setShares(v => v + 1)

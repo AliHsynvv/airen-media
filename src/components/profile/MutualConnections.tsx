@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 import FollowButton from '@/components/profile/FollowButton'
 
 interface MutualProfile {
@@ -13,6 +14,7 @@ interface MutualProfile {
 }
 
 export default function MutualConnections({ mutuals }: { mutuals: MutualProfile[] }) {
+  const t = useTranslations('profile.public')
   const [open, setOpen] = useState(false)
   if (!Array.isArray(mutuals) || mutuals.length === 0) return null
   const firstThree = mutuals.slice(0, 3)
@@ -33,14 +35,14 @@ export default function MutualConnections({ mutuals }: { mutuals: MutualProfile[
       </div>
       {extra > 0 && (
         <button type="button" onClick={() => setOpen(true)} className="text-xs text-gray-700 hover:underline">
-          ve {extra} kişi
+          {t('mutualAndMore', { count: extra })}
         </button>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Ortak bağlantılar</DialogTitle>
+            <DialogTitle>{t('mutualDialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-auto">
             <ul className="divide-y divide-gray-200">

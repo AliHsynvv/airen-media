@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/button'
 import { logoutAndRedirect } from '@/lib/auth/logout'
 import { ROUTES } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 export function Header() {
+  const t = useTranslations('header')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
@@ -101,11 +104,11 @@ export function Header() {
   }, [])
 
   const navigation = [
-    { name: 'Ana Sayfa', href: ROUTES.HOME },
-    { name: 'Haberler', href: ROUTES.NEWS },
-    { name: 'Ülkeler', href: ROUTES.COUNTRIES },
-    { name: 'Topluluk', href: ROUTES.COMMUNITY },
-    { name: 'Etkileşim', href: ROUTES.INTERACTION },
+    { name: t('navigation.home'), href: ROUTES.HOME },
+    { name: t('navigation.news'), href: ROUTES.NEWS },
+    { name: t('navigation.countries'), href: ROUTES.COUNTRIES },
+    { name: t('navigation.community'), href: ROUTES.COMMUNITY },
+    { name: t('navigation.interaction'), href: ROUTES.INTERACTION },
   ]
 
   return (
@@ -145,7 +148,7 @@ export function Header() {
               <Link
                 href={ROUTES.NOTIFICATIONS}
                 className="relative inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                aria-label={unreadCount > 0 ? `Bildirimler, ${unreadCount} okunmamış` : 'Bildirimler'}
+                aria-label={unreadCount > 0 ? `${t('notifications.label')}, ${t('notifications.unread', { count: unreadCount })}` : t('notifications.label')}
               >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
@@ -156,10 +159,13 @@ export function Header() {
               </Link>
             )}
 
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Search Button */}
             <Button variant="ghost" size="icon" className="hidden md:flex text-gray-700 hover:text-gray-900">
               <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
+              <span className="sr-only">{t('search')}</span>
             </Button>
 
             {/* User Menu */}
@@ -171,15 +177,15 @@ export function Header() {
                   ) : (
                     <User className="h-5 w-5 text-gray-700" />
                   )}
-                  <span className="sr-only">User menu</span>
+                  <span className="sr-only">{t('auth.profile')}</span>
                 </Button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg border border-gray-200 p-2 shadow-lg z-50">
                     <div className="px-2 py-1 text-xs text-gray-500 mb-1">
-                      {profile?.full_name || profile?.username || 'Kullanıcı'}
+                      {profile?.full_name || profile?.username || t('user')}
                     </div>
                     <Link href={ROUTES.PROFILE} className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md" onClick={() => setIsUserMenuOpen(false)}>
-                      Profil
+                      {t('auth.profile')}
                     </Link>
                     <button
                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
@@ -188,7 +194,7 @@ export function Header() {
                         await logoutAndRedirect('/')
                       }}
                     >
-                      Çıkış Yap
+                      {t('auth.logout')}
                     </button>
                   </div>
                 )}
@@ -200,13 +206,13 @@ export function Header() {
                   <Button asChild variant="outline" size="sm" className="rounded-full border-gray-300 text-gray-700 hover:bg-gray-100">
                     <Link href={ROUTES.AUTH.LOGIN}>
                       <LogIn className="h-4 w-4 mr-2" />
-                      Giriş
+                      {t('auth.login')}
                     </Link>
                   </Button>
                   <Button asChild size="sm" className="rounded-full bg-gray-900 text-white hover:bg-black">
                     <Link href={ROUTES.AUTH.REGISTER}>
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Kayıt Ol
+                      {t('auth.register')}
                     </Link>
                   </Button>
                 </div>
@@ -215,13 +221,13 @@ export function Header() {
                   <Button asChild variant="outline" size="sm" className="rounded-full border-gray-300 text-gray-700 hover:bg-gray-100">
                     <Link href={ROUTES.AUTH.LOGIN}>
                       <LogIn className="h-4 w-4 mr-2" />
-                      Giriş
+                      {t('auth.login')}
                     </Link>
                   </Button>
                   <Button asChild size="sm" className="rounded-full bg-gray-900 text-white hover:bg-black">
                     <Link href={ROUTES.AUTH.REGISTER}>
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Kayıt Ol
+                      {t('auth.register')}
                     </Link>
                   </Button>
                 </div>
@@ -241,7 +247,7 @@ export function Header() {
                 <Menu className="h-6 w-6" />
               )}
               <span className="sr-only">
-                {isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                {isMobileMenuOpen ? t('menu.close') : t('menu.open')}
               </span>
             </Button>
           </div>
@@ -266,7 +272,7 @@ export function Header() {
               <div className="px-3 py-2">
                 <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                   <Search className="h-4 w-4 mr-2" />
-                  Search
+                  {t('search')}
                 </Button>
               </div>
             </div>

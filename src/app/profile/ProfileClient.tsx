@@ -7,6 +7,7 @@ import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Search, Users, LayoutGrid, Bookmark, MessageSquareText, Plus, LogIn, UserPlus } from 'lucide-react'
 import { ROUTES } from '@/lib/utils/constants'
+import { useTranslations } from 'next-intl'
 
 interface MyStoryRow {
   id: string
@@ -30,6 +31,7 @@ interface ProfileClientProps {
 }
 
 export default function ProfileClient(props: ProfileClientProps) {
+  const t = useTranslations('profile.private')
   const [email, setEmail] = useState<string | null>(props.initialEmail || null)
   const [userId, setUserId] = useState<string | null>(props.initialUserId || null)
   const [fullName, setFullName] = useState<string | null>(props.initialFullName)
@@ -160,27 +162,27 @@ export default function ProfileClient(props: ProfileClientProps) {
     const url = typeof window !== 'undefined' ? window.location.origin + '/u/' + (userId || '') : ''
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Profilim', url })
+        await navigator.share({ title: 'Profile', url })
         return
       }
     } catch {}
     try {
       await navigator.clipboard.writeText(url)
-      setMsg('Profil bağlantısı kopyalandı')
+      setMsg(t('shareCopySuccess'))
     } catch {
-      setMsg('Bağlantı kopyalanamadı')
+      setMsg(t('shareCopyFail'))
     }
   }
 
   const logout = async () => { await logoutAndRedirect('/') }
   const remove = async (id: string) => {
-    if (!confirm('Hikayeyi silmek istediğinize emin misiniz?')) return
+    if (!confirm(t('deleteConfirm'))) return
     setMsg(null)
     const { error } = await supabase.from('user_stories').delete().eq('id', id)
     if (error) setMsg(error.message)
     else {
       setStories(prev => prev.filter(s => s.id !== id))
-      setMsg('Hikaye silindi')
+      setMsg(t('deleteSuccess'))
     }
   }
   const runCommunitySearch = async (q: string) => {
@@ -209,17 +211,17 @@ export default function ProfileClient(props: ProfileClientProps) {
           <div className="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
             <LogIn className="h-7 w-7 text-gray-700" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-gray-900">Oturum bulunamadı</h1>
-          <p className="mt-1 text-sm text-gray-600">Devam etmek için lütfen hesabınıza giriş yapın veya yeni bir hesap oluşturun.</p>
+          <h1 className="mt-4 text-2xl font-semibold text-gray-900">{t('sessionMissingTitle')}</h1>
+          <p className="mt-1 text-sm text-gray-600">{t('sessionMissingDesc')}</p>
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Button asChild className="h-10 rounded-full bg-black text-white hover:bg-black/90">
               <Link href={ROUTES.AUTH.LOGIN}>
-                <LogIn className="h-4 w-4 mr-2" /> Giriş Yap
+                <LogIn className="h-4 w-4 mr-2" /> {t('login')}
               </Link>
             </Button>
             <Button asChild variant="secondary" className="h-10 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50">
               <Link href={ROUTES.AUTH.REGISTER}>
-                <UserPlus className="h-4 w-4 mr-2" /> Kayıt Ol
+                <UserPlus className="h-4 w-4 mr-2" /> {t('register')}
               </Link>
             </Button>
           </div>
@@ -280,32 +282,32 @@ export default function ProfileClient(props: ProfileClientProps) {
                 </div>
               </button>
               <div className="max-w-xl">
-                <div className="text-xl sm:text-2xl font-semibold text-black">{fullName || username || 'Kullanıcı'}</div>
+                <div className="text-xl sm:text-2xl font-semibold text-black">{fullName || username || 'User'}</div>
                 <div className="text-gray-600 text-sm">@{username || (userId ? userId.slice(0,6) : 'user')}</div>
                 <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap px-2">
-                  {bio?.trim() ? bio : <span className="text-gray-500">Biyografi ekleyin</span>}
+                  {bio?.trim() ? bio : <span className="text-gray-500">Add a bio</span>}
                 </div>
               </div>
               <div className="mt-1 grid grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-lg font-semibold text-black">{approvedCount}</div>
-                  <div className="text-xs text-gray-600">Posts</div>
+                  <div className="text-xs text-gray-600">{t('posts')}</div>
                 </div>
-                <Link href="/followers" className="text-center block hover:opacity-90" aria-label="Followers sayfasına git">
+                <Link href="/followers" className="text-center block hover:opacity-90" aria-label={t('followersAria')}>
                   <div className="text-lg font-semibold text-black">{followersCount}</div>
-                  <div className="text-xs text-gray-600">Followers</div>
+                  <div className="text-xs text-gray-600">{t('followers')}</div>
                 </Link>
-                <Link href="/following" className="text-center block hover:opacity-90" aria-label="Following sayfasına git">
+                <Link href="/following" className="text-center block hover:opacity-90" aria-label={t('followingAria')}>
                   <div className="text-lg font-semibold text-black">{followingCount}</div>
-                  <div className="text-xs text-gray-600">Following</div>
+                  <div className="text-xs text-gray-600">{t('following')}</div>
                 </Link>
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-                  <Link href="/profile/edit">Edit Profile</Link>
+                  <Link href="/profile/edit">{t('editProfile')}</Link>
                 </Button>
                 <Button variant="secondary" className="h-9 px-5 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={onShareProfile}>
-                  Share Profile
+                  {t('shareProfile')}
                 </Button>
               </div>
             </div>
@@ -319,10 +321,10 @@ export default function ProfileClient(props: ProfileClientProps) {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') runCommunitySearch(searchQuery) }}
-                  placeholder="Kullanıcı, gönderi veya #etiket ara"
+                  placeholder={t('searchPlaceholder')}
                   className="flex-1 outline-none text-sm bg-transparent"
                 />
-                <Button className="h-8 px-3" onClick={() => runCommunitySearch(searchQuery)}>Ara</Button>
+                <Button className="h-8 px-3" onClick={() => runCommunitySearch(searchQuery)}>{t('search')}</Button>
               </div>
               <div className="max-h-[70vh] overflow-auto p-2">
                 {searchResults.length ? (
@@ -340,7 +342,7 @@ export default function ProfileClient(props: ProfileClientProps) {
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-sm text-gray-600">Sonuç yok.</div>
+                  <div className="text-sm text-gray-600">{t('noResults')}</div>
                 )}
               </div>
             </div>
@@ -348,17 +350,17 @@ export default function ProfileClient(props: ProfileClientProps) {
 
           <div className="border-t border-gray-200 bg-white">
             <div className="flex items-center justify-center gap-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap px-2">
-              <button onClick={() => setActiveTab('posts')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'posts' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label="Gönderiler">
+              <button onClick={() => setActiveTab('posts')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'posts' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label={t('tabs.posts')}>
                 <LayoutGrid className="h-5 w-5" />
-                <span className="hidden sm:inline">Gönderiler</span>
+                <span className="hidden sm:inline">{t('tabs.posts')}</span>
               </button>
-              <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'saved' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label="Kaydedilenler">
+              <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'saved' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label={t('tabs.saved')}>
                 <Bookmark className="h-5 w-5" />
-                <span className="hidden sm:inline">Kaydedilenler</span>
+                <span className="hidden sm:inline">{t('tabs.saved')}</span>
               </button>
-              <button onClick={() => setActiveTab('comments')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'comments' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label="Yorumlar">
+              <button onClick={() => setActiveTab('comments')} className={`flex items-center gap-2 px-4 py-3 text-sm font-medium shrink-0 ${activeTab === 'comments' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`} aria-label={t('tabs.comments')}>
                 <MessageSquareText className="h-5 w-5" />
-                <span className="hidden sm:inline">Yorumlar</span>
+                <span className="hidden sm:inline">{t('tabs.comments')}</span>
               </button>
             </div>
 
@@ -368,16 +370,16 @@ export default function ProfileClient(props: ProfileClientProps) {
                   <>
                     <div className="mb-3 flex items-center justify-center gap-3">
                       <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-                        <Link href="/community/stories/submit" aria-label="Hikaye Paylaş">
+                        <Link href="/community/stories/submit" aria-label={t('submitStoryAria')}>
                           <PlusCircle className="h-6 w-6" />
                         </Link>
                       </Button>
                       <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" asChild>
-                        <Link href="/community" aria-label="Topluluğa Dön">
+                        <Link href="/community" aria-label={t('backToCommunityAria')}>
                           <Users className="h-6 w-6" />
                         </Link>
                       </Button>
-                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => setShowSearch(true)} aria-label="Toplulukta Ara">
+                      <Button variant="secondary" className="h-11 w-11 p-0 rounded-full border border-gray-200 bg-white text-black hover:bg-gray-50" onClick={() => setShowSearch(true)} aria-label={t('searchCommunityAria')}>
                         <Search className="h-6 w-6" />
                       </Button>
                     </div>
@@ -409,7 +411,7 @@ export default function ProfileClient(props: ProfileClientProps) {
                         <Search className="h-6 w-6" />
                       </Button>
                     </div>
-                    <div className="text-gray-600 text-sm">Henüz gönderi yok.</div>
+                    <div className="text-gray-600 text-sm">{t('noPosts')}</div>
                   </>
                 )
               )}
@@ -417,7 +419,7 @@ export default function ProfileClient(props: ProfileClientProps) {
               {activeTab === 'saved' && (
                 <div className="space-y-4">
                   <div>
-                    <div className="text-sm text-gray-500 mb-2">Haberler</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('news')}</div>
                     {savedArticles.length ? (
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {savedArticles.map(a => (
@@ -435,11 +437,11 @@ export default function ProfileClient(props: ProfileClientProps) {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-gray-600 text-sm">Kayıtlı haber yok.</div>
+                      <div className="text-gray-600 text-sm">{t('noSavedNews')}</div>
                     )}
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500 mb-2">Ülkeler</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('countries')}</div>
                     {savedCountries.length ? (
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {savedCountries.map(c => (
@@ -457,7 +459,7 @@ export default function ProfileClient(props: ProfileClientProps) {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-gray-600 text-sm">Kayıtlı ülke yok.</div>
+                      <div className="text-gray-600 text-sm">{t('noSavedCountries')}</div>
                     )}
                   </div>
                 </div>
@@ -466,15 +468,15 @@ export default function ProfileClient(props: ProfileClientProps) {
               {activeTab === 'comments' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="rounded-lg border border-gray-200 p-3">
-                    <div className="text-sm text-gray-500 mb-2">Haberler</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('news')}</div>
                     {articleComments.length ? (
                       <ul className="space-y-1">{articleComments.map(c => (<li key={c.id} className="text-black"><Link className="hover:underline" href={`/articles/${c.article?.slug || ''}`}>{c.article?.title || '—'}</Link>: <span className="text-gray-700">{c.content}</span></li>))}</ul>
                     ) : (
-                      <div className="text-gray-600 text-sm">Yorum yok.</div>
+                      <div className="text-gray-600 text-sm">{t('noComments')}</div>
                     )}
                   </div>
                   <div className="rounded-lg border border-gray-200 p-3">
-                    <div className="text-sm text-gray-500 mb-2">Ülkeler</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('countries')}</div>
                     {countryReviews.length ? (
                       <ul className="space-y-1">{countryReviews.map(r => (<li key={r.id} className="text-black"><Link className="hover:underline" href={`/countries/${r.country?.slug || ''}`}>{r.country?.name || '—'}</Link>: <span className="text-gray-700">{r.comment || `${r.rating}/5`}</span></li>))}</ul>
                     ) : (
