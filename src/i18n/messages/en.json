@@ -282,6 +282,14 @@
       "article": "Article",
       "minutes": "min",
       "readingTime": "{time} min"
+    },
+    "tooltips": {
+      "grid": "Grid view",
+      "list": "List view",
+      "readingTime": "Reading time",
+      "views": "Views",
+      "likes": "Likes",
+      "comments": "Comments"
     }
   },
   "notifications": {
@@ -351,7 +359,9 @@
       "mutualAndMore": "and {count} more",
       "mutualDialogTitle": "Mutual connections",
       "community": "Community",
-      "toProfile": "Go to my profile"
+      "toProfile": "Go to my profile",
+      "mutualFriends": "{count} mutual friends",
+      "suggestedForYou": "Suggested for you"
     },
     "private": {
       "sessionMissingTitle": "Session not found",

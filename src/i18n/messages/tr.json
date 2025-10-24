@@ -282,6 +282,14 @@
       "article": "Makale",
       "minutes": "dk",
       "readingTime": "{time} dk"
+    },
+    "tooltips": {
+      "grid": "Izgara görünüm",
+      "list": "Liste görünüm",
+      "readingTime": "Okuma süresi",
+      "views": "Görüntülenme",
+      "likes": "Beğeni",
+      "comments": "Yorum"
     }
   },
   "notifications": {
@@ -351,7 +359,9 @@
       "mutualAndMore": "ve {count} kişi",
       "mutualDialogTitle": "Ortak bağlantılar",
       "community": "Topluluk",
-      "toProfile": "Profilime dön"
+      "toProfile": "Profilime dön",
+      "mutualFriends": "{count} ortak arkadaş",
+      "suggestedForYou": "Sizin için önerilen"
     },
     "private": {
       "sessionMissingTitle": "Oturum bulunamadı",

@@ -201,7 +201,7 @@ export default async function PublicUserProfilePage(context: Props) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.avatar_url || '/default-avatar.svg'} alt="avatar" className="mx-auto h-16 w-16 rounded-full object-cover" />
                 <Link href={`/u/${p.id}`} className="block mt-3 text-sm font-semibold text-gray-900 hover:underline truncate">{p.full_name || p.username || 'User'}</Link>
-                <div className="text-xs text-gray-600 mt-0.5">{p.mutual_count ? `${p.mutual_count} mutual friends` : 'Suggested for you'}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{p.mutual_count ? t('mutualFriends', { count: p.mutual_count }) : t('suggestedForYou')}</div>
                 <div className="mt-3">
                   <FollowButton profileId={p.id} className="w-full bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200" />
                 </div>
