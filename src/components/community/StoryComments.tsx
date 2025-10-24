@@ -179,12 +179,6 @@ export default function StoryComments({ storyId, variant = 'default', onSubmitte
 
   return (
     <div id="comments" className={isMinimal ? 'p-0' : 'rounded-xl border border-gray-200 bg-white p-4'}>
-      {!isMinimal && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-gray-700">{t('heading')}</div>
-          <button onClick={() => setOpen(false)} className="text-sm text-gray-500 hover:text-gray-800">{t('close')}</button>
-        </div>
-      )}
       <div>
         {(tree['root'] || []).map(c => <Item key={c.id} c={c} />)}
       </div>
