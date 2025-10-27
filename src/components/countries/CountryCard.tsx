@@ -38,11 +38,11 @@ export function CountryCard({ country, className }: CountryCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             </>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-              <div className="text-5xl font-bold tracking-widest text-gray-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex items-center justify-center">
+              <div className="text-5xl font-bold tracking-widest text-gray-600 drop-shadow">
                 {country.iso_code || country.id?.toUpperCase()}
               </div>
             </div>
@@ -64,7 +64,11 @@ export function CountryCard({ country, className }: CountryCardProps) {
         <div className="p-4">
           <div className="flex items-baseline gap-2">
             <h3 className="text-gray-900 font-semibold text-lg">{country.name}</h3>
-            <span className="text-xs text-gray-500 font-medium">{country.iso_code}</span>
+            {country.iso_code && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-semibold border border-gray-200">
+                {country.iso_code}
+              </span>
+            )}
           </div>
           {country.capital && (
             <div className="mt-1 flex items-center gap-1 text-sm text-gray-500">

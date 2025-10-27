@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Bookmark, BookmarkCheck, Heart, MessageCircle, Share2, Eye } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Heart, MessageCircle, Share2, Eye, Sparkles, HeartHandshake } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useTranslations } from 'next-intl'
 
@@ -124,31 +124,62 @@ export default function CountryCardActions({ countryId, countrySlug, className }
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <div className="inline-flex items-center gap-2">
-          <button onClick={toggleFavorite} disabled={busy || !isUuid} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border ${favorited ? 'text-red-600 border-red-200 bg-red-50' : 'text-gray-700 border-gray-200 bg-white'} hover:bg-gray-50`}>
-            <Heart className={`h-3.5 w-3.5 ${favorited ? 'fill-red-500 text-red-500' : ''}`} />
-            <span>{counts.likes}</span>
-          </button>
-          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-white text-gray-700">
-            <MessageCircle className="h-3.5 w-3.5" />
-            <span>{counts.comments}</span>
-          </div>
-          <button onClick={toggleBookmark} disabled={busy || !isUuid} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-            {bookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-            <span>{counts.bookmarks}</span>
-          </button>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        {/* Favorite Button */}
+        <button 
+          onClick={toggleFavorite} 
+          disabled={busy || !isUuid}
+          className={`group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+            favorited 
+              ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg hover:shadow-xl' 
+              : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pink-300 hover:bg-pink-50'
+          }`}
+        >
+          <Heart className={`h-4 w-4 transition-all ${favorited ? 'fill-white text-white scale-110' : 'group-hover:text-pink-500'}`} />
+          <span className="font-semibold">{counts.likes}</span>
+          {favorited && <Sparkles className="h-3 w-3 animate-pulse" />}
+        </button>
+
+        {/* Bookmark Button */}
+        <button 
+          onClick={toggleBookmark} 
+          disabled={busy || !isUuid}
+          className={`group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+            bookmarked 
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl' 
+              : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+          }`}
+        >
+          {bookmarked ? (
+            <BookmarkCheck className="h-4 w-4 text-white" />
+          ) : (
+            <Bookmark className="h-4 w-4 group-hover:text-blue-500" />
+          )}
+          <span className="font-semibold">{bookmarked ? 'Saved' : 'Save'}</span>
+        </button>
+
+        {/* Comments Count */}
+        <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 text-gray-700">
+          <MessageCircle className="h-4 w-4 text-purple-600" />
+          <span className="font-semibold">{counts.comments}</span>
+          <span className="text-xs text-gray-500">Reviews</span>
         </div>
-        <div className="inline-flex items-center gap-2">
-          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-white text-gray-700">
-            <Eye className="h-3.5 w-3.5" />
-            <span>{counts.views}</span>
-          </div>
-          <button onClick={share} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-            <Share2 className="h-3.5 w-3.5" />
-            <span>{t('shareCountry')}</span>
-          </button>
+
+        {/* Views Count */}
+        <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200 text-gray-700">
+          <Eye className="h-4 w-4 text-gray-600" />
+          <span className="font-semibold">{counts.views}</span>
+          <span className="text-xs text-gray-500">Views</span>
         </div>
+
+        {/* Share Button */}
+        <button 
+          onClick={share}
+          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+        >
+          <Share2 className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+          <span>Share</span>
+        </button>
       </div>
     </div>
   )

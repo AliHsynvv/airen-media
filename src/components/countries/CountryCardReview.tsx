@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Star } from 'lucide-react'
+import { Star, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 interface CountryCardReviewProps {
@@ -12,6 +12,7 @@ interface CountryCardReviewProps {
   fallbackRating?: number
   className?: string
   withReviewsLabel?: boolean
+  theme?: 'light' | 'dark'
 }
 
 function formatCount(n: number): string {
@@ -20,7 +21,7 @@ function formatCount(n: number): string {
   return String(n)
 }
 
-export default function CountryCardReview({ countryId, countrySlug, variant = 'inline', fallbackRating, className, withReviewsLabel }: CountryCardReviewProps) {
+export default function CountryCardReview({ countryId, countrySlug, variant = 'inline', fallbackRating, className, withReviewsLabel, theme = 'light' }: CountryCardReviewProps) {
   const t = useTranslations('countries.cardReview')
   const [avgRating, setAvgRating] = useState<number | null>(null)
   const [count, setCount] = useState<number | null>(null)
@@ -83,20 +84,30 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
   const ratingToShow = avgRating ?? (fallbackRating !== undefined ? Number(fallbackRating.toFixed(1)) : null)
   const countToShow = count ?? 0
 
+  // Theme-based colors
+  const textColor = theme === 'dark' ? 'text-white' : 'text-gray-800'
+  const secondaryColor = theme === 'dark' ? 'text-white/70' : 'text-gray-500'
+  const starColor = 'text-amber-400'
+  const starFill = 'fill-amber-400'
+
   if (variant === 'badge') {
     return (
-      <div className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-white/90 text-gray-800 border border-gray-200 px-2 py-0.5 text-xs shadow ${className || ''}`}>
-        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" /> {ratingToShow ? ratingToShow.toFixed(1) : '—'}
+      <div className={`absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-sm text-gray-900 border border-gray-200 px-3 py-1.5 text-xs font-semibold shadow-lg ${className || ''}`}>
+        <Star className={`h-4 w-4 ${starFill} ${starColor}`} /> 
+        {ratingToShow ? ratingToShow.toFixed(1) : '—'}
       </div>
     )
   }
 
   return (
-    <span className={`inline-flex items-center gap-2 ${className || ''}`}>
-      <span className="inline-flex items-center gap-1">
-        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" /> {ratingToShow ? ratingToShow.toFixed(1) : '—'}
+    <span className={`inline-flex items-center gap-3 ${className || ''}`}>
+      <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/20">
+        <Sparkles className={`h-4 w-4 ${starColor}`} /> 
+        <span className={`font-semibold ${textColor}`}>
+          {ratingToShow ? ratingToShow.toFixed(1) : '—'}
+        </span>
       </span>
-      <span className="text-gray-400">
+      <span className={`text-sm ${secondaryColor} font-medium`}>
         {(() => {
           const parts: string[] = []
           if (withReviewsLabel) {
@@ -107,7 +118,7 @@ export default function CountryCardReview({ countryId, countrySlug, variant = 'i
           if (typeof totalStars === 'number') {
             parts.push(t('starsLabel', { count: formatCount(totalStars) }))
           }
-          return `(${parts.join(', ')})`
+          return `${parts.join(' • ')}`
         })()}
       </span>
     </span>

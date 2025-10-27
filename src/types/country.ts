@@ -30,6 +30,12 @@ export interface Country extends BaseEntity {
   // Tourism Data
   top_places: TopPlace[]
   popular_activities: string[]
+  popular_cities?: string[]
+  negatives?: string[]
+  latitude?: number | null
+  longitude?: number | null
+  popular_restaurants?: Venue[]
+  popular_hotels?: Venue[]
   average_budget: {
     daily?: number
     weekly?: number
@@ -66,6 +72,20 @@ export interface TopPlace {
   }
 }
 
+export interface Venue {
+  name: string
+  image?: string
+  url?: string
+  description?: string
+  location?: {
+    lat?: number
+    lng?: number
+    address?: string
+    city?: string
+  }
+  rating?: number
+}
+
 export interface CreateCountryData {
   name: string
   slug?: string
@@ -87,6 +107,11 @@ export interface CreateCountryData {
   local_customs?: string
   top_places?: TopPlace[]
   popular_activities?: string[]
+  negatives?: string[]
+  latitude?: number | null
+  longitude?: number | null
+  popular_restaurants?: Venue[]
+  popular_hotels?: Venue[]
   average_budget?: {
     daily?: number
     weekly?: number
