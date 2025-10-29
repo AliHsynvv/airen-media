@@ -27,8 +27,6 @@ const schema = z.object({
   popular_activities: z.array(z.string()).nullable().optional(),
   popular_cities: z.array(z.string()).nullable().optional(),
   negatives: z.array(z.string()).nullable().optional(),
-  latitude: z.number().nullable().optional(),
-  longitude: z.number().nullable().optional(),
   popular_restaurants: z.array(z.object({
     name: z.string(),
     image: z.string().url().optional(),
