@@ -152,10 +152,6 @@ export default async function Home() {
                   autoPlay
                   preload="metadata"
                 />
-                {/* subtle overlays and rings */}
-                <div className="absolute inset-0 rounded-full ring-1 ring-black/5" />
-                <div className="absolute inset-12 rounded-full ring-1 ring-black/5" />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
               </div>
             </div>
           </div>
