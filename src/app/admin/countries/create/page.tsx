@@ -46,24 +46,15 @@ export default function AdminCountryCreatePage() {
   const [hotels, setHotels] = useState<Array<{name: string, image: string, url: string}>>([])
   const [uploadingVenue, setUploadingVenue] = useState(false)
 
-<<<<<<< HEAD
   // Extended fields
-  const [latitude, setLatitude] = useState<number | ''>('')
-  const [longitude, setLongitude] = useState<number | ''>('')
   const [mapZoom, setMapZoom] = useState<number | ''>('')
   const [negativeAspects, setNegativeAspects] = useState('')
   const [famousFoods, setFamousFoods] = useState('')
-  const [restaurantsText, setRestaurantsText] = useState('')
-  const [hotelsText, setHotelsText] = useState('')
   const [totalRestaurants, setTotalRestaurants] = useState<number | ''>('')
   const [totalHotels, setTotalHotels] = useState<number | ''>('')
   const [avgMealPrice, setAvgMealPrice] = useState<number | ''>('')
   const [avgHotelPrice, setAvgHotelPrice] = useState<number | ''>('')
-
-  const upload = async (file: File) => {
-=======
   const upload = async (file: File, bucket: string = 'Countries', folder: string = 'countries') => {
->>>>>>> bbb56cc50f8a6372f8ee20ce10eaa9f8a5f04714
     const form = new FormData()
     form.append('file', file)
     form.append('folder', folder)
@@ -191,7 +182,6 @@ export default function AdminCountryCreatePage() {
           featured: featuredToggle,
           latitude: latitude === '' ? null : Number(latitude),
           longitude: longitude === '' ? null : Number(longitude),
-<<<<<<< HEAD
           map_zoom_level: mapZoom === '' ? null : Number(mapZoom),
           negative_aspects: negativeAspects
             ? negativeAspects.split('\n').map(line => {
@@ -239,13 +229,11 @@ export default function AdminCountryCreatePage() {
           total_hotels: totalHotels === '' ? null : Number(totalHotels),
           average_meal_price: avgMealPrice === '' ? null : Number(avgMealPrice),
           average_hotel_price: avgHotelPrice === '' ? null : Number(avgHotelPrice),
-=======
           negatives: negativesText
             ? negativesText.split('\n').map(s => s.trim()).filter(Boolean)
             : [],
           popular_restaurants: restaurants.filter(r => r.name.trim()),
           popular_hotels: hotels.filter(h => h.name.trim()),
->>>>>>> bbb56cc50f8a6372f8ee20ce10eaa9f8a5f04714
         }),
       })
       const json = await res.json()
@@ -278,7 +266,6 @@ export default function AdminCountryCreatePage() {
       setBudgetLevel('')
       setLatitude('')
       setLongitude('')
-<<<<<<< HEAD
       setMapZoom('')
       setNegativeAspects('')
       setFamousFoods('')
@@ -288,11 +275,8 @@ export default function AdminCountryCreatePage() {
       setTotalHotels('')
       setAvgMealPrice('')
       setAvgHotelPrice('')
-=======
       setNegativesText('')
-      setRestaurantsText('')
-      setHotelsText('')
->>>>>>> bbb56cc50f8a6372f8ee20ce10eaa9f8a5f04714
+      setNegativesText('')
     } catch (e: any) {
       setMessage(`Hata: ${e.message}`)
     } finally {
