@@ -49,7 +49,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section with Image */}
       {/* Recommended image size: 2560x1080px or 1920x823px (21:9 cinematic ratio) */}
-      <div className="relative w-full" style={{ aspectRatio: '21 / 9', maxHeight: '600px', minHeight: '400px' }}>
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] min-h-[220px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[400px] max-h-[600px]">
         {hasImage ? (
           <Image 
             src={country.featured_image || '/next.svg'} 
@@ -73,11 +73,11 @@ export default async function CountryDetailPage(context: CountryPageProps) {
           <ArrowLeft className="h-4 w-4" /> {t('detail.back')}
         </Link>
             
-            <div className="flex items-start gap-4 mb-6">
+            <div className="flex flex-wrap items-start gap-4 mb-6">
               {country.flag_icon && (
                 <div className="relative group">
                   <div 
-                    className="text-6xl transform group-hover:scale-110 transition-transform"
+                    className="text-4xl sm:text-6xl transform group-hover:scale-110 transition-transform"
                     style={{
                       filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
                       WebkitFilter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
@@ -105,7 +105,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </Badge>
                   )}
           </div>
-                <h1 className="text-5xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
+                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
             {country.name}
           </h1>
           {country.capital && (
@@ -133,7 +133,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
           </div>
         </div>
 
-      <div className="container mx-auto px-4 -mt-8 relative z-10">
+      <div className="container mx-auto px-4 -mt-6 sm:-mt-8 relative z-10">
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 mb-8">
           <button className="group px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">

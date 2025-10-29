@@ -281,11 +281,11 @@ export default function WeatherWidget({ countryName, cities, latitude, longitude
       {!loading && !error && weather && (
         <div className="space-y-4">
           {/* Main Weather Display */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               {getWeatherIcon(weather.icon)}
               <div>
-                <div className="text-5xl font-bold text-gray-900">{weather.temp}°C</div>
+                <div className="text-4xl sm:text-5xl font-bold text-gray-900">{weather.temp}°C</div>
                 <div className="text-sm text-gray-600 capitalize">{weather.description}</div>
               </div>
             </div>
