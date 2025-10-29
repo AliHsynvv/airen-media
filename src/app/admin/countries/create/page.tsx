@@ -34,6 +34,19 @@ export default function AdminCountryCreatePage() {
   const [budgetLevel, setBudgetLevel] = useState<'Budget'|'Mid-range'|'Luxury'|''>('')
   const [message, setMessage] = useState<string | null>(null)
 
+  // Extended fields
+  const [latitude, setLatitude] = useState<number | ''>('')
+  const [longitude, setLongitude] = useState<number | ''>('')
+  const [mapZoom, setMapZoom] = useState<number | ''>('')
+  const [negativeAspects, setNegativeAspects] = useState('')
+  const [famousFoods, setFamousFoods] = useState('')
+  const [restaurantsText, setRestaurantsText] = useState('')
+  const [hotelsText, setHotelsText] = useState('')
+  const [totalRestaurants, setTotalRestaurants] = useState<number | ''>('')
+  const [totalHotels, setTotalHotels] = useState<number | ''>('')
+  const [avgMealPrice, setAvgMealPrice] = useState<number | ''>('')
+  const [avgHotelPrice, setAvgHotelPrice] = useState<number | ''>('')
+
   const upload = async (file: File) => {
     const form = new FormData()
     form.append('file', file)
@@ -82,6 +95,55 @@ export default function AdminCountryCreatePage() {
             : [],
           visitors_per_year: visitorsPerYear === '' ? null : Number(visitorsPerYear),
           featured: featuredToggle,
+          latitude: latitude === '' ? null : Number(latitude),
+          longitude: longitude === '' ? null : Number(longitude),
+          map_zoom_level: mapZoom === '' ? null : Number(mapZoom),
+          negative_aspects: negativeAspects
+            ? negativeAspects.split('\n').map(line => {
+                const [title, description, severity, category] = line.split('|')
+                return {
+                  title: (title || '').trim(),
+                  description: (description || '').trim() || undefined,
+                  severity: (severity || '').trim() || undefined,
+                  category: (category || '').trim() || undefined,
+                }
+              }).filter(p => p.title)
+            : [],
+          famous_foods: famousFoods
+            ? famousFoods.split('\n').map(line => {
+                const [name, description, image_url, price_range] = line.split('|')
+                return {
+                  name: (name || '').trim(),
+                  description: (description || '').trim() || undefined,
+                  image_url: (image_url || '').trim() || undefined,
+                  price_range: (price_range || '').trim() || undefined,
+                }
+              }).filter(p => p.name)
+            : [],
+          restaurants: restaurantsText
+            ? restaurantsText.split('\n').map(line => {
+                const [name, description, image] = line.split('|')
+                return {
+                  name: (name || '').trim(),
+                  description: (description || '').trim() || undefined,
+                  images: image ? [image.trim()] : undefined,
+                }
+              }).filter(p => p.name)
+            : [],
+          hotels: hotelsText
+            ? hotelsText.split('\n').map(line => {
+                const [name, description, image] = line.split('|')
+                return {
+                  name: (name || '').trim(),
+                  description: (description || '').trim() || undefined,
+                  images: image ? [image.trim()] : undefined,
+                }
+              }).filter(p => p.name)
+            : [],
+          total_restaurants: totalRestaurants === '' ? null : Number(totalRestaurants),
+          total_hotels: totalHotels === '' ? null : Number(totalHotels),
+          average_meal_price: avgMealPrice === '' ? null : Number(avgMealPrice),
+          average_hotel_price: avgHotelPrice === '' ? null : Number(avgHotelPrice),
         }),
       })
       const json = await res.json()
@@ -112,6 +174,17 @@ export default function AdminCountryCreatePage() {
       setVisitorsPerYear('')
       setFeaturedToggle(false)
       setBudgetLevel('')
+      setLatitude('')
+      setLongitude('')
+      setMapZoom('')
+      setNegativeAspects('')
+      setFamousFoods('')
+      setRestaurantsText('')
+      setHotelsText('')
+      setTotalRestaurants('')
+      setTotalHotels('')
+      setAvgMealPrice('')
+      setAvgHotelPrice('')
     } catch (e: any) {
       setMessage(`Hata: ${e.message}`)
     } finally {
@@ -158,6 +231,20 @@ export default function AdminCountryCreatePage() {
         <div>
           <label className="block text-sm text-gray-700 mb-1">Genel Bilgiler</label>
           <Textarea value={cultureDescription} onChange={e => setCultureDescription(e.target.value)} rows={3} />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Harita Enlem (latitude)</label>
+            <Input value={latitude} onChange={e => setLatitude(e.target.value as any)} placeholder="40.4093" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Harita Boylam (longitude)</label>
+            <Input value={longitude} onChange={e => setLongitude(e.target.value as any)} placeholder="49.8671" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Harita Yakınlık (zoom)</label>
+            <Input value={mapZoom} onChange={e => setMapZoom(e.target.value as any)} placeholder="6" />
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Vize & Giriş</label>
@@ -224,6 +311,40 @@ export default function AdminCountryCreatePage() {
         <div>
           <label className="block text-sm text-gray-700 mb-1">En Çok Ziyaret Edilen Yerler (satır başına "Ad|Açıklama")</label>
           <Textarea value={topPlaces} onChange={e => setTopPlaces(e.target.value)} rows={3} />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Mənfi tərəflər (satır: Başlık|Açıklama|severity(optional)|category(optional))</label>
+          <Textarea value={negativeAspects} onChange={e => setNegativeAspects(e.target.value)} rows={3} placeholder="Pahalı|Konaklama fiyatları yüksek|high|cost" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">En məşhur yemeklər (satır: Ad|Açıklama|ResimURL|FiyatAralığı)</label>
+          <Textarea value={famousFoods} onChange={e => setFamousFoods(e.target.value)} rows={3} placeholder="Plov|Milli yemək|https://.../plov.jpg|10-20 AZN" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Restoranlar (sadece görsel destekli) satır: Ad|Açıklama|ResimURL</label>
+          <Textarea value={restaurantsText} onChange={e => setRestaurantsText(e.target.value)} rows={3} placeholder="Firuze|Yerel mətbəx|https://.../rest.jpg" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Oteller (sadece görsel destekli) satır: Ad|Açıklama|ResimURL</label>
+          <Textarea value={hotelsText} onChange={e => setHotelsText(e.target.value)} rows={3} placeholder="Four Seasons|5 yıldızlı|https://.../hotel.jpg" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Toplam Restoran</label>
+            <Input value={totalRestaurants} onChange={e => setTotalRestaurants(e.target.value as any)} placeholder="120" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Toplam Otel</label>
+            <Input value={totalHotels} onChange={e => setTotalHotels(e.target.value as any)} placeholder="80" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Ortalama Yemek Fiyatı</label>
+            <Input value={avgMealPrice} onChange={e => setAvgMealPrice(e.target.value as any)} placeholder="35" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Ortalama Otel Gecelik</label>
+            <Input value={avgHotelPrice} onChange={e => setAvgHotelPrice(e.target.value as any)} placeholder="120" />
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Slug (opsiyonel)</label>

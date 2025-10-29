@@ -14,6 +14,11 @@ export interface Country extends BaseEntity {
   currency_code: string | null
   timezone: string | null
   
+  // Map Data
+  latitude: number | null
+  longitude: number | null
+  map_zoom_level: number | null
+  
   // Travel Info
   visa_info: string | null
   entry_requirements: string | null
@@ -35,6 +40,20 @@ export interface Country extends BaseEntity {
     weekly?: number
   }
   budget_level?: 'Budget' | 'Mid-range' | 'Luxury' | string | null
+  
+  // Negative Aspects
+  negative_aspects: NegativeAspect[]
+  
+  // Famous Foods
+  famous_foods: FamousFood[]
+  
+  // Restaurants & Hotels
+  restaurants: Restaurant[]
+  hotels: Hotel[]
+  total_restaurants: number
+  total_hotels: number
+  average_meal_price: number | null
+  average_hotel_price: number | null
   
   // AI Content
   airen_advice: string | null
@@ -64,6 +83,60 @@ export interface TopPlace {
     lat: number
     lng: number
   }
+}
+
+export interface NegativeAspect {
+  title: string
+  description: string
+  severity?: 'low' | 'medium' | 'high'
+  category?: 'cost' | 'safety' | 'weather' | 'infrastructure' | 'other'
+}
+
+export interface FamousFood {
+  name: string
+  local_name?: string
+  description: string
+  image_url?: string
+  price_range?: string
+  ingredients?: string[]
+  recommended_places?: string[]
+  is_vegetarian?: boolean
+  is_vegan?: boolean
+}
+
+export interface Restaurant {
+  name: string
+  description: string
+  address?: string
+  latitude?: number
+  longitude?: number
+  rating?: number
+  price_range?: '$' | '$$' | '$$$' | '$$$$'
+  cuisine_type?: string
+  specialties?: string[]
+  images?: string[]
+  phone?: string
+  website?: string
+  opening_hours?: string
+  average_meal_cost?: number
+}
+
+export interface Hotel {
+  name: string
+  description: string
+  address?: string
+  latitude?: number
+  longitude?: number
+  rating?: number
+  star_rating?: number
+  price_range?: '$' | '$$' | '$$$' | '$$$$'
+  price_per_night?: number
+  images?: string[]
+  amenities?: string[]
+  phone?: string
+  website?: string
+  booking_url?: string
+  room_types?: string[]
 }
 
 export interface CreateCountryData {

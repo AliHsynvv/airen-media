@@ -31,6 +31,18 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       popular_activities: body.popular_activities ?? [],
       airen_advice: body.airen_advice ?? null,
       top_places: body.top_places ?? [],
+      // Extended fields
+      latitude: body.latitude ?? null,
+      longitude: body.longitude ?? null,
+      map_zoom_level: body.map_zoom_level ?? null,
+      negative_aspects: body.negative_aspects ?? [],
+      famous_foods: body.famous_foods ?? [],
+      restaurants: body.restaurants ?? [],
+      hotels: body.hotels ?? [],
+      total_restaurants: body.total_restaurants ?? null,
+      total_hotels: body.total_hotels ?? null,
+      average_meal_price: body.average_meal_price ?? null,
+      average_hotel_price: body.average_hotel_price ?? null,
     }
     const { data, error } = await supabaseAdmin.from('countries').update(update).eq('id', id).select('*').single()
     if (error) throw error
