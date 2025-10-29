@@ -32,8 +32,6 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       popular_activities: body.popular_activities ?? [],
       popular_cities: body.popular_cities ?? [],
       negatives: body.negatives ?? [],
-      latitude: body.latitude ?? null,
-      longitude: body.longitude ?? null,
       popular_restaurants: body.popular_restaurants ?? [],
       popular_hotels: body.popular_hotels ?? [],
       airen_advice: body.airen_advice ?? null,
