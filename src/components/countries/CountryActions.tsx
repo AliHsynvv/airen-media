@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Bookmark, BookmarkCheck, Heart, Share2 } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Heart, Share2, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 interface CountryActionsProps {
@@ -127,28 +127,47 @@ export default function CountryActions({ countryId, countryName, className }: Co
 
   return (
     <div className={className}>
-      <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          onClick={toggleBookmark}
-          disabled={busy || !isUuid}
-          className="h-9 px-3 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1"
-        >
-          {bookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          {bookmarked ? t('bookmarked') : t('bookmark')}
-        </button>
+      <div className="flex flex-wrap gap-3">
+        {/* Favorite Button */}
         <button
           onClick={toggleFavorite}
           disabled={busy || !isUuid}
-          className={`h-9 px-3 rounded-md border border-gray-200 bg-white hover:bg-gray-50 inline-flex items-center gap-1 ${favorited ? 'text-red-600 border-red-200 bg-red-50' : 'text-gray-700'}`}
+          className={`group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 hover:scale-105 ${
+            favorited 
+              ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg hover:shadow-xl' 
+              : 'bg-white/90 backdrop-blur-sm text-gray-700 border-2 border-white/40 hover:border-pink-300 hover:bg-white shadow-md'
+          }`}
         >
-          <Heart className={`h-4 w-4 ${favorited ? 'fill-red-500 text-red-500' : ''}`} />
-          {favorited ? t('favorited') : t('addToFavorites')}
+          <Heart className={`h-5 w-5 transition-all ${favorited ? 'fill-white text-white scale-110' : 'group-hover:text-pink-500'}`} />
+          <span>{favorited ? t('favorited') : t('addToFavorites')}</span>
+          {favorited && <Sparkles className="h-4 w-4 animate-pulse" />}
         </button>
+
+        {/* Bookmark Button */}
+        <button
+          onClick={toggleBookmark}
+          disabled={busy || !isUuid}
+          className={`group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 hover:scale-105 ${
+            bookmarked 
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl' 
+              : 'bg-white/90 backdrop-blur-sm text-gray-700 border-2 border-white/40 hover:border-blue-300 hover:bg-white shadow-md'
+          }`}
+        >
+          {bookmarked ? (
+            <BookmarkCheck className="h-5 w-5 text-white" />
+          ) : (
+            <Bookmark className="h-5 w-5 group-hover:text-blue-500" />
+          )}
+          <span>{bookmarked ? t('bookmarked') : t('bookmark')}</span>
+        </button>
+
+        {/* Share Button */}
         <button
           onClick={share}
-          className="h-9 px-3 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
         >
-          <Share2 className="h-4 w-4" /> {t('shareCountry')}
+          <Share2 className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+          <span>{t('shareCountry')}</span>
         </button>
       </div>
     </div>

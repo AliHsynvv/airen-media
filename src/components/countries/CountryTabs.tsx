@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import CountryReviews from '@/components/countries/CountryReviews'
 import { useTranslations } from 'next-intl'
+import { MessageSquare, Info } from 'lucide-react'
 
 interface CountryTabsProps {
   countryId?: string
@@ -20,33 +21,42 @@ export default function CountryTabs({ countryId, countrySlug, overview }: Countr
   return (
     <div className="mt-8">
       {/* Tab headers */}
-      <div className="border-b border-gray-200">
-        <div className="flex gap-6 text-sm">
+      <div className="border-b border-gray-200 bg-white/50 backdrop-blur-sm sticky top-0 z-20">
+        <div className="flex gap-2">
           <button
-            className={`px-1 py-3 ${tab === 'overview' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all ${
+              tab === 'overview' 
+                ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50/50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
             onClick={() => setTab('overview')}
           >
+            <Info className="h-4 w-4" />
             {t('overview')}
           </button>
           <button
-            className={`px-1 py-3 ${tab === 'reviews' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all ${
+              tab === 'reviews' 
+                ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50/50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
             onClick={() => setTab('reviews')}
           >
+            <MessageSquare className="h-4 w-4" />
             {t('reviews')}
           </button>
         </div>
       </div>
 
       {/* Tab content */}
-      <div className="mt-6 space-y-6">
+      <div className="mt-8 space-y-6">
         {tab === 'overview' && (
           <>{overview}</>
         )}
         {tab === 'reviews' && (
-          <Card className="bg-white border border-gray-200 rounded-xl p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">{t('reviewsHeading')}</h3>
+          <div>
             <CountryReviews countryId={countryId} countrySlug={countrySlug} />
-          </Card>
+          </div>
         )}
       </div>
     </div>
