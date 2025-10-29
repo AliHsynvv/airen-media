@@ -38,17 +38,25 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
   const href = story.slug ? `/community/stories/${story.slug}` : '#'
   if (variant === 'grid') {
     return (
-      <div className={cn('block w-full', className)}>
+      <div className={cn('block w-full group', className)}>
         <Link href={href} className="block">
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative aspect-square overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
             <Image
               src={story.image_url || '/next.svg'}
               alt={story.image_alt || story.title}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
               sizes="(max-width: 640px) 50vw, 200px"
               loading="lazy"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Story Info Overlay on Hover */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+              <p className="text-white text-xs font-semibold line-clamp-2 drop-shadow-lg">
+                {story.title || story.content}
+              </p>
+            </div>
           </div>
         </Link>
       </div>
@@ -57,12 +65,12 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
   return (
     <div className={cn('block w-full group', className)}>
       <Card className={cn(
-        'overflow-hidden transition-transform hover:-translate-y-0.5 bg-white flex flex-col shadow-sm hover:shadow-md',
+        'overflow-hidden transition-all duration-300 bg-white flex flex-col shadow-lg hover:shadow-2xl hover:-translate-y-1',
         // Full-width on mobile, rounded corners preserved; tighter on desktop
-        variant === 'fixed' ? 'w-[220px] border border-gray-200' : 'w-full sm:max-w-none rounded-xl sm:rounded-2xl border-0 sm:border border-gray-200'
+        variant === 'fixed' ? 'w-[220px] border-2 border-gray-100 rounded-3xl' : 'w-full sm:max-w-none rounded-2xl sm:rounded-3xl border-0 sm:border-2 border-gray-100'
       )}>
         {/* Header: compact, minimal (client logic to route to /profile if self) */}
-        <div className="px-0 sm:px-3 py-2 flex items-center justify-between gap-2 sm:gap-3 max-[390px]:gap-4 min-[391px]:gap-5 relative">
+        <div className="px-3 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-3 max-[390px]:gap-4 min-[391px]:gap-5 relative">
           <StoryCardHeaderClient
             profileId={s.users_profiles?.id}
             avatarUrl={s.users_profiles?.avatar_url}
@@ -78,7 +86,7 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
         <StoryMediaClient href={href} imageUrl={story.image_url} imageAlt={story.image_alt || story.title} variant={variant} storyId={story.id} />
 
         {/* Content block */}
-        <div className="py-2 px-3 sm:px-4 flex-1 flex flex-col gap-2">
+        <div className="py-3 px-3 sm:px-4 flex-1 flex flex-col gap-3">
           {/* Actions directly under the image, minimal spacing */}
           <StoryCardClientActions
             storyId={story.id}
@@ -86,27 +94,33 @@ export function StoryCard({ story, className, variant = 'fixed' }: StoryCardProp
             initialComments={Array.isArray(s.community_story_comments) ? s.community_story_comments[0]?.count || 0 : s.comments_count || 0}
             storySlug={story.slug}
             storyTitle={story.title}
-            className="px-0 -ml-4 sm:ml-0 pr-4 pt-2 pb-0"
+            className="px-0 pr-2"
           />
 
-          {/* Post description line: bold username + real content; align to page-left on mobile */}
-          <Link href={href} className="block -ml-4 sm:ml-0 pr-4 -mt-1">
-            <div className="text-[16px] min-[430px]:text-[17px] sm:text-[17px] text-black leading-6 flex items-baseline gap-2">
-              <span className="font-semibold shrink-0 text-black">{s.users_profiles?.username || s.users_profiles?.full_name || t('user')}</span>
-              <span className="font-normal truncate flex-1 min-w-0 whitespace-nowrap text-black">
+          {/* Post description line: bold username + real content */}
+          <Link href={href} className="block">
+            <div className="text-base sm:text-[17px] text-gray-900 leading-relaxed">
+              <span className="font-bold text-gray-900">{s.users_profiles?.username || s.users_profiles?.full_name || t('user')}</span>
+              {' '}
+              <span className="font-normal text-gray-800">
                 {story.content}
               </span>
             </div>
           </Link>
 
-          {/* Timestamp under description; align to page left using negative margin on mobile */}
-          <div className="text-[12px] font-normal text-gray-500 text-left -ml-4 sm:ml-0 -mt-1">
+          {/* Timestamp under description */}
+          <div className="text-xs font-medium text-gray-500">
             {formatRelativeTime(story.created_at, locale)}
           </div>
 
           {/* Meta link (desktop) */}
-          <div className="hidden sm:block text-xs text-gray-500">
-            <Link href={href + '#comments'} className="hover:underline">{t('viewAllComments')}</Link>
+          <div className="hidden sm:block">
+            <Link 
+              href={href + '#comments'} 
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold hover:underline transition-colors"
+            >
+              {t('viewAllComments')}
+            </Link>
           </div>
         </div>
       </Card>

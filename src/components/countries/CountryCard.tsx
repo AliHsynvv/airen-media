@@ -27,7 +27,7 @@ export function CountryCard({ country, className }: CountryCardProps) {
     <Link href={`${ROUTES.COUNTRIES}/${country.slug}`} className={cn('block group', className)}>
       <Card className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
         {/* Header / Media */}
-        <div className="relative h-40">
+        <div className="relative h-40 rounded-xl overflow-hidden">
           {hasImage ? (
             <>
               <Image

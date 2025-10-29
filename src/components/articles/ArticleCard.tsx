@@ -50,109 +50,109 @@ export function ArticleCard({
 
   if (variant === 'featured') {
     return (
-      <Card className={`${theme === 'light' ? 'bg-white border border-gray-200' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group overflow-hidden ${className}`}>
+      <Card className={`${theme === 'light' ? 'bg-white border-2 border-gray-100 shadow-xl hover:shadow-2xl' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group overflow-hidden rounded-2xl ${className}`}>
         <div className="relative">
           {featured_image && (
-            <div className="relative h-64 overflow-hidden">
+            <div className="relative h-80 lg:h-96 overflow-hidden rounded-3xl">
               <Image
                 src={featured_image}
                 alt={title}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                loading="lazy"
+                priority
               />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 transition-all duration-500" />
             </div>
           )}
           
           {/* Category Badge */}
           {category && (
-            <div className="absolute top-4 left-4">
-              <Badge variant="secondary" className="neon-button text-airen-neon-blue bg-black/60 backdrop-blur">
+            <div className="absolute top-6 left-6">
+              <Badge variant="secondary" className={`${theme === 'light' ? 'bg-white/95 backdrop-blur-sm text-indigo-600 border-0 shadow-lg font-semibold px-4 py-1.5' : 'neon-button text-airen-neon-blue bg-black/60 backdrop-blur'}`}>
                 {category.name}
               </Badge>
             </div>
           )}
           
           {/* Type Badge */}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-6 right-6">
             <Badge 
               variant={type === 'news' ? 'destructive' : 'default'}
-              className="bg-black/60 backdrop-blur text-white border-white/20"
+              className={`${theme === 'light' ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-black/60 backdrop-blur text-white'} border-0 shadow-lg font-semibold px-4 py-1.5`}
             >
-              {type === 'news' ? t('news') : t('article')}
+              {type === 'news' ? '📰 ' + t('news') : '📝 ' + t('article')}
             </Badge>
           </div>
         </div>
 
-        <CardHeader className="pb-2">
-          <CardTitle className={`${theme === 'light' ? 'text-gray-900' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2`}>
+        <CardHeader className="pb-4 pt-6 px-6 lg:px-8">
+          <CardTitle className={`${theme === 'light' ? 'text-gray-900 group-hover:text-indigo-600' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2 text-2xl lg:text-3xl font-bold leading-tight`}>
             <Link href={`/articles/${slug}`} className="hover:underline">
               {title}
             </Link>
           </CardTitle>
           
           {excerpt && (
-            <CardDescription className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} line-clamp-3 mt-2`}>
+            <CardDescription className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} line-clamp-3 mt-4 text-base lg:text-lg leading-relaxed`}>
               {excerpt}
             </CardDescription>
           )}
           {Array.isArray(article.tags) && article.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {article.tags.slice(0, 5).map((t) => (
-                <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-gray-100 border-gray-200 text-black' : 'bg-white/10 text-gray-200'}`}>#{t.name}</Badge>
+                <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100' : 'bg-white/10 text-gray-200'} px-3 py-1 font-medium transition-colors`}>#{t.name}</Badge>
               ))}
             </div>
           )}
         </CardHeader>
 
-        <CardContent className="pt-0">
-          <div className={`flex items-center justify-between text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+        <CardContent className="pt-0 px-6 lg:px-8 pb-6">
+          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
             <div className="flex items-center space-x-4">
               {author && (
                 <div className="flex items-center space-x-2">
-                  <Avatar className="h-6 w-6">
+                  <Avatar className="h-9 w-9 ring-2 ring-gray-200">
                     <AvatarImage src={author.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs bg-airen-dark-2">
+                    <AvatarFallback className="text-sm bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold">
                       {author.full_name?.charAt(0) || author.username?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className={`${theme === 'light' ? 'text-gray-700' : ''} hover:text-airen-neon-blue transition-colors`}>
+                  <span className={`${theme === 'light' ? 'text-gray-900 font-semibold' : ''} hover:text-indigo-600 transition-colors`}>
                     {author.full_name || author.username}
                   </span>
                 </div>
               )}
               
               {published_at && (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1.5 text-gray-500">
                   <Calendar className="h-4 w-4" />
-                  <span>{formatRelativeTime(published_at, locale)}</span>
+                  <span className="font-medium">{formatRelativeTime(published_at, locale)}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               {reading_time && (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1.5 text-gray-600">
                   <Clock className="h-4 w-4" />
-                  <span>{t('readingTime', { time: reading_time })}</span>
+                  <span className="font-medium">{t('readingTime', { time: reading_time })}</span>
                 </div>
               )}
               
               {view_count > 0 && (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1.5 text-gray-600">
                   <Eye className="h-4 w-4" />
-                  <span>{view_count}</span>
+                  <span className="font-semibold">{view_count.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1.5 text-red-500">
                 <Heart className="h-4 w-4" />
-                <span>{likeCount}</span>
+                <span className="font-semibold">{likeCount.toLocaleString()}</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1.5 text-blue-500">
                 <MessageSquare className="h-4 w-4" />
-                <span>{commentCount}</span>
+                <span className="font-semibold">{commentCount.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -163,57 +163,76 @@ export function ArticleCard({
 
   if (variant === 'compact') {
     return (
-      <Card className={`${theme === 'light' ? 'bg-white border border-gray-200' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group ${className}`}>
-        <CardContent className="p-4">
-          <div className="flex space-x-4">
+      <Card className={`${theme === 'light' ? 'bg-white border-2 border-gray-100 shadow-lg hover:shadow-xl' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group rounded-2xl ${className}`}>
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex space-x-4 sm:space-x-6">
             {featured_image && (
-              <div className="relative w-24 h-16 flex-shrink-0 overflow-hidden rounded-lg">
+              <div className="relative w-32 sm:w-40 h-24 sm:h-28 flex-shrink-0 overflow-hidden rounded-2xl shadow-md">
                 <Image
                   src={featured_image}
                   alt={title}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="96px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="160px"
                   loading="lazy"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             )}
             
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-2">
-                {category && (
-                  <Badge variant="secondary" className="text-xs bg-airen-neon-blue/20 text-airen-neon-blue border-airen-neon-blue/30">
-                    {category.name}
+            <div className="flex-1 min-w-0 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center space-x-2 mb-3">
+                  {category && (
+                    <Badge variant="secondary" className={`${theme === 'light' ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold' : 'bg-airen-neon-blue/20 text-airen-neon-blue border-airen-neon-blue/30'} text-xs px-2.5 py-0.5`}>
+                      {category.name}
+                    </Badge>
+                  )}
+                  <Badge 
+                    variant={type === 'news' ? 'destructive' : 'default'}
+                    className={`${theme === 'light' ? 'bg-red-500 text-white' : ''} text-xs px-2.5 py-0.5 font-semibold`}
+                  >
+                    {type === 'news' ? '📰' : '📝'}
                   </Badge>
+                </div>
+                
+                <h3 className={`text-base sm:text-lg font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-indigo-600' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2 mb-3 leading-snug`}>
+                  <Link href={`/articles/${slug}`} className="hover:underline">
+                    {title}
+                  </Link>
+                </h3>
+                {Array.isArray(article.tags) && article.tags.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-1.5">
+                    {article.tags.slice(0, 3).map((t) => (
+                      <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-gray-100 border border-gray-200 text-gray-700' : 'bg-white/10 text-gray-200'} text-[11px] px-2 py-0.5 font-medium`}>#{t.name}</Badge>
+                    ))}
+                  </div>
                 )}
-                <Badge 
-                  variant={type === 'news' ? 'destructive' : 'default'}
-                  className="text-xs"
-                >
-                  {type === 'news' ? t('news') : t('article')}
-                </Badge>
               </div>
               
-              <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2 mb-2`}>
-                <Link href={`/articles/${slug}`} className="hover:underline">
-                  {title}
-                </Link>
-              </h3>
-              {Array.isArray(article.tags) && article.tags.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-1">
-                  {article.tags.slice(0, 3).map((t) => (
-                    <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-gray-100 border-gray-200 text-black' : 'bg-white/10 text-gray-200'} text-[10px]`}>#{t.name}</Badge>
-                  ))}
-                </div>
-              )}
-              
-              <div className={`flex items-center justify-between text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+              <div className={`flex items-center justify-between text-xs sm:text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                 {author && (
-                  <span className={`truncate ${theme === 'light' ? 'text-gray-700' : ''}`}>{author.full_name || author.username}</span>
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="h-6 w-6 ring-1 ring-gray-200">
+                      <AvatarImage src={author.avatar_url || undefined} />
+                      <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold">
+                        {author.full_name?.charAt(0) || author.username?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className={`truncate ${theme === 'light' ? 'text-gray-900 font-semibold' : ''}`}>{author.full_name || author.username}</span>
+                  </div>
                 )}
-                {published_at && (
-                  <span>{formatRelativeTime(published_at, locale)}</span>
-                )}
+                <div className="flex items-center space-x-3">
+                  {published_at && (
+                    <span className="font-medium text-gray-500">{formatRelativeTime(published_at, locale)}</span>
+                  )}
+                  {view_count > 0 && (
+                    <div className="flex items-center space-x-1 text-gray-600">
+                      <Eye className="h-3.5 w-3.5" />
+                      <span className="font-semibold">{view_count.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -224,90 +243,99 @@ export function ArticleCard({
 
   // Default variant
   return (
-    <Card className={`${theme === 'light' ? 'bg-white border border-gray-200' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group ${className} flex flex-col`}>
+    <Card className={`${theme === 'light' ? 'bg-white border-2 border-gray-100 shadow-lg hover:shadow-2xl' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group ${className} flex flex-col rounded-2xl overflow-hidden`}>
       {featured_image && (
-        <div className="relative h-72 sm:h-48 overflow-hidden">
+        <div className="relative h-56 overflow-hidden rounded-2xl">
           <Image
             src={featured_image}
             alt={title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent group-hover:from-black/40 transition-all duration-500" />
           
           {/* Category Badge */}
           {category && (
-            <div className="absolute top-3 left-3">
-              <Badge variant="secondary" className="neon-button text-airen-neon-blue bg-black/60 backdrop-blur">
+            <div className="absolute top-4 left-4">
+              <Badge variant="secondary" className={`${theme === 'light' ? 'bg-white/95 backdrop-blur-sm text-indigo-600 border-0 shadow-lg font-semibold px-3 py-1' : 'neon-button text-airen-neon-blue bg-black/60 backdrop-blur'}`}>
                 {category.name}
               </Badge>
             </div>
           )}
+          
+          {/* Type Badge */}
+          <div className="absolute top-4 right-4">
+            <Badge 
+              variant={type === 'news' ? 'destructive' : 'default'}
+              className={`${theme === 'light' ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-black/60 backdrop-blur text-white'} border-0 shadow-lg font-semibold px-3 py-1`}
+            >
+              {type === 'news' ? '📰' : '📝'}
+            </Badge>
+          </div>
         </div>
       )}
 
-      <CardHeader>
-        <div className="flex items-center justify-between mb-2">
-          <Badge 
-            variant={type === 'news' ? 'destructive' : 'default'}
-            className="text-xs"
-          >
-            {type === 'news' ? t('news') : t('article')}
-          </Badge>
-          
+      <CardHeader className="pb-3 pt-5 px-5">
+        <div className="flex items-center justify-between mb-3">
           {published_at && (
-            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-              {formatRelativeTime(published_at, locale)}
-            </span>
+            <div className="flex items-center space-x-1.5 text-xs text-gray-500">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="font-medium">{formatRelativeTime(published_at, locale)}</span>
+            </div>
           )}
         </div>
         
-        <CardTitle className={`${theme === 'light' ? 'text-gray-900' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2`}>
+        <CardTitle className={`${theme === 'light' ? 'text-gray-900 group-hover:text-indigo-600' : 'text-white group-hover:text-airen-neon-blue'} transition-colors line-clamp-2 text-xl font-bold leading-tight mb-3`}>
           <Link href={`/articles/${slug}`} className="hover:underline">
             {title}
           </Link>
         </CardTitle>
         
         {excerpt && (
-          <CardDescription className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} line-clamp-2 mt-2`}>
+          <CardDescription className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} line-clamp-2 text-sm leading-relaxed`}>
             {excerpt}
           </CardDescription>
         )}
         {Array.isArray(article.tags) && article.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {article.tags.slice(0, 5).map((t) => (
-              <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-gray-100 border-gray-200 text-black' : 'bg-white/10 text-gray-200'}`}>#{t.name}</Badge>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {article.tags.slice(0, 3).map((t) => (
+              <Badge key={t.slug} variant="secondary" className={`${theme === 'light' ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100' : 'bg-white/10 text-gray-200'} text-[11px] px-2 py-0.5 font-medium transition-colors`}>#{t.name}</Badge>
             ))}
           </div>
         )}
       </CardHeader>
 
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between">
+      <CardContent className="pt-0 px-5 pb-4 mt-auto">
+        <div className="flex items-center justify-between border-t border-gray-100 pt-4">
           {author && (
             <div className="flex items-center space-x-2">
-              <Avatar className="h-6 w-6">
+              <Avatar className="h-8 w-8 ring-2 ring-gray-100">
                 <AvatarImage src={author.avatar_url || undefined} />
-                <AvatarFallback className="text-xs bg-airen-dark-2">
+                <AvatarFallback className="text-xs bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold">
                   {author.full_name?.charAt(0) || author.username?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-400'} hover:text-airen-neon-blue transition-colors`}>
+              <span className={`text-sm ${theme === 'light' ? 'text-gray-900 font-semibold' : 'text-gray-400'} hover:text-indigo-600 transition-colors`}>
                 {author.full_name || author.username}
               </span>
             </div>
           )}
 
-          <div className={`flex items-center space-x-3 text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+          <div className={`flex items-center space-x-3 text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
             {reading_time && (
               <div className="flex items-center space-x-1">
-                <Clock className="h-3 w-3" />
-                <span>{t('readingTime', { time: reading_time })}</span>
+                <Clock className="h-3.5 w-3.5" />
+                <span className="font-medium">{reading_time} dk</span>
               </div>
             )}
-            {/* Internal action icons removed to avoid duplication with bottom bar */}
+            {view_count > 0 && (
+              <div className="flex items-center space-x-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span className="font-semibold">{view_count.toLocaleString()}</span>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
