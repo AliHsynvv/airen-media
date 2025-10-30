@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -9,6 +9,7 @@ import BusinessLocationPicker from '@/components/business/BusinessLocationPicker
 
 export default function AdminCountryCreatePage() {
   const router = useRouter()
+  const mapRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -102,7 +103,8 @@ export default function AdminCountryCreatePage() {
       const data = await res.json()
       if (data && data[0]) {
         const country = data[0]
-        // Currency
+        
+        // Currency (Para Birimi)
         if (country.currencies) {
           const currencyData = Object.values(country.currencies)[0] as any
           if (currencyData) {
@@ -110,21 +112,97 @@ export default function AdminCountryCreatePage() {
             setCurrencyCode(Object.keys(country.currencies)[0] || '')
           }
         }
-        // Bonus: diğer bilgileri de doldur
-        if (country.capital && country.capital[0]) setCapital(country.capital[0])
-        if (country.timezones && country.timezones[0]) setTimezone(country.timezones[0])
+        
+        // Capital (Başkent)
+        if (country.capital && country.capital[0]) {
+          setCapital(country.capital[0])
+        }
+        
+        // Timezone (Saat Dilimi)
+        if (country.timezones && country.timezones[0]) {
+          setTimezone(country.timezones[0])
+        }
+        
+        // Languages (Diller)
         if (country.languages) {
           const langs = Object.values(country.languages).join(', ')
           setOfficialLanguage(langs)
         }
+        
+        // Coordinates (Enlem/Boylam)
         if (country.latlng && country.latlng.length === 2) {
           setLatitude(country.latlng[0])
           setLongitude(country.latlng[1])
         }
-        if (country.cca2) setIsoCode(country.cca2)
-        if (country.flag) setFlagIcon(country.flag)
-        if (country.population) setPopulation(country.population)
-        setMessage('✅ Bilgiler API\'den başarıyla çekildi!')
+        
+        // ISO Code
+        if (country.cca2) {
+          setIsoCode(country.cca2)
+        }
+        
+        // Flag (Bayrak emoji)
+        if (country.flag) {
+          setFlagIcon(country.flag)
+        }
+        
+        // Population (Nüfus)
+        if (country.population) {
+          setPopulation(country.population)
+        }
+        
+        // Slug - ülke adından otomatik oluştur
+        if (!slug && country.name?.common) {
+          const autoSlug = country.name.common.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+          setSlug(autoSlug)
+        }
+        
+        // Popular Cities - başkent ve büyük şehirler (capital + capitalInfo)
+        if (country.capital && country.capital.length > 0) {
+          const cities = [...country.capital]
+          // Eğer başka büyük şehir bilgisi varsa eklenebilir
+          setPopularCities(cities.join(', '))
+        }
+        
+        // Climate Info - bölge bilgisinden iklim tahmini
+        if (country.region || country.subregion) {
+          const region = country.region || ''
+          const subregion = country.subregion || ''
+          
+          let climate = ''
+          // Basit iklim tahminleri
+          if (region === 'Europe') {
+            if (subregion.includes('Northern')) climate = 'Soğuk, nemli'
+            else if (subregion.includes('Southern')) climate = 'Akdeniz iklimi'
+            else climate = 'Ilıman'
+          } else if (region === 'Africa') {
+            if (subregion.includes('Northern')) climate = 'Kurak, sıcak'
+            else climate = 'Tropikal'
+          } else if (region === 'Asia') {
+            if (subregion.includes('Southern')) climate = 'Tropikal, muson'
+            else if (subregion.includes('Eastern')) climate = 'Ilıman, nemli'
+            else if (subregion.includes('Western')) climate = 'Kurak, sıcak'
+            else climate = 'Değişken'
+          } else if (region === 'Americas') {
+            if (subregion.includes('South')) climate = 'Tropikal-Ilıman'
+            else if (subregion.includes('Central')) climate = 'Tropikal'
+            else climate = 'Değişken'
+          } else if (region === 'Oceania') {
+            climate = 'Ilıman-Tropikal'
+          }
+          
+          if (climate) {
+            setClimateInfo(climate)
+          }
+        }
+        
+        setMessage('✅ Bilgiler API\'den başarıyla çekildi! (Para birimi, başkent, koordinatlar, dil, iklim, vs.)')
+        
+        // Haritaya otomatik scroll et
+        setTimeout(() => {
+          mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 300)
       }
     } catch (err: any) {
       setMessage(`❌ Hata: ${err.message}`)
@@ -250,7 +328,10 @@ export default function AdminCountryCreatePage() {
             </Button>
           </div>
           <div className="text-xs text-gray-600">
-            Ülke adına göre currency, capital, timezone, language, flag, ISO code, population ve koordinatları otomatik doldurur
+            <strong>API'den otomatik doldurulan alanlar:</strong><br/>
+            💱 Para birimi (adı ve kodu) • 🏛️ Başkent • 🌐 Enlem/Boylam • 🗣️ Resmi Dil<br/>
+            🏴 Bayrak emoji • 🔤 ISO Kodu • 👥 Nüfus • ⏰ Saat Dilimi<br/>
+            🏙️ Popüler Şehirler (başkent bazlı) • 🌤️ İklim (bölge bazlı tahmin) • 🔗 Slug
           </div>
         </div>
 
@@ -367,8 +448,12 @@ export default function AdminCountryCreatePage() {
           <label className="block text-sm text-gray-700 mb-1">Airen Tavsiyesi</label>
           <Textarea value={airenAdvice} onChange={e => setAirenAdvice(e.target.value)} rows={2} />
         </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Harita (konum seç)</label>
+        <div ref={mapRef} className="bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-4">
+          <label className="block text-sm text-green-700 font-semibold mb-3 flex items-center gap-2">
+            <span className="text-lg">🗺️</span>
+            Harita (konum seç)
+            <span className="text-xs font-normal text-gray-600">- API'den otomatik doldurulur</span>
+          </label>
           <div className="space-y-2">
             <BusinessLocationPicker
               latitude={latitude === '' ? null : latitude}

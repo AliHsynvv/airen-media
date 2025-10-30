@@ -173,92 +173,181 @@ export default function ProfileEditPage() {
   }
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Yükleniyor...</div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
+        <div className="text-gray-600 text-lg">Yükleniyor...</div>
+      </div>
+    )
   }
 
   if (!userId) {
-    return <div className="container mx-auto px-4 py-8">Oturum bulunamadı.</div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
+        <div className="text-gray-600 text-lg">Oturum bulunamadı.</div>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-md">
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-4">
-        <Link href="/profile" className="text-gray-900 text-xl leading-none">×</Link>
-        <div className="text-base font-semibold text-gray-900">Edit Profile</div>
-        <button className="text-sm font-medium text-blue-600 disabled:text-gray-400" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-6">
+      <div className="container mx-auto px-4 max-w-2xl">
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 px-6 py-4 shadow-md">
+          <Link href="/profile" className="text-gray-900 text-3xl leading-none hover:text-gray-600 transition-colors">×</Link>
+          <h1 className="text-lg font-bold text-gray-900">Profili Düzenle</h1>
+          <button 
+            className="text-sm font-semibold text-white bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 disabled:from-gray-400 disabled:to-gray-400 px-5 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300" 
+            onClick={saveProfile} 
+            disabled={saving}
+          >
+            {saving ? 'Kaydediliyor…' : 'Kaydet'}
+          </button>
+        </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="flex flex-col items-center text-center">
-          <div className="relative h-28 w-28 rounded-full overflow-hidden bg-gray-100">
-            { }
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-gray-700 text-3xl">{(fullName || email || 'U')[0]}</div>
-            )}
-            <button onClick={onPickAvatar} className="absolute bottom-1 right-1 h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center ring-2 ring-white">
-              <Pencil className="h-4 w-4" />
+        <div className="rounded-3xl border border-gray-200 bg-white/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="relative group">
+              <div className="h-32 w-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 ring-4 ring-white shadow-2xl">
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-gray-900 text-4xl font-bold">
+                    {(fullName || email || 'U')[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={onPickAvatar} 
+                className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-gradient-to-br from-gray-900 to-gray-700 text-white flex items-center justify-center ring-4 ring-white shadow-lg hover:scale-110 transition-transform duration-300"
+              >
+                <Pencil className="h-5 w-5" />
+              </button>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
+            <button 
+              onClick={onPickAvatar} 
+              className="mt-4 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              {uploadingAvatar ? 'Yükleniyor…' : 'Profil Fotoğrafını Değiştir'}
             </button>
           </div>
-          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onAvatarSelected} />
-          <button onClick={onPickAvatar} className="mt-3 text-sm font-medium text-blue-600">{uploadingAvatar ? 'Uploading…' : 'Change Profile Photo'}</button>
+
+          {/* Form Fields */}
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Ad</label>
+                <Input 
+                  value={firstName} 
+                  onChange={e => setFirstName(e.target.value)} 
+                  placeholder="Adınız" 
+                  className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Soyad</label>
+                <Input 
+                  value={lastName} 
+                  onChange={e => setLastName(e.target.value)} 
+                  placeholder="Soyadınız" 
+                  className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Kullanıcı Adı</label>
+              <Input 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                placeholder="@kullaniciadi" 
+                className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Biyografi</label>
+              <textarea 
+                value={bio} 
+                onChange={e => setBio(e.target.value)} 
+                rows={4} 
+                className="w-full rounded-xl border-2 border-gray-200 focus:border-gray-400 bg-white text-gray-900 p-4 placeholder:text-gray-400 focus:outline-none transition-colors resize-none" 
+                placeholder="Kendinizden kısaca bahsedin..."
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Favori Lokasyon</label>
+                <Input 
+                  value={favoriteLocation} 
+                  onChange={e => setFavoriteLocation(e.target.value)} 
+                  placeholder="Şehir, Ülke" 
+                  className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Cinsiyet</label>
+                <select 
+                  value={gender} 
+                  onChange={e => setGender(e.target.value)} 
+                  className="w-full h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 bg-white text-gray-900 px-4 focus:outline-none transition-colors"
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="Female">Kadın</option>
+                  <option value="Male">Erkek</option>
+                  <option value="Other">Diğer</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">E-posta</label>
+              <Input 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                placeholder="email@example.com" 
+                className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Telefon Numarası</label>
+              <Input 
+                value={phone} 
+                onChange={e => setPhone(e.target.value)} 
+                placeholder="+90 (555) 123-4567" 
+                className="h-11 rounded-xl border-2 border-gray-200 focus:border-gray-400 transition-colors"
+              />
+            </div>
+          </div>
+
+          {message && (
+            <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100">
+              <p className="text-sm font-medium text-gray-900 text-center">{message}</p>
+            </div>
+          )}
         </div>
 
-        <div className="mt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Name</label>
-              <Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Jane" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Surname</label>
-              <Input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Doe" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Username</label>
-            <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="@janedoe" />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Biography</label>
-            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="w-full rounded-md border border-gray-200 bg-white text-gray-900 p-3 placeholder:text-gray-400" placeholder="Passionate product designer with a knack for creating intuitive and beautiful user experiences." />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Favorite Location</label>
-              <Input value={favoriteLocation} onChange={e => setFavoriteLocation(e.target.value)} placeholder="San Francisco, CA" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Gender</label>
-              <select value={gender} onChange={e => setGender(e.target.value)} className="w-full h-10 rounded-md border border-gray-200 bg-white text-gray-900 px-3">
-                <option value="">Select</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Email</label>
-            <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="jane.doe@example.com" />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Phone Numbers</label>
-            <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (415) 555-0132" />
-          </div>
+        {/* Bottom actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
+          <Button 
+            variant="outline" 
+            className="w-full sm:w-auto h-11 px-8 rounded-full border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-md hover:shadow-lg transition-all duration-300 font-semibold" 
+            asChild
+          >
+            <Link href="/profile">İptal</Link>
+          </Button>
+          <Button 
+            className="w-full sm:w-auto h-11 px-8 rounded-full bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 shadow-md hover:shadow-lg transition-all duration-300 font-semibold" 
+            onClick={saveProfile} 
+            disabled={saving}
+          >
+            {saving ? 'Kaydediliyor…' : 'Değişiklikleri Kaydet'}
+          </Button>
         </div>
-
-        {message && <div className="mt-4 text-sm text-gray-700">{message}</div>}
-      </div>
-
-      {/* Bottom actions */}
-      <div className="flex items-center justify-between mt-4">
-        <Button variant="outline" className="rounded-full" asChild>
-          <Link href="/profile">Cancel</Link>
-        </Button>
-        <Button className="rounded-full" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</Button>
       </div>
     </div>
   )

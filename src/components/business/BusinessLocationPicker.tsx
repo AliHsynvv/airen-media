@@ -14,6 +14,7 @@ export default function BusinessLocationPicker({ latitude, longitude, onChange, 
   const mapRef = useRef<HTMLDivElement | null>(null)
   const leafletRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
+  const mapInstanceRef = useRef<any>(null)
 
   useEffect(() => {
     const ensureLeaflet = async () => {
@@ -45,6 +46,7 @@ export default function BusinessLocationPicker({ latitude, longitude, onChange, 
       const lat = typeof latitude === 'string' ? parseFloat(latitude) : (latitude ?? 39.925)
       const lng = typeof longitude === 'string' ? parseFloat(longitude) : (longitude ?? 32.836)
       const map = L.map(mapRef.current).setView([lat || 39.925, lng || 32.836], (lat && lng) ? 12 : 6)
+      mapInstanceRef.current = map
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map)
@@ -75,13 +77,18 @@ export default function BusinessLocationPicker({ latitude, longitude, onChange, 
   }, [])
 
   useEffect(() => {
-    // update marker position if props change
+    // update marker position and map view if props change
     try {
-      if (!markerRef.current || !leafletRef.current) return
+      if (!markerRef.current || !leafletRef.current || !mapInstanceRef.current) return
       const lat = typeof latitude === 'string' ? parseFloat(latitude) : (latitude ?? null)
       const lng = typeof longitude === 'string' ? parseFloat(longitude) : (longitude ?? null)
-      if (lat !== null && lng !== null) {
+      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+        // Update marker position
         markerRef.current.setLatLng([lat, lng])
+        // Update map view - fly to new location with smooth animation
+        mapInstanceRef.current.flyTo([lat, lng], 6, {
+          duration: 1.5 // 1.5 seconds animation
+        })
       }
     } catch {}
   }, [latitude, longitude])
