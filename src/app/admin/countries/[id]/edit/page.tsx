@@ -15,7 +15,10 @@ export default function AdminCountryEditPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
+  const [isoCode, setIsoCode] = useState('')
+  const [flagIcon, setFlagIcon] = useState('')
   const [capital, setCapital] = useState('')
+  const [population, setPopulation] = useState<number | ''>('')
   const [featuredImage, setFeaturedImage] = useState('')
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [officialLanguage, setOfficialLanguage] = useState('')
@@ -23,12 +26,21 @@ export default function AdminCountryEditPage() {
   const [currencyCode, setCurrencyCode] = useState('')
   const [timezone, setTimezone] = useState('')
   const [fetchingCurrency, setFetchingCurrency] = useState(false)
+  const [bestTimeToVisit, setBestTimeToVisit] = useState('')
+  const [climateInfo, setClimateInfo] = useState('')
+  const [avgDaily, setAvgDaily] = useState<number | ''>('')
+  const [avgWeekly, setAvgWeekly] = useState<number | ''>('')
   const [cultureDescription, setCultureDescription] = useState('')
   const [visaInfo, setVisaInfo] = useState('')
+  const [entryRequirements, setEntryRequirements] = useState('')
+  const [visaRequired, setVisaRequired] = useState<null | boolean>(null)
   const [popularActivities, setPopularActivities] = useState('')
   const [airenAdvice, setAirenAdvice] = useState('')
   const [topPlaces, setTopPlaces] = useState('')
   const [popularCities, setPopularCities] = useState('')
+  const [visitorsPerYear, setVisitorsPerYear] = useState<number | ''>('')
+  const [featuredToggle, setFeaturedToggle] = useState(false)
+  const [budgetLevel, setBudgetLevel] = useState<'Budget'|'Mid-range'|'Luxury'|''>('')
   const [latitude, setLatitude] = useState<number | ''>('')
   const [longitude, setLongitude] = useState<number | ''>('')
   const [negativesText, setNegativesText] = useState('')
@@ -90,19 +102,31 @@ export default function AdminCountryEditPage() {
         const c = json.data
         setName(c.name || '')
         setSlug(c.slug || '')
+        setIsoCode(c.iso_code || '')
+        setFlagIcon(c.flag_icon || '')
         setCapital(c.capital || '')
+        setPopulation(typeof c.population === 'number' ? c.population : '')
         setFeaturedImage(c.featured_image || '')
         setStatus(c.status || 'active')
         setOfficialLanguage(c.official_language || '')
         setCurrency(c.currency || '')
         setCurrencyCode(c.currency_code || '')
         setTimezone(c.timezone || '')
+        setBestTimeToVisit(c.best_time_to_visit || '')
+        setClimateInfo(c.climate_info || '')
+        setAvgDaily(c.average_budget?.daily || '')
+        setAvgWeekly(c.average_budget?.weekly || '')
+        setBudgetLevel(c.budget_level || '')
         setCultureDescription(c.culture_description || '')
         setVisaInfo(c.visa_info || '')
+        setEntryRequirements(c.entry_requirements || '')
+        setVisaRequired(c.visa_required === null ? null : c.visa_required)
         setPopularActivities(Array.isArray(c.popular_activities) ? c.popular_activities.join(', ') : '')
         setPopularCities(Array.isArray(c.popular_cities) ? c.popular_cities.join(', ') : '')
         setAirenAdvice(c.airen_advice || '')
         setTopPlaces(Array.isArray(c.top_places) ? c.top_places.map((p: any) => `${p.name || ''}|${p.description || ''}`).join('\n') : '')
+        setVisitorsPerYear(typeof c.visitors_per_year === 'number' ? c.visitors_per_year : '')
+        setFeaturedToggle(c.featured || false)
         setLatitude(typeof c.latitude === 'number' ? c.latitude : '')
         setLongitude(typeof c.longitude === 'number' ? c.longitude : '')
         setNegativesText(Array.isArray(c.negatives) ? c.negatives.join('\n') : '')
@@ -247,17 +271,28 @@ export default function AdminCountryEditPage() {
       body: JSON.stringify({
         name,
         slug,
+        iso_code: isoCode || null,
+        flag_icon: flagIcon || null,
         capital,
+        population: population === '' ? null : Number(population),
         featured_image: featuredImage,
         status,
         official_language: officialLanguage || null,
         currency: currency || null,
         currency_code: currencyCode || null,
         timezone: timezone || null,
+        best_time_to_visit: bestTimeToVisit || null,
+        climate_info: climateInfo || null,
+        average_budget: (avgDaily || avgWeekly) ? { daily: avgDaily === '' ? undefined : Number(avgDaily), weekly: avgWeekly === '' ? undefined : Number(avgWeekly) } : null,
+        budget_level: budgetLevel || null,
         culture_description: cultureDescription || null,
         visa_info: visaInfo || null,
+        entry_requirements: entryRequirements || null,
+        visa_required: visaRequired,
         popular_activities: popularActivities ? popularActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
         popular_cities: popularCities ? popularCities.split(',').map(s => s.trim()).filter(Boolean) : [],
+        visitors_per_year: visitorsPerYear === '' ? null : Number(visitorsPerYear),
+        featured: featuredToggle,
         latitude: latitude === '' ? null : Number(latitude),
         longitude: longitude === '' ? null : Number(longitude),
         negatives: negativesText ? negativesText.split('\n').map(s => s.trim()).filter(Boolean) : [],
