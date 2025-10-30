@@ -50,10 +50,6 @@ export default function AdminCountryCreatePage() {
   const [mapZoom, setMapZoom] = useState<number | ''>('')
   const [negativeAspects, setNegativeAspects] = useState('')
   const [famousFoods, setFamousFoods] = useState('')
-  const [totalRestaurants, setTotalRestaurants] = useState<number | ''>('')
-  const [totalHotels, setTotalHotels] = useState<number | ''>('')
-  const [avgMealPrice, setAvgMealPrice] = useState<number | ''>('')
-  const [avgHotelPrice, setAvgHotelPrice] = useState<number | ''>('')
   const upload = async (file: File, bucket: string = 'Countries', folder: string = 'countries') => {
     const form = new FormData()
     form.append('file', file)
@@ -225,10 +221,6 @@ export default function AdminCountryCreatePage() {
                 }
               }).filter(p => p.name)
             : [],
-          total_restaurants: totalRestaurants === '' ? null : Number(totalRestaurants),
-          total_hotels: totalHotels === '' ? null : Number(totalHotels),
-          average_meal_price: avgMealPrice === '' ? null : Number(avgMealPrice),
-          average_hotel_price: avgHotelPrice === '' ? null : Number(avgHotelPrice),
           negatives: negativesText
             ? negativesText.split('\n').map(s => s.trim()).filter(Boolean)
             : [],
@@ -658,24 +650,6 @@ export default function AdminCountryCreatePage() {
         <div>
           <label className="block text-sm text-gray-700 mb-1">Oteller (sadece görsel destekli) satır: Ad|Açıklama|ResimURL</label>
           <Textarea value={hotelsText} onChange={e => setHotelsText(e.target.value)} rows={3} placeholder="Four Seasons|5 yıldızlı|https://.../hotel.jpg" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Toplam Restoran</label>
-            <Input value={totalRestaurants} onChange={e => setTotalRestaurants(e.target.value as any)} placeholder="120" />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Toplam Otel</label>
-            <Input value={totalHotels} onChange={e => setTotalHotels(e.target.value as any)} placeholder="80" />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Ortalama Yemek Fiyatı</label>
-            <Input value={avgMealPrice} onChange={e => setAvgMealPrice(e.target.value as any)} placeholder="35" />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Ortalama Otel Gecelik</label>
-            <Input value={avgHotelPrice} onChange={e => setAvgHotelPrice(e.target.value as any)} placeholder="120" />
-          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Slug (opsiyonel)</label>

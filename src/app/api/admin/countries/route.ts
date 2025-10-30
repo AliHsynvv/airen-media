@@ -101,10 +101,6 @@ const schema = z.object({
     booking_url: z.string().optional(),
     room_types: z.array(z.string()).optional(),
   })).nullable().optional(),
-  total_restaurants: z.number().nullable().optional(),
-  total_hotels: z.number().nullable().optional(),
-  average_meal_price: z.number().nullable().optional(),
-  average_hotel_price: z.number().nullable().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -156,10 +152,6 @@ export async function POST(req: NextRequest) {
         famous_foods: p.famous_foods ?? [],
         restaurants: p.restaurants ?? [],
         hotels: p.hotels ?? [],
-        total_restaurants: p.total_restaurants ?? null,
-        total_hotels: p.total_hotels ?? null,
-        average_meal_price: p.average_meal_price ?? null,
-        average_hotel_price: p.average_hotel_price ?? null,
       })
       .select('*')
       .single()

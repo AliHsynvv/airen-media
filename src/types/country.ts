@@ -54,10 +54,6 @@ export interface Country extends BaseEntity {
   // Restaurants & Hotels
   restaurants: Restaurant[]
   hotels: Hotel[]
-  total_restaurants: number
-  total_hotels: number
-  average_meal_price: number | null
-  average_hotel_price: number | null
   
   // AI Content
   airen_advice: string | null
