@@ -17,7 +17,6 @@ export interface Country extends BaseEntity {
   // Map Data
   latitude: number | null
   longitude: number | null
-  map_zoom_level: number | null
   
   // Travel Info
   visa_info: string | null

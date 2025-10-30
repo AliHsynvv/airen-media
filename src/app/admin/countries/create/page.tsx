@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import BusinessLocationPicker from '@/components/business/BusinessLocationPicker'
 
 export default function AdminCountryCreatePage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -40,16 +42,10 @@ export default function AdminCountryCreatePage() {
   const [latitude, setLatitude] = useState<number | ''>('')
   const [longitude, setLongitude] = useState<number | ''>('')
   const [negativesText, setNegativesText] = useState('')
-  const [restaurantsText, setRestaurantsText] = useState('')
-  const [hotelsText, setHotelsText] = useState('')
   const [restaurants, setRestaurants] = useState<Array<{name: string, image: string, url: string}>>([])
   const [hotels, setHotels] = useState<Array<{name: string, image: string, url: string}>>([])
   const [uploadingVenue, setUploadingVenue] = useState(false)
 
-  // Extended fields
-  const [mapZoom, setMapZoom] = useState<number | ''>('')
-  const [negativeAspects, setNegativeAspects] = useState('')
-  const [famousFoods, setFamousFoods] = useState('')
   const upload = async (file: File, bucket: string = 'Countries', folder: string = 'countries') => {
     const form = new FormData()
     form.append('file', file)
@@ -178,49 +174,6 @@ export default function AdminCountryCreatePage() {
           featured: featuredToggle,
           latitude: latitude === '' ? null : Number(latitude),
           longitude: longitude === '' ? null : Number(longitude),
-          map_zoom_level: mapZoom === '' ? null : Number(mapZoom),
-          negative_aspects: negativeAspects
-            ? negativeAspects.split('\n').map(line => {
-                const [title, description, severity, category] = line.split('|')
-                return {
-                  title: (title || '').trim(),
-                  description: (description || '').trim() || undefined,
-                  severity: (severity || '').trim() || undefined,
-                  category: (category || '').trim() || undefined,
-                }
-              }).filter(p => p.title)
-            : [],
-          famous_foods: famousFoods
-            ? famousFoods.split('\n').map(line => {
-                const [name, description, image_url, price_range] = line.split('|')
-                return {
-                  name: (name || '').trim(),
-                  description: (description || '').trim() || undefined,
-                  image_url: (image_url || '').trim() || undefined,
-                  price_range: (price_range || '').trim() || undefined,
-                }
-              }).filter(p => p.name)
-            : [],
-          restaurants: restaurantsText
-            ? restaurantsText.split('\n').map(line => {
-                const [name, description, image] = line.split('|')
-                return {
-                  name: (name || '').trim(),
-                  description: (description || '').trim() || undefined,
-                  images: image ? [image.trim()] : undefined,
-                }
-              }).filter(p => p.name)
-            : [],
-          hotels: hotelsText
-            ? hotelsText.split('\n').map(line => {
-                const [name, description, image] = line.split('|')
-                return {
-                  name: (name || '').trim(),
-                  description: (description || '').trim() || undefined,
-                  images: image ? [image.trim()] : undefined,
-                }
-              }).filter(p => p.name)
-            : [],
           negatives: negativesText
             ? negativesText.split('\n').map(s => s.trim()).filter(Boolean)
             : [],
@@ -230,7 +183,14 @@ export default function AdminCountryCreatePage() {
       })
       const json = await res.json()
       if (!res.ok || !json.success) throw new Error(json.error || 'Hata')
-      setMessage('Ülke oluşturuldu!')
+      setMessage('Ülke oluşturuldu! Düzenleme sayfasına yönlendiriliyorsunuz...')
+      // Redirect to edit page after short delay
+      setTimeout(() => {
+        if (json.data?.id) {
+          router.push(`/admin/countries/${json.data.id}/edit`)
+        }
+      }, 1500)
+      return // Don't reset form if redirecting
       setName('')
       setSlug('')
       setIsoCode('')
@@ -348,10 +308,6 @@ export default function AdminCountryCreatePage() {
           <div>
             <label className="block text-sm text-gray-700 mb-1">Harita Boylam (longitude)</label>
             <Input value={longitude} onChange={e => setLongitude(e.target.value as any)} placeholder="49.8671" />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Harita Yakınlık (zoom)</label>
-            <Input value={mapZoom} onChange={e => setMapZoom(e.target.value as any)} placeholder="6" />
           </div>
         </div>
         <div>
@@ -634,22 +590,6 @@ export default function AdminCountryCreatePage() {
         <div>
           <label className="block text-sm text-gray-700 mb-1">En Çok Ziyaret Edilen Yerler (satır başına "Ad|Açıklama")</label>
           <Textarea value={topPlaces} onChange={e => setTopPlaces(e.target.value)} rows={3} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Mənfi tərəflər (satır: Başlık|Açıklama|severity(optional)|category(optional))</label>
-          <Textarea value={negativeAspects} onChange={e => setNegativeAspects(e.target.value)} rows={3} placeholder="Pahalı|Konaklama fiyatları yüksek|high|cost" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">En məşhur yemeklər (satır: Ad|Açıklama|ResimURL|FiyatAralığı)</label>
-          <Textarea value={famousFoods} onChange={e => setFamousFoods(e.target.value)} rows={3} placeholder="Plov|Milli yemək|https://.../plov.jpg|10-20 AZN" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Restoranlar (sadece görsel destekli) satır: Ad|Açıklama|ResimURL</label>
-          <Textarea value={restaurantsText} onChange={e => setRestaurantsText(e.target.value)} rows={3} placeholder="Firuze|Yerel mətbəx|https://.../rest.jpg" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Oteller (sadece görsel destekli) satır: Ad|Açıklama|ResimURL</label>
-          <Textarea value={hotelsText} onChange={e => setHotelsText(e.target.value)} rows={3} placeholder="Four Seasons|5 yıldızlı|https://.../hotel.jpg" />
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Slug (opsiyonel)</label>

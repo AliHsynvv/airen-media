@@ -39,11 +39,6 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       // Extended fields
       latitude: body.latitude ?? null,
       longitude: body.longitude ?? null,
-      map_zoom_level: body.map_zoom_level ?? null,
-      negative_aspects: body.negative_aspects ?? [],
-      famous_foods: body.famous_foods ?? [],
-      restaurants: body.restaurants ?? [],
-      hotels: body.hotels ?? [],
     }
     const { data, error } = await supabaseAdmin.from('countries').update(update).eq('id', id).select('*').single()
     if (error) throw error
