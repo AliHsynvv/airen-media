@@ -27,6 +27,15 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       meta_title: payload.meta_title ?? null,
       meta_description: payload.meta_description ?? null,
     }
+    
+    // Add translations if provided
+    if (payload.translations) {
+      update.translations = payload.translations
+    }
+    if (payload.default_language) {
+      update.default_language = payload.default_language
+    }
+    
     if (payload.title) {
       update.slug = slugify(payload.title, { lower: true, strict: true })
     }

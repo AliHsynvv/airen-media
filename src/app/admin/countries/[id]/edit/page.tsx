@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import BusinessLocationPicker from '@/components/business/BusinessLocationPicker'
+import { TranslateButton } from '@/components/admin/TranslateButton'
 
 export default function AdminCountryEditPage() {
   const params = useParams<{ id: string }>()
@@ -31,14 +32,27 @@ export default function AdminCountryEditPage() {
   const [avgDaily, setAvgDaily] = useState<number | ''>('')
   const [avgWeekly, setAvgWeekly] = useState<number | ''>('')
   const [cultureDescription, setCultureDescription] = useState('')
+  const [cultureDescriptionTr, setCultureDescriptionTr] = useState('')
+  const [cultureDescriptionRu, setCultureDescriptionRu] = useState('')
   const [visaInfo, setVisaInfo] = useState('')
+  const [visaInfoTr, setVisaInfoTr] = useState('')
+  const [visaInfoRu, setVisaInfoRu] = useState('')
   const [entryRequirements, setEntryRequirements] = useState('')
+  const [entryRequirementsTr, setEntryRequirementsTr] = useState('')
+  const [entryRequirementsRu, setEntryRequirementsRu] = useState('')
   const [visaRequired, setVisaRequired] = useState<null | boolean>(null)
   const [popularActivities, setPopularActivities] = useState('')
   const [airenAdvice, setAirenAdvice] = useState('')
+  const [airenAdviceTr, setAirenAdviceTr] = useState('')
+  const [airenAdviceRu, setAirenAdviceRu] = useState('')
+  const [bestTimeToVisitTr, setBestTimeToVisitTr] = useState('')
+  const [bestTimeToVisitRu, setBestTimeToVisitRu] = useState('')
+  const [climateInfoTr, setClimateInfoTr] = useState('')
+  const [climateInfoRu, setClimateInfoRu] = useState('')
   const [topPlaces, setTopPlaces] = useState('')
   const [popularCities, setPopularCities] = useState('')
   const [visitorsPerYear, setVisitorsPerYear] = useState<number | ''>('')
+  const [visitorsUnit, setVisitorsUnit] = useState<'million' | 'thousand'>('million')
   const [featuredToggle, setFeaturedToggle] = useState(false)
   const [budgetLevel, setBudgetLevel] = useState<'Budget'|'Mid-range'|'Luxury'|''>('')
   const [latitude, setLatitude] = useState<number | ''>('')
@@ -117,15 +131,55 @@ export default function AdminCountryEditPage() {
         setAvgDaily(c.average_budget?.daily || '')
         setAvgWeekly(c.average_budget?.weekly || '')
         setBudgetLevel(c.budget_level || '')
-        setCultureDescription(c.culture_description || '')
-        setVisaInfo(c.visa_info || '')
-        setEntryRequirements(c.entry_requirements || '')
+        
+        // İngilizce içerik (backward compatibility için hem yeni hem eski alanlardan oku)
+        setCultureDescription(c.culture_description_i18n?.en || c.culture_description || '')
+        setVisaInfo(c.visa_info_i18n?.en || c.visa_info || '')
+        setEntryRequirements(c.entry_requirements_i18n?.en || c.entry_requirements || '')
+        setAirenAdvice(c.airen_advice_i18n?.en || c.airen_advice || '')
+        setBestTimeToVisit(c.best_time_to_visit_i18n?.en || c.best_time_to_visit || '')
+        setClimateInfo(c.climate_info_i18n?.en || c.climate_info || '')
+        
+        // Türkçe içerik
+        setCultureDescriptionTr(c.culture_description_i18n?.tr || '')
+        setVisaInfoTr(c.visa_info_i18n?.tr || '')
+        setEntryRequirementsTr(c.entry_requirements_i18n?.tr || '')
+        setAirenAdviceTr(c.airen_advice_i18n?.tr || '')
+        setBestTimeToVisitTr(c.best_time_to_visit_i18n?.tr || '')
+        setClimateInfoTr(c.climate_info_i18n?.tr || '')
+        
+        // Rusça içerik
+        setCultureDescriptionRu(c.culture_description_i18n?.ru || '')
+        setVisaInfoRu(c.visa_info_i18n?.ru || '')
+        setEntryRequirementsRu(c.entry_requirements_i18n?.ru || '')
+        setAirenAdviceRu(c.airen_advice_i18n?.ru || '')
+        setBestTimeToVisitRu(c.best_time_to_visit_i18n?.ru || '')
+        setClimateInfoRu(c.climate_info_i18n?.ru || '')
+        
         setVisaRequired(c.visa_required === null ? null : c.visa_required)
         setPopularActivities(Array.isArray(c.popular_activities) ? c.popular_activities.join(', ') : '')
         setPopularCities(Array.isArray(c.popular_cities) ? c.popular_cities.join(', ') : '')
-        setAirenAdvice(c.airen_advice || '')
         setTopPlaces(Array.isArray(c.top_places) ? c.top_places.map((p: any) => `${p.name || ''}|${p.description || ''}`).join('\n') : '')
-        setVisitorsPerYear(typeof c.visitors_per_year === 'number' ? c.visitors_per_year : '')
+        // Set visitors and determine unit (stored in thousands in DB)
+        console.log('📊 Loading visitors_per_year from DB (in thousands):', c.visitors_per_year)
+        if (typeof c.visitors_per_year === 'number' && c.visitors_per_year > 0) {
+          if (c.visitors_per_year < 1000) {
+            // Less than 1000 thousands = Less than 1 million
+            console.log('  → Showing as thousands:', c.visitors_per_year)
+            setVisitorsPerYear(c.visitors_per_year)
+            setVisitorsUnit('thousand')
+          } else {
+            // 1000+ thousands = 1+ million
+            const millions = c.visitors_per_year / 1000
+            console.log('  → Converting to millions:', millions)
+            setVisitorsPerYear(millions)
+            setVisitorsUnit('million')
+          }
+        } else {
+          console.log('  → No visitor data, setting empty')
+          setVisitorsPerYear('')
+          setVisitorsUnit('million')
+        }
         setFeaturedToggle(c.featured || false)
         setLatitude(typeof c.latitude === 'number' ? c.latitude : '')
         setLongitude(typeof c.longitude === 'number' ? c.longitude : '')
@@ -265,6 +319,20 @@ export default function AdminCountryEditPage() {
 
   const save = async () => {
     setMessage(null)
+    
+    // Store in thousands (bigint compatible)
+    const visitorsValue = visitorsPerYear === '' ? null : (
+      visitorsUnit === 'thousand' 
+        ? Math.round(Number(visitorsPerYear)) // 120 thousand → 120
+        : Math.round(Number(visitorsPerYear) * 1000) // 89 million → 89000
+    )
+    
+    console.log('💾 Saving visitors_per_year (in thousands):', {
+      input: visitorsPerYear,
+      unit: visitorsUnit,
+      calculated: visitorsValue
+    })
+    
     const res = await fetch(`/api/admin/countries/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -289,9 +357,40 @@ export default function AdminCountryEditPage() {
         visa_info: visaInfo || null,
         entry_requirements: entryRequirements || null,
         visa_required: visaRequired,
+        // Çoklu dil desteği (_i18n alanları)
+        culture_description_i18n: {
+          en: cultureDescription || null,
+          tr: cultureDescriptionTr || null,
+          ru: cultureDescriptionRu || null
+        },
+        visa_info_i18n: {
+          en: visaInfo || null,
+          tr: visaInfoTr || null,
+          ru: visaInfoRu || null
+        },
+        entry_requirements_i18n: {
+          en: entryRequirements || null,
+          tr: entryRequirementsTr || null,
+          ru: entryRequirementsRu || null
+        },
+        airen_advice_i18n: {
+          en: airenAdvice || null,
+          tr: airenAdviceTr || null,
+          ru: airenAdviceRu || null
+        },
+        best_time_to_visit_i18n: {
+          en: bestTimeToVisit || null,
+          tr: bestTimeToVisitTr || null,
+          ru: bestTimeToVisitRu || null
+        },
+        climate_info_i18n: {
+          en: climateInfo || null,
+          tr: climateInfoTr || null,
+          ru: climateInfoRu || null
+        },
         popular_activities: popularActivities ? popularActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
         popular_cities: popularCities ? popularCities.split(',').map(s => s.trim()).filter(Boolean) : [],
-        visitors_per_year: visitorsPerYear === '' ? null : Number(visitorsPerYear),
+        visitors_per_year: visitorsValue,
         featured: featuredToggle,
         latitude: latitude === '' ? null : Number(latitude),
         longitude: longitude === '' ? null : Number(longitude),
@@ -308,8 +407,17 @@ export default function AdminCountryEditPage() {
       }),
     })
     const json = await res.json()
-    if (!res.ok || !json.success) setMessage(json.error || 'Kaydedilemedi')
-    else setMessage('Kaydedildi')
+    console.log('📥 API Response:', json)
+    if (!res.ok || !json.success) {
+      console.error('❌ Save failed:', json.error)
+      setMessage(json.error || 'Kaydedilemedi')
+    } else {
+      console.log('✅ Save successful! Saved visitors_per_year (in thousands):', json.data?.visitors_per_year)
+      const displayValue = visitorsValue !== null 
+        ? `${visitorsPerYear} ${visitorsUnit === 'thousand' ? 'Bin' : 'Milyon'} (DB: ${visitorsValue}K)` 
+        : 'Yok'
+      setMessage('✅ Kaydedildi - Ziyaretçi: ' + displayValue)
+    }
   }
 
   return (
@@ -325,7 +433,27 @@ export default function AdminCountryEditPage() {
           </div>
           <div>
             <label className="block text-sm text-gray-300 mb-1">Slug</label>
-            <Input value={slug} onChange={e => setSlug(e.target.value)} />
+            <div className="flex gap-2">
+              <Input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1" />
+              <Button 
+                type="button"
+                onClick={() => {
+                  if (!name) {
+                    setMessage('❌ Önce ülke adını girin')
+                    return
+                  }
+                  const autoSlug = name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                  setSlug(autoSlug)
+                  setMessage('✅ Slug otomatik oluşturuldu')
+                }}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 whitespace-nowrap"
+              >
+                🔗 Oluştur
+              </Button>
+            </div>
+            {!slug && <div className="text-xs text-yellow-400 mt-1">⚠️ Slug boş! Lütfen oluştur butonuna tıklayın.</div>}
           </div>
           <div>
             <label className="block text-sm text-gray-300 mb-1">Başkent</label>
@@ -414,13 +542,61 @@ export default function AdminCountryEditPage() {
               <Input value={timezone} onChange={e => setTimezone(e.target.value)} placeholder="GMT+3" />
             </div>
           </div>
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Genel Bilgiler</label>
-            <Textarea value={cultureDescription} onChange={e => setCultureDescription(e.target.value)} rows={3} />
+          <div className="glass-card border border-blue-500/30 rounded-xl p-4 bg-gradient-to-br from-blue-900/10 to-cyan-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-blue-300 font-bold">🌍 Genel Bilgiler / Culture Description</label>
+              <TranslateButton 
+                text={cultureDescription}
+                field="culture_description"
+                onTranslated={(translations) => {
+                  setCultureDescriptionTr(translations.tr)
+                  setCultureDescriptionRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English (Ana Dil)</label>
+                <Textarea value={cultureDescription} onChange={e => setCultureDescription(e.target.value)} rows={3} placeholder="Cultural description in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={cultureDescriptionTr} onChange={e => setCultureDescriptionTr(e.target.value)} rows={3} placeholder="Türkçe açıklama..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={cultureDescriptionRu} onChange={e => setCultureDescriptionRu(e.target.value)} rows={3} placeholder="Описание на русском..." />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Vize & Giriş</label>
-            <Textarea value={visaInfo} onChange={e => setVisaInfo(e.target.value)} rows={3} />
+          <div className="glass-card border border-green-500/30 rounded-xl p-4 bg-gradient-to-br from-green-900/10 to-emerald-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-green-300 font-bold">✈️ Vize & Giriş Bilgileri / Visa Info</label>
+              <TranslateButton 
+                text={visaInfo}
+                field="visa_info"
+                onTranslated={(translations) => {
+                  setVisaInfoTr(translations.tr)
+                  setVisaInfoRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+                <Textarea value={visaInfo} onChange={e => setVisaInfo(e.target.value)} rows={3} placeholder="Visa information in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={visaInfoTr} onChange={e => setVisaInfoTr(e.target.value)} rows={3} placeholder="Vize bilgisi Türkçe..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={visaInfoRu} onChange={e => setVisaInfoRu(e.target.value)} rows={3} placeholder="Визовая информация..." />
+              </div>
+            </div>
           </div>
           <div>
             <label className="block text-sm text-gray-300 mb-1">Popüler Aktiviteler (virgülle)</label>
@@ -431,9 +607,33 @@ export default function AdminCountryEditPage() {
             <Input value={popularCities} onChange={e => setPopularCities(e.target.value)} placeholder="Istanbul, Ankara, Izmir, Antalya, Bodrum" />
             <div className="text-xs text-blue-300 mt-1">Bu şehirler weather widget'ta seçilebilir olacak</div>
           </div>
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Airen Tavsiyesi</label>
-            <Textarea value={airenAdvice} onChange={e => setAirenAdvice(e.target.value)} rows={2} />
+          <div className="glass-card border border-purple-500/30 rounded-xl p-4 bg-gradient-to-br from-purple-900/10 to-pink-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-purple-300 font-bold">✨ Airen Tavsiyesi / AI Travel Advice</label>
+              <TranslateButton 
+                text={airenAdvice}
+                field="airen_advice"
+                onTranslated={(translations) => {
+                  setAirenAdviceTr(translations.tr)
+                  setAirenAdviceRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+                <Textarea value={airenAdvice} onChange={e => setAirenAdvice(e.target.value)} rows={2} placeholder="AI travel advice in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={airenAdviceTr} onChange={e => setAirenAdviceTr(e.target.value)} rows={2} placeholder="Airen tavsiyesi Türkçe..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={airenAdviceRu} onChange={e => setAirenAdviceRu(e.target.value)} rows={2} placeholder="Совет от Airen..." />
+              </div>
+            </div>
           </div>
           <div ref={mapRef} className="bg-gradient-to-br from-green-900/20 to-blue-900/20 border-2 border-green-500/30 rounded-lg p-4">
             <label className="block text-sm text-green-300 font-semibold mb-3 flex items-center gap-2">
@@ -454,6 +654,40 @@ export default function AdminCountryEditPage() {
               </div>
             </div>
           </div>
+          
+          {/* Visitor Stats and Other Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm text-gray-300 mb-1">Yıllık Ziyaretçi Sayısı</label>
+              <div className="flex gap-2">
+                <Input 
+                  value={visitorsPerYear} 
+                  onChange={e => setVisitorsPerYear(e.target.value as any)} 
+                  placeholder={visitorsUnit === 'million' ? '89' : '500'} 
+                  className="flex-1"
+                  type="number"
+                />
+                <select 
+                  value={visitorsUnit} 
+                  onChange={e => setVisitorsUnit(e.target.value as 'million' | 'thousand')} 
+                  className="w-28 bg-transparent border rounded-md px-2 py-2 text-sm text-gray-300"
+                >
+                  <option value="million">Milyon</option>
+                  <option value="thousand">Bin</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-300 mb-1">Bütçe Seviyesi</label>
+              <select value={budgetLevel} onChange={e => setBudgetLevel(e.target.value as any)} className="w-full bg-transparent border rounded-md px-3 py-2 text-gray-300">
+                <option value="">Seç</option>
+                <option value="Budget">Budget</option>
+                <option value="Mid-range">Mid-range</option>
+                <option value="Luxury">Luxury</option>
+              </select>
+            </div>
+          </div>
+          
           <div>
             <label className="block text-sm text-gray-300 mb-1">Menfi Tərəflər (her satır bir madde)</label>
             <Textarea value={negativesText} onChange={e => setNegativesText(e.target.value)} rows={3} placeholder="Kalabalık sezonlar\nYüksek fiyatlar" />

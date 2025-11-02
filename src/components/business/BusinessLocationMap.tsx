@@ -9,6 +9,7 @@ type Props = {
   height?: number
   showControls?: boolean
   theme?: 'light' | 'dark' | 'voyager'
+  zoom?: number
 }
 
 export default function BusinessLocationMap({ 
@@ -16,7 +17,8 @@ export default function BusinessLocationMap({
   longitude, 
   height = 180, 
   showControls = true,
-  theme = 'voyager' 
+  theme = 'voyager',
+  zoom 
 }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<any>(null)
@@ -57,6 +59,9 @@ export default function BusinessLocationMap({
       const lat = latitude ?? 39.925
       const lng = longitude ?? 32.836
       
+      // Determine zoom level (default to 5 for country view if not specified)
+      const zoomLevel = zoom ?? ((latitude && longitude) ? 5 : 4)
+      
       // Create map with smooth animations
       const map = L.map(mapRef.current, { 
         zoomControl: false, 
@@ -64,7 +69,7 @@ export default function BusinessLocationMap({
         fadeAnimation: true,
         zoomAnimation: true,
         markerZoomAnimation: true
-      }).setView([lat, lng], (latitude && longitude) ? 13 : 6)
+      }).setView([lat, lng], zoomLevel)
       
       // Choose modern tile layer based on theme
       let tileUrl = ''
@@ -153,7 +158,7 @@ export default function BusinessLocationMap({
         mapInstanceRef.current = null
       }
     }
-  }, [latitude, longitude, theme])
+  }, [latitude, longitude, theme, zoom])
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) {

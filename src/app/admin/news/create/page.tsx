@@ -12,9 +12,20 @@ export default function AdminNewsCreatePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [excerpt, setExcerpt] = useState('')
+  const [currentLang, setCurrentLang] = useState<'tr' | 'en' | 'ru'>('tr')
+  const [defaultLanguage, setDefaultLanguage] = useState<'tr' | 'en' | 'ru'>('tr')
+  
+  // Multilingual content
+  const [translations, setTranslations] = useState<{
+    tr: { title: string; content: string; excerpt: string }
+    en: { title: string; content: string; excerpt: string }
+    ru: { title: string; content: string; excerpt: string }
+  }>({
+    tr: { title: '', content: '', excerpt: '' },
+    en: { title: '', content: '', excerpt: '' },
+    ru: { title: '', content: '', excerpt: '' }
+  })
+  
   const [featuredImage, setFeaturedImage] = useState('')
   const [tags, setTags] = useState('')
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
@@ -43,6 +54,19 @@ export default function AdminNewsCreatePage() {
     }
   }, [message])
 
+  // Helper functions to update translations
+  const updateTranslation = (lang: 'tr' | 'en' | 'ru', field: 'title' | 'content' | 'excerpt', value: string) => {
+    setTranslations(prev => ({
+      ...prev,
+      [lang]: {
+        ...prev[lang],
+        [field]: value
+      }
+    }))
+  }
+
+  const currentContent = translations[currentLang]
+
   const upload = async (file: File) => {
     const form = new FormData()
     form.append('file', file)
@@ -58,13 +82,18 @@ export default function AdminNewsCreatePage() {
     setLoading(true)
     setMessage(null)
     try {
+      // Use default language as the primary content
+      const defaultContent = translations[defaultLanguage]
+      
       const payload: any = {
-        title,
-        content,
-        excerpt: excerpt || undefined,
+        title: defaultContent.title,
+        content: defaultContent.content,
+        excerpt: defaultContent.excerpt || undefined,
         type: 'news',
         status: isDraft ? 'draft' : 'published',
         tag_names: tags.split(',').map(t => t.trim()).filter(Boolean),
+        translations: translations,
+        default_language: defaultLanguage,
       }
       if (featuredImage) payload.featured_image = featuredImage
       if (categoryId) payload.category_id = categoryId
@@ -93,9 +122,17 @@ export default function AdminNewsCreatePage() {
     }
   }
 
-  const wordCount = content.trim().split(/\s+/).filter(Boolean).length
-  const charCount = content.length
+  const wordCount = currentContent.content.trim().split(/\s+/).filter(Boolean).length
+  const charCount = currentContent.content.length
   const tagList = tags.split(',').map(t => t.trim()).filter(Boolean)
+  
+  // Check if current language has content
+  const hasContent = (lang: 'tr' | 'en' | 'ru') => {
+    return translations[lang].title.trim() !== '' || translations[lang].content.trim() !== ''
+  }
+  
+  // Check if default language has required content
+  const canSubmit = translations[defaultLanguage].title.trim() !== '' && translations[defaultLanguage].content.trim() !== ''
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -118,7 +155,7 @@ export default function AdminNewsCreatePage() {
           <Button 
             onClick={() => submit(true)} 
             variant="outline"
-            disabled={loading || !title || !content}
+            disabled={loading || !canSubmit}
             className="border-gray-300"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +165,7 @@ export default function AdminNewsCreatePage() {
           </Button>
           <Button 
             onClick={() => submit(false)} 
-            disabled={loading || !title || !content}
+            disabled={loading || !canSubmit}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,21 +202,84 @@ export default function AdminNewsCreatePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Language Selector */}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <label className="flex items-center text-sm font-semibold text-purple-700">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+                Dil Seçimi
+              </label>
+              <div className="text-xs text-purple-600">
+                Ana Dil: <strong>{defaultLanguage.toUpperCase()}</strong>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mb-4">
+              {(['tr', 'en', 'ru'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setCurrentLang(lang)}
+                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all ${
+                    currentLang === lang
+                      ? 'bg-purple-600 text-white shadow-lg scale-105'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:border-purple-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-xl">
+                      {lang === 'tr' ? '🇹🇷' : lang === 'en' ? '🇬🇧' : '🇷🇺'}
+                    </span>
+                    <span>{lang === 'tr' ? 'Türkçe' : lang === 'en' ? 'English' : 'Русский'}</span>
+                    {hasContent(lang) && (
+                      <span className="ml-1 w-2 h-2 bg-green-500 rounded-full"></span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <div className="flex gap-2 text-xs">
+              <button
+                onClick={() => setDefaultLanguage('tr')}
+                className={`px-3 py-1 rounded ${defaultLanguage === 'tr' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+              >
+                Ana Dil: TR
+              </button>
+              <button
+                onClick={() => setDefaultLanguage('en')}
+                className={`px-3 py-1 rounded ${defaultLanguage === 'en' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+              >
+                Ana Dil: EN
+              </button>
+              <button
+                onClick={() => setDefaultLanguage('ru')}
+                className={`px-3 py-1 rounded ${defaultLanguage === 'ru' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+              >
+                Ana Dil: RU
+              </button>
+            </div>
+            <p className="text-xs text-gray-600 mt-2">
+              💡 Ana dil varsayılan gösterim dilidir. Çeviri yoksa ana dil gösterilir.
+            </p>
+          </div>
+
           {/* Title Card */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
               <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
-              Başlık *
+              Başlık ({currentLang.toUpperCase()}) {currentLang === defaultLanguage && '*'}
             </label>
             <Input 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
-              placeholder="Haber başlığını buraya yazın..." 
+              value={currentContent.title} 
+              onChange={e => updateTranslation(currentLang, 'title', e.target.value)} 
+              placeholder={`Haber başlığını ${currentLang === 'tr' ? 'Türkçe' : currentLang === 'en' ? 'İngilizce' : 'Rusça'} yazın...`} 
               className="text-lg font-semibold h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-2">{title.length}/100 karakter</p>
+            <p className="text-xs text-gray-500 mt-2">{currentContent.title.length}/100 karakter</p>
           </div>
 
           {/* Excerpt Card */}
@@ -188,12 +288,12 @@ export default function AdminNewsCreatePage() {
               <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
-              Kısa Özet
+              Kısa Özet ({currentLang.toUpperCase()})
             </label>
             <Input 
-              value={excerpt} 
-              onChange={e => setExcerpt(e.target.value)} 
-              placeholder="Haberin kısa özetini yazın (opsiyonel)" 
+              value={currentContent.excerpt} 
+              onChange={e => updateTranslation(currentLang, 'excerpt', e.target.value)} 
+              placeholder={`Haberin kısa özetini ${currentLang === 'tr' ? 'Türkçe' : currentLang === 'en' ? 'İngilizce' : 'Rusça'} yazın`} 
               className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
             <p className="text-xs text-gray-500 mt-2">Bu özet, haber kartlarında görünecek</p>
@@ -205,22 +305,22 @@ export default function AdminNewsCreatePage() {
               <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Haber İçeriği *
+              Haber İçeriği ({currentLang.toUpperCase()}) {currentLang === defaultLanguage && '*'}
             </label>
             <Textarea 
-              value={content} 
-              onChange={e => setContent(e.target.value)} 
+              value={currentContent.content} 
+              onChange={e => updateTranslation(currentLang, 'content', e.target.value)} 
               rows={16} 
-              placeholder="Haber içeriğini buraya yazın..." 
+              placeholder={`Haber içeriğini ${currentLang === 'tr' ? 'Türkçe' : currentLang === 'en' ? 'İngilizce' : 'Rusça'} yazın...`} 
               className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
             />
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-gray-500">
                 {wordCount} kelime • {charCount} karakter
               </p>
-              {content.length > 0 && (
-                <Badge variant={content.length > 500 ? 'default' : 'outline'} className="text-xs">
-                  {content.length > 500 ? '✓ Yeterli' : '⚠ Çok kısa'}
+              {currentContent.content.length > 0 && (
+                <Badge variant={currentContent.content.length > 500 ? 'default' : 'outline'} className="text-xs">
+                  {currentContent.content.length > 500 ? '✓ Yeterli' : '⚠ Çok kısa'}
                 </Badge>
               )}
         </div>

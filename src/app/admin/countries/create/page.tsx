@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import BusinessLocationPicker from '@/components/business/BusinessLocationPicker'
+import { TranslateButton } from '@/components/admin/TranslateButton'
 
 export default function AdminCountryCreatePage() {
   const router = useRouter()
@@ -29,14 +30,27 @@ export default function AdminCountryCreatePage() {
   const [avgDaily, setAvgDaily] = useState<number | ''>('')
   const [avgWeekly, setAvgWeekly] = useState<number | ''>('')
   const [cultureDescription, setCultureDescription] = useState('')
+  const [cultureDescriptionTr, setCultureDescriptionTr] = useState('')
+  const [cultureDescriptionRu, setCultureDescriptionRu] = useState('')
   const [visaInfo, setVisaInfo] = useState('')
+  const [visaInfoTr, setVisaInfoTr] = useState('')
+  const [visaInfoRu, setVisaInfoRu] = useState('')
   const [entryRequirements, setEntryRequirements] = useState('')
+  const [entryRequirementsTr, setEntryRequirementsTr] = useState('')
+  const [entryRequirementsRu, setEntryRequirementsRu] = useState('')
   const [visaRequired, setVisaRequired] = useState<null | boolean>(null)
   const [popularActivities, setPopularActivities] = useState('')
   const [popularCities, setPopularCities] = useState('')
   const [airenAdvice, setAirenAdvice] = useState('')
+  const [airenAdviceTr, setAirenAdviceTr] = useState('')
+  const [airenAdviceRu, setAirenAdviceRu] = useState('')
+  const [bestTimeToVisitTr, setBestTimeToVisitTr] = useState('')
+  const [bestTimeToVisitRu, setBestTimeToVisitRu] = useState('')
+  const [climateInfoTr, setClimateInfoTr] = useState('')
+  const [climateInfoRu, setClimateInfoRu] = useState('')
   const [topPlaces, setTopPlaces] = useState('Kapadokya|Peri bacaları ve balon turları\nİstanbul|Tarihi yarımada ve Boğaz')
   const [visitorsPerYear, setVisitorsPerYear] = useState<number | ''>('')
+  const [visitorsUnit, setVisitorsUnit] = useState<'million' | 'thousand'>('million')
   const [featuredToggle, setFeaturedToggle] = useState(false)
   const [budgetLevel, setBudgetLevel] = useState<'Budget'|'Mid-range'|'Luxury'|''>('')
   const [message, setMessage] = useState<string | null>(null)
@@ -239,6 +253,37 @@ export default function AdminCountryCreatePage() {
           visa_info: visaInfo || null,
           entry_requirements: entryRequirements || null,
           visa_required: visaRequired,
+          // Çoklu dil desteği (_i18n alanları)
+          culture_description_i18n: {
+            en: cultureDescription || null,
+            tr: cultureDescriptionTr || null,
+            ru: cultureDescriptionRu || null
+          },
+          visa_info_i18n: {
+            en: visaInfo || null,
+            tr: visaInfoTr || null,
+            ru: visaInfoRu || null
+          },
+          entry_requirements_i18n: {
+            en: entryRequirements || null,
+            tr: entryRequirementsTr || null,
+            ru: entryRequirementsRu || null
+          },
+          airen_advice_i18n: {
+            en: airenAdvice || null,
+            tr: airenAdviceTr || null,
+            ru: airenAdviceRu || null
+          },
+          best_time_to_visit_i18n: {
+            en: bestTimeToVisit || null,
+            tr: bestTimeToVisitTr || null,
+            ru: bestTimeToVisitRu || null
+          },
+          climate_info_i18n: {
+            en: climateInfo || null,
+            tr: climateInfoTr || null,
+            ru: climateInfoRu || null
+          },
           popular_activities: popularActivities ? popularActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
           popular_cities: popularCities ? popularCities.split(',').map(s => s.trim()).filter(Boolean) : [],
           airen_advice: airenAdvice || null,
@@ -248,7 +293,11 @@ export default function AdminCountryCreatePage() {
                 return { name: (name || '').trim(), description: (description || '').trim() }
               }).filter(p => p.name)
             : [],
-          visitors_per_year: visitorsPerYear === '' ? null : Number(visitorsPerYear),
+          visitors_per_year: visitorsPerYear === '' ? null : (
+            visitorsUnit === 'thousand' 
+              ? Math.round(Number(visitorsPerYear)) // 120 thousand → 120
+              : Math.round(Number(visitorsPerYear) * 1000) // 89 million → 89000
+          ),
           featured: featuredToggle,
           latitude: latitude === '' ? null : Number(latitude),
           longitude: longitude === '' ? null : Number(longitude),
@@ -367,9 +416,33 @@ export default function AdminCountryCreatePage() {
             <Input value={population} onChange={e => setPopulation(e.target.value as any)} placeholder="67800000" />
           </div>
         </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Genel Bilgiler</label>
-          <Textarea value={cultureDescription} onChange={e => setCultureDescription(e.target.value)} rows={3} />
+        <div className="glass-card border border-blue-500/30 rounded-xl p-4 bg-gradient-to-br from-blue-900/10 to-cyan-900/10">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-base text-blue-300 font-bold">🌍 Genel Bilgiler / Culture Description</label>
+            <TranslateButton 
+              text={cultureDescription}
+              field="culture_description"
+              onTranslated={(translations) => {
+                setCultureDescriptionTr(translations.tr)
+                setCultureDescriptionRu(translations.ru)
+              }}
+              className="text-xs px-3 py-1"
+            />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇬🇧 English (Ana Dil)</label>
+              <Textarea value={cultureDescription} onChange={e => setCultureDescription(e.target.value)} rows={3} placeholder="Cultural description in English..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+              <Textarea value={cultureDescriptionTr} onChange={e => setCultureDescriptionTr(e.target.value)} rows={3} placeholder="Türkçe açıklama..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+              <Textarea value={cultureDescriptionRu} onChange={e => setCultureDescriptionRu(e.target.value)} rows={3} placeholder="Описание на русском..." />
+            </div>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -381,9 +454,33 @@ export default function AdminCountryCreatePage() {
             <Input value={longitude} onChange={e => setLongitude(e.target.value as any)} placeholder="49.8671" />
           </div>
         </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Vize & Giriş</label>
-          <Textarea value={visaInfo} onChange={e => setVisaInfo(e.target.value)} rows={3} />
+        <div className="glass-card border border-green-500/30 rounded-xl p-4 bg-gradient-to-br from-green-900/10 to-emerald-900/10">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-base text-green-300 font-bold">✈️ Vize & Giriş Bilgileri / Visa Info</label>
+            <TranslateButton 
+              text={visaInfo}
+              field="visa_info"
+              onTranslated={(translations) => {
+                setVisaInfoTr(translations.tr)
+                setVisaInfoRu(translations.ru)
+              }}
+              className="text-xs px-3 py-1"
+            />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+              <Textarea value={visaInfo} onChange={e => setVisaInfo(e.target.value)} rows={3} placeholder="Visa information in English..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+              <Textarea value={visaInfoTr} onChange={e => setVisaInfoTr(e.target.value)} rows={3} placeholder="Vize bilgisi Türkçe..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+              <Textarea value={visaInfoRu} onChange={e => setVisaInfoRu(e.target.value)} rows={3} placeholder="Визовая информация..." />
+            </div>
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Giriş Şartları</label>
@@ -399,8 +496,24 @@ export default function AdminCountryCreatePage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Yıllık Ziyaretçi (milyon)</label>
-            <Input value={visitorsPerYear} onChange={e => setVisitorsPerYear(e.target.value as any)} placeholder="89" />
+            <label className="block text-sm text-gray-700 mb-1">Yıllık Ziyaretçi Sayısı</label>
+            <div className="flex gap-2">
+              <Input 
+                value={visitorsPerYear} 
+                onChange={e => setVisitorsPerYear(e.target.value as any)} 
+                placeholder={visitorsUnit === 'million' ? '89' : '500'} 
+                className="flex-1"
+                type="number"
+              />
+              <select 
+                value={visitorsUnit} 
+                onChange={e => setVisitorsUnit(e.target.value as 'million' | 'thousand')} 
+                className="w-28 bg-white border rounded-md px-2 py-2 text-sm"
+              >
+                <option value="million">Milyon</option>
+                <option value="thousand">Bin</option>
+              </select>
+            </div>
           </div>
           <div>
             <label className="block text-sm text-gray-700 mb-1">Bütçe Seviyesi</label>
@@ -444,9 +557,33 @@ export default function AdminCountryCreatePage() {
           <Input value={popularCities} onChange={e => setPopularCities(e.target.value)} placeholder="Istanbul, Ankara, Izmir, Antalya, Bodrum" />
           <div className="text-xs text-blue-600 mt-1">Bu şehirler weather widget'ta seçilebilir olacak</div>
         </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Airen Tavsiyesi</label>
-          <Textarea value={airenAdvice} onChange={e => setAirenAdvice(e.target.value)} rows={2} />
+        <div className="glass-card border border-purple-500/30 rounded-xl p-4 bg-gradient-to-br from-purple-900/10 to-pink-900/10">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-base text-purple-300 font-bold">✨ Airen Tavsiyesi / AI Travel Advice</label>
+            <TranslateButton 
+              text={airenAdvice}
+              field="airen_advice"
+              onTranslated={(translations) => {
+                setAirenAdviceTr(translations.tr)
+                setAirenAdviceRu(translations.ru)
+              }}
+              className="text-xs px-3 py-1"
+            />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+              <Textarea value={airenAdvice} onChange={e => setAirenAdvice(e.target.value)} rows={2} placeholder="AI travel advice in English..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+              <Textarea value={airenAdviceTr} onChange={e => setAirenAdviceTr(e.target.value)} rows={2} placeholder="Airen tavsiyesi Türkçe..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+              <Textarea value={airenAdviceRu} onChange={e => setAirenAdviceRu(e.target.value)} rows={2} placeholder="Совет от Airen..." />
+            </div>
+          </div>
         </div>
         <div ref={mapRef} className="bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-4">
           <label className="block text-sm text-green-700 font-semibold mb-3 flex items-center gap-2">
@@ -667,8 +804,27 @@ export default function AdminCountryCreatePage() {
           <Textarea value={topPlaces} onChange={e => setTopPlaces(e.target.value)} rows={3} />
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Slug (opsiyonel)</label>
-          <Input value={slug} onChange={e => setSlug(e.target.value)} />
+          <label className="block text-sm text-gray-700 mb-1">Slug (opsiyonel - boş bırakılırsa otomatik oluşturulur)</label>
+          <div className="flex gap-2">
+            <Input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1" placeholder="otomatik oluşturulacak" />
+            <Button 
+              type="button"
+              onClick={() => {
+                if (!name) {
+                  setMessage('❌ Önce ülke adını girin')
+                  return
+                }
+                const autoSlug = name.toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-+|-+$/g, '')
+                setSlug(autoSlug)
+                setMessage('✅ Slug otomatik oluşturuldu: ' + autoSlug)
+              }}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 whitespace-nowrap text-white"
+            >
+              🔗 Oluştur
+            </Button>
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Başkent</label>

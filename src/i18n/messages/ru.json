@@ -221,6 +221,11 @@
       "replyingTo": "В ответ: #{id}",
       "cancel": "отмена",
       "send": "Отправить"
+    },
+    "detail": {
+      "backAria": "Вернуться к историям",
+      "back": "Вернуться к историям",
+      "moreFromUser": "Больше постов от этого пользователя"
     }
   },
   "footer": {
@@ -258,10 +263,72 @@
     "tagline": "Сделано с ❤️ для путешественников",
     "poweredBy": "Работает на ИИ"
   },
+  "notifications": {
+    "title": "Уведомления",
+    "search": "Поиск",
+    "new": "Новые",
+    "earlier": "Раньше",
+    "viewStory": "Посмотреть историю",
+    "generic": "Уведомление",
+    "empty": "Нет уведомлений.",
+    "aUser": "Пользователь",
+    "messages": {
+      "comment_like": "понравился ваш комментарий.",
+      "story_like": "понравилась ваша история.",
+      "story_comment": "прокомментировал вашу историю.",
+      "comment_reply": "ответил на ваш комментарий.",
+      "follow": "начал за вами следить."
+    }
+  },
   "profile": {
     "followButton": {
       "follow": "Подписаться",
       "following": "Вы подписаны"
+    },
+    "public": {
+      "notFound": "Пользователь не найден.",
+      "posts": "Посты",
+      "followers": "Подписчики",
+      "following": "Подписки",
+      "discover": "Узнайте людей",
+      "mutualAndMore": "и ещё {count}",
+      "mutualDialogTitle": "Общие связи",
+      "community": "Сообщество",
+      "toProfile": "Перейти в мой профиль",
+      "mutualFriends": "{count} общих друзей",
+      "suggestedForYou": "Рекомендуем для вас"
+    },
+    "private": {
+      "sessionMissingTitle": "Сеанс не найден",
+      "sessionMissingDesc": "Пожалуйста, войдите или создайте аккаунт, чтобы продолжить.",
+      "login": "Войти",
+      "register": "Регистрация",
+      "posts": "Посты",
+      "followers": "Подписчики",
+      "following": "Подписки",
+      "editProfile": "Редактировать профиль",
+      "shareProfile": "Поделиться профилем",
+      "shareCopySuccess": "Ссылка на профиль скопирована",
+      "shareCopyFail": "Не удалось скопировать ссылку",
+      "searchPlaceholder": "Поиск пользователей, постов или #хэштегов",
+      "search": "Поиск",
+      "noResults": "Нет результатов.",
+      "tabs": { "posts": "Посты", "saved": "Сохранённое", "comments": "Комментарии" },
+      "submitStoryAria": "Поделиться историей",
+      "backToCommunityAria": "Назад к сообществу",
+      "searchCommunityAria": "Поиск в сообществе",
+      "noPosts": "Пока нет постов.",
+      "news": "Новости",
+      "noSavedNews": "Нет сохранённых новостей.",
+      "countries": "Страны",
+      "noSavedCountries": "Нет сохранённых стран.",
+      "noComments": "Нет комментариев.",
+      "followersAria": "Перейти на страницу подписчиков",
+      "followingAria": "Перейти на страницу подписок",
+      "deleteConfirm": "Вы уверены, что хотите удалить историю?",
+      "deleteSuccess": "История удалена",
+      "uploadFail": "Ошибка загрузки",
+      "avatarUpdated": "Фото профиля обновлено"
     }
   },
   "countries": {
@@ -343,6 +410,17 @@
         "yes": "Да",
         "no": "Нет",
         "populationValue": "{value} млн"
+      },
+      "sections": {
+        "overview": "Обзор",
+        "culture": "Культура",
+        "topPlaces": "Лучшие места",
+        "food": "Местная еда",
+        "activities": "Активности",
+        "travel": "Информация о поездке",
+        "negativeAspects": "Что нужно знать",
+        "restaurants": "Популярные рестораны",
+        "hotels": "Популярные отели"
       }
     }
   }

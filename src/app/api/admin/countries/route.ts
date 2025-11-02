@@ -50,6 +50,13 @@ const schema = z.object({
   trending_score: z.number().nullable().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
+  // Multi-language fields
+  culture_description_i18n: z.record(z.string()).nullable().optional(),
+  visa_info_i18n: z.record(z.string()).nullable().optional(),
+  entry_requirements_i18n: z.record(z.string()).nullable().optional(),
+  airen_advice_i18n: z.record(z.string()).nullable().optional(),
+  best_time_to_visit_i18n: z.record(z.string()).nullable().optional(),
+  climate_info_i18n: z.record(z.string()).nullable().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -60,7 +67,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: parsed.error.message }, { status: 400 })
     }
     const p = parsed.data
-    const slug = p.slug && p.slug.length ? p.slug : slugify(p.name, { lower: true, strict: true })
+    // Ensure slug is always lowercase and properly formatted
+    const slug = p.slug && p.slug.length 
+      ? slugify(p.slug, { lower: true, strict: true })
+      : slugify(p.name, { lower: true, strict: true })
     const { data, error } = await supabaseAdmin
       .from('countries')
       .insert({
@@ -94,8 +104,15 @@ export async function POST(req: NextRequest) {
         visitors_per_year: p.visitors_per_year ?? null,
         featured: p.featured ?? false,
         trending_score: p.trending_score ?? 0,
-      latitude: p.latitude ?? null,
-      longitude: p.longitude ?? null,
+        latitude: p.latitude ?? null,
+        longitude: p.longitude ?? null,
+        // Multi-language support
+        culture_description_i18n: p.culture_description_i18n ?? null,
+        visa_info_i18n: p.visa_info_i18n ?? null,
+        entry_requirements_i18n: p.entry_requirements_i18n ?? null,
+        airen_advice_i18n: p.airen_advice_i18n ?? null,
+        best_time_to_visit_i18n: p.best_time_to_visit_i18n ?? null,
+        climate_info_i18n: p.climate_info_i18n ?? null,
       })
       .select('*')
       .single()

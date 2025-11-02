@@ -261,6 +261,17 @@
         "yes": "Yes",
         "no": "No",
         "populationValue": "{value} million"
+      },
+      "sections": {
+        "overview": "Overview",
+        "culture": "Culture",
+        "topPlaces": "Top Places",
+        "food": "Local Food",
+        "activities": "Activities",
+        "travel": "Travel Information",
+        "negativeAspects": "Things to Know",
+        "restaurants": "Popular Restaurants",
+        "hotels": "Popular Hotels"
       }
     }
   },

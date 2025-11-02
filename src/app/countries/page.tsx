@@ -23,16 +23,74 @@ export default function CountriesPage() {
   const [budget, setBudget] = useState<'All' | 'Budget' | 'Mid-range' | 'Luxury'>('All')
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [trendingOnly, setTrendingOnly] = useState(false)
+  const [sortBy, setSortBy] = useState<'name' | 'popular' | 'trending'>('name')
 
-  // Helpers
+  // Helpers - Complete ISO to Continent mapping
   const isoToContinent: Record<string, string> = {
-    // EMEA
-    TR: 'Asia', FR: 'Europe', DE: 'Europe', IT: 'Europe', ES: 'Europe', GB: 'Europe',
-    // AMER
-    US: 'North America', CA: 'North America', BR: 'South America', AR: 'South America',
-    // APAC
-    CN: 'Asia', JP: 'Asia', KR: 'Asia', AU: 'Oceania', NZ: 'Oceania'
+    // Africa
+    DZ: 'Africa', AO: 'Africa', BJ: 'Africa', BW: 'Africa', BF: 'Africa', BI: 'Africa',
+    CM: 'Africa', CV: 'Africa', CF: 'Africa', TD: 'Africa', KM: 'Africa', CG: 'Africa',
+    CD: 'Africa', CI: 'Africa', DJ: 'Africa', EG: 'Africa', GQ: 'Africa', ER: 'Africa',
+    ET: 'Africa', GA: 'Africa', GM: 'Africa', GH: 'Africa', GN: 'Africa', GW: 'Africa',
+    KE: 'Africa', LS: 'Africa', LR: 'Africa', LY: 'Africa', MG: 'Africa', MW: 'Africa',
+    ML: 'Africa', MR: 'Africa', MU: 'Africa', YT: 'Africa', MA: 'Africa', MZ: 'Africa',
+    NA: 'Africa', NE: 'Africa', NG: 'Africa', RE: 'Africa', RW: 'Africa', SH: 'Africa',
+    ST: 'Africa', SN: 'Africa', SC: 'Africa', SL: 'Africa', SO: 'Africa', ZA: 'Africa',
+    SS: 'Africa', SD: 'Africa', SZ: 'Africa', TZ: 'Africa', TG: 'Africa', TN: 'Africa',
+    UG: 'Africa', ZM: 'Africa', ZW: 'Africa',
+    
+    // Asia
+    AF: 'Asia', AM: 'Asia', AZ: 'Asia', BH: 'Asia', BD: 'Asia', BT: 'Asia',
+    BN: 'Asia', KH: 'Asia', CN: 'Asia', CX: 'Asia', CC: 'Asia', IO: 'Asia',
+    GE: 'Asia', HK: 'Asia', IN: 'Asia', ID: 'Asia', IR: 'Asia', IQ: 'Asia',
+    IL: 'Asia', JP: 'Asia', JO: 'Asia', KZ: 'Asia', KW: 'Asia', KG: 'Asia',
+    LA: 'Asia', LB: 'Asia', MO: 'Asia', MY: 'Asia', MV: 'Asia', MN: 'Asia',
+    MM: 'Asia', NP: 'Asia', KP: 'Asia', OM: 'Asia', PK: 'Asia', PS: 'Asia',
+    PH: 'Asia', QA: 'Asia', SA: 'Asia', SG: 'Asia', KR: 'Asia', LK: 'Asia',
+    SY: 'Asia', TW: 'Asia', TJ: 'Asia', TH: 'Asia', TL: 'Asia', TR: 'Asia',
+    TM: 'Asia', AE: 'Asia', UZ: 'Asia', VN: 'Asia', YE: 'Asia',
+    
+    // Europe
+    AX: 'Europe', AL: 'Europe', AD: 'Europe', AT: 'Europe', BY: 'Europe', BE: 'Europe',
+    BA: 'Europe', BG: 'Europe', HR: 'Europe', CY: 'Europe', CZ: 'Europe', DK: 'Europe',
+    EE: 'Europe', FO: 'Europe', FI: 'Europe', FR: 'Europe', DE: 'Europe', GI: 'Europe',
+    GR: 'Europe', GG: 'Europe', VA: 'Europe', HU: 'Europe', IS: 'Europe', IE: 'Europe',
+    IM: 'Europe', IT: 'Europe', JE: 'Europe', LV: 'Europe', LI: 'Europe', LT: 'Europe',
+    LU: 'Europe', MK: 'Europe', MT: 'Europe', MD: 'Europe', MC: 'Europe', ME: 'Europe',
+    NL: 'Europe', NO: 'Europe', PL: 'Europe', PT: 'Europe', RO: 'Europe', RU: 'Europe',
+    SM: 'Europe', RS: 'Europe', SK: 'Europe', SI: 'Europe', ES: 'Europe', SJ: 'Europe',
+    SE: 'Europe', CH: 'Europe', UA: 'Europe', GB: 'Europe', UK: 'Europe',
+    
+    // North America
+    AI: 'North America', AG: 'North America', AW: 'North America', BS: 'North America',
+    BB: 'North America', BZ: 'North America', BM: 'North America', BQ: 'North America',
+    CA: 'North America', KY: 'North America', CR: 'North America', CU: 'North America',
+    CW: 'North America', DM: 'North America', DO: 'North America', SV: 'North America',
+    GL: 'North America', GD: 'North America', GP: 'North America', GT: 'North America',
+    HT: 'North America', HN: 'North America', JM: 'North America', MQ: 'North America',
+    MX: 'North America', MS: 'North America', NI: 'North America', PA: 'North America',
+    PM: 'North America', PR: 'North America', BL: 'North America', KN: 'North America',
+    LC: 'North America', MF: 'North America', VC: 'North America', SX: 'North America',
+    TT: 'North America', TC: 'North America', US: 'North America', VG: 'North America',
+    VI: 'North America',
+    
+    // South America
+    AR: 'South America', BO: 'South America', BR: 'South America', CL: 'South America',
+    CO: 'South America', EC: 'South America', FK: 'South America', GF: 'South America',
+    GY: 'South America', PY: 'South America', PE: 'South America', SR: 'South America',
+    UY: 'South America', VE: 'South America',
+    
+    // Oceania
+    AS: 'Oceania', AU: 'Oceania', CK: 'Oceania', FJ: 'Oceania', PF: 'Oceania',
+    GU: 'Oceania', KI: 'Oceania', MH: 'Oceania', FM: 'Oceania', NR: 'Oceania',
+    NC: 'Oceania', NZ: 'Oceania', NU: 'Oceania', NF: 'Oceania', MP: 'Oceania',
+    PW: 'Oceania', PG: 'Oceania', PN: 'Oceania', WS: 'Oceania', SB: 'Oceania',
+    TK: 'Oceania', TO: 'Oceania', TV: 'Oceania', VU: 'Oceania', WF: 'Oceania',
+    
+    // Antarctica
+    AQ: 'Antarctica', BV: 'Antarctica', TF: 'Antarctica', HM: 'Antarctica', GS: 'Antarctica'
   }
+  
   const getContinent = (iso?: string | null): string => {
     const code = (iso || '').toUpperCase()
     return isoToContinent[code] || 'Other'
@@ -54,7 +112,7 @@ export default function CountriesPage() {
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
-    return list
+    let result = list
       .filter(c =>
         c.name.toLowerCase().includes(q) ||
         (c.capital || '').toLowerCase().includes(q) ||
@@ -64,7 +122,22 @@ export default function CountriesPage() {
       .filter(c => (budget === 'All') ? true : getBudgetLabel(c) === budget)
       .filter(c => (featuredOnly ? !!c.featured : true))
       .filter(c => (trendingOnly ? isTrending(c) : true))
-  }, [query, list, continent, budget, featuredOnly, trendingOnly])
+    
+    // Sorting
+    if (sortBy === 'name') {
+      result = result.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === 'popular') {
+      result = result.sort((a, b) => (b.visitors_per_year || 0) - (a.visitors_per_year || 0))
+    } else if (sortBy === 'trending') {
+      result = result.sort((a, b) => {
+        const scoreA = a.trending_score ?? (a.popular_activities?.length || 0) * 10
+        const scoreB = b.trending_score ?? (b.popular_activities?.length || 0) * 10
+        return scoreB - scoreA
+      })
+    }
+    
+    return result
+  }, [query, list, continent, budget, featuredOnly, trendingOnly, sortBy])
 
   const popularActivities = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -167,9 +240,14 @@ export default function CountriesPage() {
               <TrendingUp className="h-4 w-4" /> {t('list.controls.trending')}
             </button>
             <div className="ml-auto flex items-center gap-2">
-              <select className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3">
-                <option>{t('list.controls.sortName')}</option>
-                <option>{t('list.controls.sortPopular')}</option>
+              <select 
+                className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+              >
+                <option value="name">{t('list.controls.sortName')}</option>
+                <option value="popular">{t('list.controls.sortPopular')}</option>
+                <option value="trending">Trend</option>
               </select>
               <button className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
                 <LayoutGrid className="h-4 w-4" />

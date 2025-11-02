@@ -261,6 +261,17 @@
         "yes": "Evet",
         "no": "Hayır",
         "populationValue": "{value} milyon"
+      },
+      "sections": {
+        "overview": "Genel Bakış",
+        "culture": "Kültür",
+        "topPlaces": "Gezilecek Yerler",
+        "food": "Yerel Yemekler",
+        "activities": "Aktiviteler",
+        "travel": "Seyahat Bilgileri",
+        "negativeAspects": "Bilinmesi Gerekenler",
+        "restaurants": "Popüler Restoranlar",
+        "hotels": "Popüler Oteller"
       }
     }
   },

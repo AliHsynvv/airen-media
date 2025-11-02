@@ -1,30 +1,105 @@
-import { Card } from '@/components/ui/card'
+'use client'
 
-interface SocialPost {
-  id: string
-  image: string
-  caption: string
-  url: string
+import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+const StoryCard = dynamic(() => import('@/components/community/StoryCard').then(m => m.StoryCard))
+
+interface Story {
+  id: number
+  slug: string
+  title: string
+  content: string
+  image_url: string
+  image_alt?: string
+  category: string
+  tags: string[]
+  status: string
+  created_at: string
+  user_id: string
+  users_profiles: {
+    id: string
+    full_name: string
+    username: string
+    avatar_url: string
+  }
+  community_story_comments: Array<{ count: number }>
 }
 
-const mockPosts: SocialPost[] = [
-  { id: 'p1', image: '/images/media/istanbul.jpg', caption: 'İstanbul manzarası', url: '#' },
-  { id: 'p2', image: '/images/media/paris.jpg', caption: 'Paris geceleri', url: '#' },
-  { id: 'p3', image: '/images/media/tokyo.jpg', caption: 'Tokyo sokakları', url: '#' },
-]
-
 export default function SocialFeed() {
+  const [stories, setStories] = useState<Story[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const res = await fetch('/api/community/stories')
+        const json = await res.json()
+        
+        if (json.success && json.data) {
+          // Son 12 story'yi al
+          setStories(json.data.slice(0, 12))
+        }
+      } catch (error) {
+        console.error('Error fetching stories:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStories()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="overflow-hidden py-2 sm:py-4">
+        <div className="flex gap-2 sm:gap-3">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-[160px] sm:w-[200px] h-[220px] sm:h-[280px] bg-gray-200 animate-pulse rounded-xl sm:rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!stories.length) {
+    return (
+      <div className="text-center py-6 sm:py-8 text-sm sm:text-base text-gray-500">
+        Henüz story paylaşılmamış
+      </div>
+    )
+  }
+
+  // Stories'i iki kez tekrarla ki animasyon sonsuz görünsün
+  const duplicatedStories = [...stories, ...stories]
+
   return (
-    <div className="grid grid-cols-3 gap-3">
-      {mockPosts.map(p => (
-        <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
-          <Card className="glass-card overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.image} alt={p.caption} className="w-full h-28 object-cover" />
-            <div className="p-2 text-gray-300 text-xs line-clamp-2">{p.caption}</div>
-          </Card>
-        </a>
-      ))}
+    <div className="overflow-hidden py-2 sm:py-4 relative">
+      <div className="animate-scroll-horizontal flex gap-2 sm:gap-3">
+        {duplicatedStories.map((story, idx) => (
+          <div key={`${story.id}-${idx}`} className="flex-shrink-0 w-[160px] sm:w-[200px]">
+            <StoryCard story={story} variant="grid" />
+          </div>
+        ))}
+      </div>
+      
+      <style jsx>{`
+        @keyframes scroll-horizontal {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        
+        .animate-scroll-horizontal {
+          animation: scroll-horizontal 60s linear infinite;
+        }
+        
+        .animate-scroll-horizontal:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   )
 }

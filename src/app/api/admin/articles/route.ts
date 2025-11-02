@@ -3,6 +3,12 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import slugify from 'slugify'
 
+const translationSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  excerpt: z.string().optional(),
+})
+
 const schema = z.object({
   title: z.string().min(3),
   content: z.string().min(20),
@@ -16,6 +22,13 @@ const schema = z.object({
   meta_title: z.string().max(70).optional(),
   meta_description: z.string().max(160).optional(),
   tag_names: z.array(z.string()).optional(),
+  // Multilingual support
+  translations: z.object({
+    tr: translationSchema,
+    en: translationSchema,
+    ru: translationSchema,
+  }).optional(),
+  default_language: z.enum(['tr', 'en', 'ru']).default('tr'),
 })
 
 export async function POST(req: NextRequest) {
@@ -42,7 +55,7 @@ export async function POST(req: NextRequest) {
     let createdArticle: any = null
     while (attempt < 3) {
       const slugCandidate = attempt === 0 ? baseSlug : `${baseSlug}-${Math.floor(Math.random() * 1000)}`
-      const { data, error } = await supabaseAdmin
+      const { data, error} = await supabaseAdmin
         .from('articles')
         .insert({
           title: payload.title,
@@ -59,6 +72,8 @@ export async function POST(req: NextRequest) {
           meta_title: payload.meta_title ?? null,
           meta_description: payload.meta_description ?? null,
           published_at: payload.status === 'published' ? new Date().toISOString() : null,
+          translations: payload.translations ?? null,
+          default_language: payload.default_language ?? 'tr',
         })
         .select('*')
         .single()

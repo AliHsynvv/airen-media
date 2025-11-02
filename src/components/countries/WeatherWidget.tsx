@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown } from 'lucide-react'
+import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, MapPin, ChevronDown, Search } from 'lucide-react'
 
 interface WeatherWidgetProps {
   countryName: string
@@ -26,13 +26,88 @@ interface WeatherData {
 
 // Popular cities for countries (fallback if no cities provided)
 const defaultCities: Record<string, string[]> = {
-  'Turkey': ['Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bodrum'],
-  'United Kingdom': ['London', 'Manchester', 'Edinburgh', 'Birmingham', 'Liverpool'],
-  'France': ['Paris', 'Marseille', 'Lyon', 'Nice', 'Bordeaux'],
-  'Spain': ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Bilbao'],
-  'Italy': ['Rome', 'Milan', 'Venice', 'Florence', 'Naples'],
-  'Germany': ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne'],
-  'United States': ['New York', 'Los Angeles', 'Chicago', 'Miami', 'San Francisco'],
+  // Europe
+  'Turkey': ['Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bodrum', 'Bursa', 'Konya', 'Adana'],
+  'United Kingdom': ['London', 'Manchester', 'Edinburgh', 'Birmingham', 'Liverpool', 'Bristol', 'Glasgow'],
+  'France': ['Paris', 'Marseille', 'Lyon', 'Nice', 'Bordeaux', 'Toulouse', 'Strasbourg'],
+  'Spain': ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Bilbao', 'Malaga', 'Zaragoza'],
+  'Italy': ['Rome', 'Milan', 'Venice', 'Florence', 'Naples', 'Turin', 'Bologna'],
+  'Germany': ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 'Dusseldorf'],
+  'Greece': ['Athens', 'Thessaloniki', 'Patras', 'Heraklion', 'Larissa', 'Rhodes'],
+  'Portugal': ['Lisbon', 'Porto', 'Faro', 'Coimbra', 'Braga', 'Funchal'],
+  'Netherlands': ['Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven'],
+  'Belgium': ['Brussels', 'Antwerp', 'Ghent', 'Bruges', 'Liege'],
+  'Austria': ['Vienna', 'Salzburg', 'Innsbruck', 'Graz', 'Linz'],
+  'Switzerland': ['Zurich', 'Geneva', 'Basel', 'Bern', 'Lausanne'],
+  'Poland': ['Warsaw', 'Krakow', 'Gdansk', 'Wroclaw', 'Poznan'],
+  'Czech Republic': ['Prague', 'Brno', 'Ostrava', 'Plzen', 'Liberec'],
+  'Hungary': ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pecs'],
+  'Romania': ['Bucharest', 'Cluj-Napoca', 'Timisoara', 'Iasi', 'Constanta'],
+  'Bulgaria': ['Sofia', 'Plovdiv', 'Varna', 'Burgas', 'Ruse'],
+  'Croatia': ['Zagreb', 'Split', 'Rijeka', 'Dubrovnik', 'Zadar'],
+  'Serbia': ['Belgrade', 'Novi Sad', 'Nis', 'Kragujevac', 'Subotica'],
+  'Ukraine': ['Kyiv', 'Kharkiv', 'Odesa', 'Dnipro', 'Lviv'],
+  'Russia': ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan'],
+  'Albania': ['Tirana', 'Durres', 'Vlore', 'Shkoder', 'Fier'],
+  
+  // Caucasus & Central Asia
+  'Azerbaijan': ['Baku', 'Ganja', 'Sumqayit', 'Mingachevir', 'Lankaran'],
+  'Georgia': ['Tbilisi', 'Batumi', 'Kutaisi', 'Rustavi', 'Gori'],
+  'Armenia': ['Yerevan', 'Gyumri', 'Vanadzor', 'Vagharshapat', 'Hrazdan'],
+  'Kazakhstan': ['Almaty', 'Nur-Sultan', 'Shymkent', 'Karaganda', 'Aktobe'],
+  'Uzbekistan': ['Tashkent', 'Samarkand', 'Bukhara', 'Namangan', 'Andijan'],
+  'Kyrgyzstan': ['Bishkek', 'Osh', 'Jalal-Abad', 'Karakol', 'Tokmok'],
+  'Turkmenistan': ['Ashgabat', 'Turkmenabat', 'Dasoguz', 'Mary', 'Balkanabat'],
+  'Tajikistan': ['Dushanbe', 'Khujand', 'Kulob', 'Bokhtar', 'Istaravshan'],
+  
+  // Middle East
+  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah'],
+  'Saudi Arabia': ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar'],
+  'Israel': ['Tel Aviv', 'Jerusalem', 'Haifa', 'Eilat', 'Beersheba'],
+  'Jordan': ['Amman', 'Aqaba', 'Irbid', 'Zarqa', 'Petra'],
+  'Lebanon': ['Beirut', 'Tripoli', 'Sidon', 'Tyre', 'Byblos'],
+  'Qatar': ['Doha', 'Al Wakrah', 'Al Rayyan', 'Umm Salal', 'Al Khor'],
+  'Kuwait': ['Kuwait City', 'Hawalli', 'Salmiya', 'Ahmadi', 'Jahra'],
+  'Oman': ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur'],
+  'Bahrain': ['Manama', 'Muharraq', 'Riffa', 'Hamad Town', 'Isa Town'],
+  'Iraq': ['Baghdad', 'Basra', 'Mosul', 'Erbil', 'Najaf'],
+  'Iran': ['Tehran', 'Mashhad', 'Isfahan', 'Shiraz', 'Tabriz'],
+  
+  // Americas
+  'United States': ['New York', 'Los Angeles', 'Chicago', 'Miami', 'San Francisco', 'Las Vegas', 'Seattle'],
+  'Canada': ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Ottawa', 'Edmonton'],
+  'Mexico': ['Mexico City', 'Cancun', 'Guadalajara', 'Monterrey', 'Playa del Carmen', 'Puerto Vallarta'],
+  'Brazil': ['Sao Paulo', 'Rio de Janeiro', 'Brasilia', 'Salvador', 'Fortaleza', 'Belo Horizonte'],
+  'Argentina': ['Buenos Aires', 'Cordoba', 'Rosario', 'Mendoza', 'Bariloche'],
+  'Chile': ['Santiago', 'Valparaiso', 'Vina del Mar', 'Concepcion', 'La Serena'],
+  'Colombia': ['Bogota', 'Medellin', 'Cali', 'Cartagena', 'Barranquilla'],
+  'Peru': ['Lima', 'Cusco', 'Arequipa', 'Trujillo', 'Chiclayo'],
+  
+  // Asia
+  'China': ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Hong Kong'],
+  'Japan': ['Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya', 'Sapporo', 'Fukuoka'],
+  'South Korea': ['Seoul', 'Busan', 'Incheon', 'Daegu', 'Daejeon', 'Gwangju'],
+  'India': ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune'],
+  'Thailand': ['Bangkok', 'Phuket', 'Chiang Mai', 'Pattaya', 'Krabi', 'Hua Hin'],
+  'Vietnam': ['Ho Chi Minh City', 'Hanoi', 'Da Nang', 'Nha Trang', 'Hoi An', 'Hue'],
+  'Indonesia': ['Jakarta', 'Bali', 'Surabaya', 'Bandung', 'Medan', 'Yogyakarta'],
+  'Malaysia': ['Kuala Lumpur', 'Penang', 'Johor Bahru', 'Malacca', 'Langkawi'],
+  'Singapore': ['Singapore', 'Sentosa', 'Changi', 'Jurong', 'Marina Bay'],
+  'Philippines': ['Manila', 'Cebu', 'Davao', 'Boracay', 'Palawan'],
+  'Pakistan': ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'],
+  'Bangladesh': ['Dhaka', 'Chittagong', 'Khulna', 'Rajshahi', 'Sylhet'],
+  
+  // Africa
+  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan', 'Sharm El Sheikh'],
+  'South Africa': ['Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'Port Elizabeth'],
+  'Morocco': ['Marrakech', 'Casablanca', 'Fez', 'Rabat', 'Tangier', 'Agadir'],
+  'Kenya': ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret'],
+  'Nigeria': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt'],
+  'Tunisia': ['Tunis', 'Sousse', 'Sfax', 'Monastir', 'Djerba'],
+  
+  // Oceania
+  'Australia': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast'],
+  'New Zealand': ['Auckland', 'Wellington', 'Christchurch', 'Queenstown', 'Rotorua'],
 }
 
 export default function WeatherWidget({ countryName, cities, latitude, longitude }: WeatherWidgetProps) {
@@ -41,8 +116,12 @@ export default function WeatherWidget({ countryName, cities, latitude, longitude
   const [error, setError] = useState<string | null>(null)
   const [selectedCity, setSelectedCity] = useState<string>('')
   const [isOpen, setIsOpen] = useState(false)
+  const [citySearch, setCitySearch] = useState('')
 
   const availableCities = cities || defaultCities[countryName] || []
+  const filteredCities = availableCities.filter(city => 
+    city.toLowerCase().includes(citySearch.toLowerCase())
+  )
 
   useEffect(() => {
     if (availableCities.length > 0 && !selectedCity) {
@@ -208,43 +287,136 @@ export default function WeatherWidget({ countryName, cities, latitude, longitude
         </div>
         
         {/* City Selector */}
-        {availableCities.length > 0 && (
-          <div className="relative">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-blue-300 rounded-lg hover:border-blue-400 transition-all"
-            >
-              <MapPin className="h-4 w-4 text-blue-600" />
-              <span className="font-medium text-gray-900">{selectedCity}</span>
-              <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {isOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsOpen(false)}
-                ></div>
-                <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-blue-200 rounded-lg shadow-xl z-20 max-h-64 overflow-y-auto">
-                  {availableCities.map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => {
-                        setSelectedCity(city)
-                        setIsOpen(false)
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all"
+          >
+            <MapPin className="h-4 w-4" />
+            <span className="font-bold text-sm">{selectedCity || countryName}</span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {isOpen && (
+            <>
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => {
+                  setIsOpen(false)
+                  setCitySearch('')
+                }}
+              ></div>
+              <div className="absolute right-0 mt-2 w-72 bg-white border-2 border-black rounded-lg shadow-2xl z-20 overflow-hidden">
+                {/* Search/Custom Input */}
+                <div className="p-3 border-b-2 border-black bg-gray-50">
+                  <div className="relative mb-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={citySearch}
+                      onChange={(e) => setCitySearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && citySearch.trim()) {
+                          setSelectedCity(citySearch.trim())
+                          setIsOpen(false)
+                          setCitySearch('')
+                        }
                       }}
-                      className={`w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors ${
-                        selectedCity === city ? 'bg-blue-100 font-semibold' : ''
-                      }`}
+                      placeholder="Herhangi bir şehir yazın veya seçin..."
+                      className="w-full pl-9 pr-3 py-2 border-2 border-gray-300 focus:border-black rounded-lg text-sm font-medium outline-none"
+                      autoFocus
+                    />
+                  </div>
+                  
+                  {/* Custom City Button */}
+                  {citySearch.trim() && filteredCities.length === 0 && (
+                    <button
+                      onClick={() => {
+                        setSelectedCity(citySearch.trim())
+                        setIsOpen(false)
+                        setCitySearch('')
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all"
                     >
-                      {city}
+                      <Search className="h-4 w-4" />
+                      <span className="font-bold text-sm">"{citySearch}" için hava durumu</span>
                     </button>
-                  ))}
+                  )}
+                  
+                  {citySearch.trim() && filteredCities.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setSelectedCity(citySearch.trim())
+                        setIsOpen(false)
+                        setCitySearch('')
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-all mb-2"
+                    >
+                      <Search className="h-4 w-4" />
+                      <span className="font-bold text-sm">"{citySearch}" ara</span>
+                    </button>
+                  )}
                 </div>
-              </>
-            )}
-          </div>
-        )}
+                
+                {/* Predefined City List */}
+                {availableCities.length > 0 && (
+                  <>
+                    <div className="px-4 py-2 bg-gray-100 border-b border-gray-300">
+                      <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Popüler Şehirler</span>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                      {filteredCities.length > 0 ? (
+                        filteredCities.map((city) => (
+                          <button
+                            key={city}
+                            onClick={() => {
+                              setSelectedCity(city)
+                              setIsOpen(false)
+                              setCitySearch('')
+                            }}
+                            className={`w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-0 ${
+                              selectedCity === city ? 'bg-black text-white hover:bg-gray-800' : 'text-black'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <MapPin className={`h-4 w-4 ${selectedCity === city ? 'text-white' : 'text-gray-400'}`} />
+                              <span className="font-bold text-sm">{city}</span>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        citySearch.trim() === '' && (
+                          <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                            Şehir listesi boş
+                          </div>
+                        )
+                      )}
+                    </div>
+                    
+                    {/* Total Count */}
+                    {filteredCities.length > 0 && (
+                      <div className="px-4 py-2 bg-gray-50 border-t-2 border-black text-xs text-gray-600 font-medium text-center">
+                        {filteredCities.length} popüler şehir
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {/* No predefined cities - just search */}
+                {availableCities.length === 0 && (
+                  <div className="px-4 py-6 text-center">
+                    <div className="text-sm text-gray-600 mb-2">
+                      {countryName} için herhangi bir şehir yazın
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Örn: Mingachevir, Ganja, Baku...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Weather Content */}

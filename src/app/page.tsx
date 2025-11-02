@@ -159,27 +159,27 @@ export default async function Home() {
       </section>
 
       {/* Latest News */}
-      <section className="w-full px-0 sm:px-4">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <section className="w-full px-2 sm:px-4">
+        <div className="flex items-center justify-between mb-4 sm:mb-5 px-1 sm:px-0">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">{t('latestNews.title')}</h2>
-            <p className="mt-1">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-gray-900">{t('latestNews.title')}</h2>
+            <p className="mt-1.5 sm:mt-1">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] sm:text-xs text-gray-700 shadow-sm">
-                <Newspaper className="h-3.5 w-3.5" />
+                <Newspaper className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 {t('latestNews.badge')}
               </span>
             </p>
           </div>
-          <Link href="/news" className="sm:hidden inline-flex items-center gap-2 h-9 px-3 rounded-full border border-gray-200 bg-white text-gray-900 shadow-sm">
+          <Link href="/news" className="sm:hidden inline-flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-gray-200 bg-white text-gray-900 shadow-sm text-xs">
             {t('latestNews.viewMore')}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link href="/news" className="hidden sm:inline text-sm text-gray-700 hover:underline">{t('latestNews.viewMore')}</Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-stretch">
           {latestNews.map((a: any, i: number) => (
             <div key={a.id} className="opacity-0 translate-y-4 animate-[fadein_0.6s_ease_forwards]" style={{ animationDelay: `${i * 80}ms` }}>
-              <ArticleCard article={a} theme="light" className="h-[320px] sm:h-[380px] lg:h-[420px]" />
+              <ArticleCard article={a} theme="light" className="h-[340px] sm:h-[380px] lg:h-[420px]" />
             </div>
           ))}
         </div>
