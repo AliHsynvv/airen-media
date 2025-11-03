@@ -2,27 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { UserStory } from '@/types/story'
 const StoryCard = dynamic(() => import('@/components/community/StoryCard').then(m => m.StoryCard))
 
-interface Story {
-  id: number
-  slug: string
-  title: string
-  content: string
-  image_url: string
-  image_alt?: string
-  category: string
-  tags: string[]
-  status: string
-  created_at: string
-  user_id: string
-  users_profiles: {
+type Story = UserStory & {
+  users_profiles?: {
     id: string
-    full_name: string
-    username: string
-    avatar_url: string
+    full_name: string | null
+    username: string | null
+    avatar_url: string | null
   }
-  community_story_comments: Array<{ count: number }>
+  community_story_comments?: Array<{ count: number }>
 }
 
 export default function SocialFeed() {
