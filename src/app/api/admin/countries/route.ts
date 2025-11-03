@@ -51,12 +51,12 @@ const schema = z.object({
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   // Multi-language fields
-  culture_description_i18n: z.record(z.string()).nullable().optional(),
-  visa_info_i18n: z.record(z.string()).nullable().optional(),
-  entry_requirements_i18n: z.record(z.string()).nullable().optional(),
-  airen_advice_i18n: z.record(z.string()).nullable().optional(),
-  best_time_to_visit_i18n: z.record(z.string()).nullable().optional(),
-  climate_info_i18n: z.record(z.string()).nullable().optional(),
+  culture_description_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  visa_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  entry_requirements_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  airen_advice_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  best_time_to_visit_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  climate_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
 })
 
 export async function POST(req: NextRequest) {
