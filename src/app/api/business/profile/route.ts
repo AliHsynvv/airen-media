@@ -27,6 +27,7 @@ export async function PATCH(req: NextRequest) {
     social_tiktok: rest.social_tiktok ?? undefined,
     social_facebook: rest.social_facebook ?? undefined,
     social_youtube: rest.social_youtube ?? undefined,
+    services: Array.isArray(rest.services) ? rest.services : undefined,
   }
 
   const { error } = await supabase.from('business_profiles').update(payload).eq('id', id)

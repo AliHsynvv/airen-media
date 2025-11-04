@@ -34,19 +34,19 @@ export async function GET(request: NextRequest) {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
-        // Check if user owns a business using supabase query directly
+        // Check if user has business account type
         try {
-          const { data: businessData } = await supabase
-            .from('businesses')
-            .select('id')
-            .eq('owner_id', user.id)
+          const { data: profile } = await supabase
+            .from('users_profiles')
+            .select('account_type')
+            .eq('id', user.id)
             .single()
           
-          if (businessData) {
-            return NextResponse.redirect(new URL('/business', requestUrl.origin))
+          if (profile?.account_type === 'business') {
+            return NextResponse.redirect(new URL('/business/me', requestUrl.origin))
           }
         } catch (error) {
-          console.error('Error checking business:', error)
+          console.error('Error checking account type:', error)
         }
       }
       

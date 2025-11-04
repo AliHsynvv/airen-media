@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 
 const StoryCard = dynamic(() => import('@/components/community/StoryCard').then(m => m.StoryCard))
+const AutoScrollCarousel = dynamic(() => import('@/components/home/AutoScrollCarousel'))
 
 interface Props {
   stories: any[]
@@ -29,18 +30,24 @@ export default function HomeStoriesGridLazy({ stories }: Props) {
   return (
     <div ref={ref}>
       {visible ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-3">
+        <AutoScrollCarousel autoScrollInterval={3500} gradientColor="white">
           {stories.map((s: any, i: number) => (
-            <div key={s.id} className="opacity-0 translate-y-4 animate-[fadein_0.6s_ease_forwards] sm:px-0" style={{ animationDelay: `${i * 80}ms` }}>
+            <div 
+              key={s.id} 
+              className="carousel-item flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)] xl:w-[calc(25%-12px)] opacity-0 translate-x-8 animate-[slideIn_0.6s_ease_forwards]" 
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
               <StoryCard story={s as any} variant="responsive" />
             </div>
           ))}
-        </div>
+        </AutoScrollCarousel>
       ) : (
-        <div className="grid grid-cols-4 gap-1">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-md animate-pulse border border-gray-200 bg-white" />
-          ))}
+        <div className="overflow-x-auto scrollbar-hide pb-4">
+          <div className="flex gap-3 min-w-full">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)] xl:w-[calc(25%-12px)] aspect-square rounded-md animate-pulse border border-gray-200 bg-white" />
+            ))}
+          </div>
         </div>
       )}
     </div>

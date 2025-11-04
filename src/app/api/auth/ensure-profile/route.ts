@@ -6,6 +6,7 @@ const schema = z.object({
   user_id: z.string().uuid(),
   username: z.string().min(3),
   full_name: z.string().optional(),
+  account_type: z.enum(['user', 'business']).optional(),
 })
   
 export async function POST(req: NextRequest) {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: parsed.error.message }, { status: 400 })
     }
 
-    const { user_id, username, full_name } = parsed.data
+    const { user_id, username, full_name, account_type } = parsed.data
     const { data, error } = await supabaseAdmin
       .from('users_profiles')
       .upsert({
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
         role: 'user',
         status: 'active',
         email_verified: false,
+        account_type: account_type ?? 'user',
       }, { onConflict: 'id' })
       .select('*')
       .single()

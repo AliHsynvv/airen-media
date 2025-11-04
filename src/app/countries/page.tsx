@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCountries } from '@/lib/hooks/useCountries'
-import { Search, TrendingUp, LayoutGrid, List, Star, ChevronDown } from 'lucide-react'
+import { Search, TrendingUp, LayoutGrid, List, Star, Globe2, MapPin, DollarSign, CreditCard, Gem, ArrowUpDown, Flame, TrendingUp as TrendingUpIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 export default function CountriesPage() {
@@ -195,66 +196,201 @@ export default function CountriesPage() {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm px-4 py-3 mb-8">
-        <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              className="pl-9 h-11 rounded-lg border-gray-200"
-              placeholder={t('list.controls.searchPlaceholder')}
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
+      {/* Controls - Modern Design */}
+      <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg backdrop-blur-sm px-6 py-6 mb-8 transition-all hover:shadow-xl">
+        <div className="flex flex-col gap-5">
+          {/* Search Bar */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+            <div className="relative flex items-center">
+              <div className="absolute left-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+              </div>
+              <Input
+                className="pl-12 pr-4 h-14 rounded-xl border-2 border-gray-200 bg-white text-base font-medium text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+                placeholder={t('list.controls.searchPlaceholder')}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3"
-              value={continent}
-              onChange={e => setContinent(e.target.value as any)}
-            >
-              {continentOptions.map(opt => (
-                <option key={opt} value={opt}>{opt === 'All' ? t('list.controls.continentAll') : opt}</option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3"
-              value={budget}
-              onChange={e => setBudget(e.target.value as any)}
-            >
-              <option value="All">{t('list.controls.budgetAll')}</option>
-              <option value="Budget">{t('list.controls.budget')}</option>
-              <option value="Mid-range">{t('list.controls.midRange')}</option>
-              <option value="Luxury">{t('list.controls.luxury')}</option>
-            </select>
-            <button
-              onClick={() => setFeaturedOnly(v => !v)}
-              className={`inline-flex items-center gap-1 h-9 px-3 rounded-md border ${featuredOnly ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
-            >
-              <Star className="h-4 w-4" /> {t('list.controls.featuredOnly')}
-            </button>
-            <button
-              onClick={() => setTrendingOnly(v => !v)}
-              className={`inline-flex items-center gap-1 h-9 px-3 rounded-md border ${trendingOnly ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
-            >
-              <TrendingUp className="h-4 w-4" /> {t('list.controls.trending')}
-            </button>
-            <div className="ml-auto flex items-center gap-2">
-              <select 
-                className="h-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 px-3"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+
+          {/* Filters Row */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Left: Filter Controls */}
+            <div className="flex flex-wrap items-center gap-2 flex-1">
+              {/* Continent */}
+              <Select value={continent} onValueChange={(val) => setContinent(val as any)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue>
+                    {continent === 'All' ? (
+                      <span className="flex items-center gap-2">
+                        <Globe2 className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.continentAll')}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-600" />
+                        {continent}
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">
+                    <span className="flex items-center gap-2">
+                      <Globe2 className="h-4 w-4" />
+                      {t('list.controls.continentAll')}
+                    </span>
+                  </SelectItem>
+                  {continentOptions.filter(opt => opt !== 'All').map(opt => (
+                    <SelectItem key={opt} value={opt}>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        {opt}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Budget */}
+              <Select value={budget} onValueChange={(val) => setBudget(val as any)}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue>
+                    {budget === 'All' ? (
+                      <span className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.budgetAll')}
+                      </span>
+                    ) : budget === 'Budget' ? (
+                      <span className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.budget')}
+                      </span>
+                    ) : budget === 'Mid-range' ? (
+                      <span className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.midRange')}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Gem className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.luxury')}
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">
+                    <span className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      {t('list.controls.budgetAll')}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="Budget">
+                    <span className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      {t('list.controls.budget')}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="Mid-range">
+                    <span className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      {t('list.controls.midRange')}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="Luxury">
+                    <span className="flex items-center gap-2">
+                      <Gem className="h-4 w-4" />
+                      {t('list.controls.luxury')}
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Featured Only */}
+              <button
+                onClick={() => setFeaturedOnly(v => !v)}
+                className={`inline-flex items-center gap-2 h-11 px-5 rounded-xl border-2 font-semibold text-sm transition-all shadow-sm hover:shadow-md ${
+                  featuredOnly 
+                    ? 'border-yellow-400 bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-yellow-400/20' 
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50'
+                }`}
               >
-                <option value="name">{t('list.controls.sortName')}</option>
-                <option value="popular">{t('list.controls.sortPopular')}</option>
-                <option value="trending">Trend</option>
-              </select>
-              <button className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-                <LayoutGrid className="h-4 w-4" />
+                <Star className={`h-4 w-4 ${featuredOnly ? 'fill-current' : ''}`} />
+                <span>{t('list.controls.featuredOnly')}</span>
               </button>
-              <button className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-                <List className="h-4 w-4" />
+
+              {/* Trending */}
+              <button
+                onClick={() => setTrendingOnly(v => !v)}
+                className={`inline-flex items-center gap-2 h-11 px-5 rounded-xl border-2 font-semibold text-sm transition-all shadow-sm hover:shadow-md ${
+                  trendingOnly 
+                    ? 'border-pink-400 bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-400/20' 
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-pink-400 hover:bg-pink-50'
+                }`}
+              >
+                <TrendingUp className="h-4 w-4" />
+                <span>{t('list.controls.trending')}</span>
               </button>
+            </div>
+
+            {/* Right: Sort & View Controls */}
+            <div className="flex items-center gap-2">
+              {/* Sort */}
+              <Select value={sortBy} onValueChange={(val) => setSortBy(val as any)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue>
+                    {sortBy === 'name' ? (
+                      <span className="flex items-center gap-2">
+                        <ArrowUpDown className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.sortName')}
+                      </span>
+                    ) : sortBy === 'popular' ? (
+                      <span className="flex items-center gap-2">
+                        <Flame className="h-4 w-4 text-gray-600" />
+                        {t('list.controls.sortPopular')}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <TrendingUpIcon className="h-4 w-4 text-gray-600" />
+                        Trend
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">
+                    <span className="flex items-center gap-2">
+                      <ArrowUpDown className="h-4 w-4" />
+                      {t('list.controls.sortName')}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="popular">
+                    <span className="flex items-center gap-2">
+                      <Flame className="h-4 w-4" />
+                      {t('list.controls.sortPopular')}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="trending">
+                    <span className="flex items-center gap-2">
+                      <TrendingUpIcon className="h-4 w-4" />
+                      Trend
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* View Toggle Buttons */}
+              <div className="hidden sm:flex items-center gap-1 p-1 rounded-xl bg-gray-100 border border-gray-200">
+                <button className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-white text-gray-900 shadow-sm transition-all hover:scale-105">
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-sm transition-all hover:scale-105">
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

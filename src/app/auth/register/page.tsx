@@ -148,7 +148,13 @@ export default function RegisterPage() {
         await fetch('/api/auth/ensure-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: data.user.id, username, full_name: fullName, gender }),
+          body: JSON.stringify({ 
+            user_id: data.user.id, 
+            username, 
+            full_name: fullName, 
+            gender,
+            account_type: accountType 
+          }),
         })
         if (isBusiness) {
           const bizRes = await fetch('/api/business/register', {

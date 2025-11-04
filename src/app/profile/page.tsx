@@ -37,16 +37,16 @@ export default async function ProfilePage() {
     )
   }
 
-  // If user owns a business profile, redirect to business dashboard
+  // If user has business account_type, redirect to business dashboard
   try {
-    const { data: biz } = await supabase
-      .from('business_profiles')
-      .select('id')
-      .eq('owner_id', u.id)
-      .limit(1)
-      .maybeSingle()
-    if (biz?.id) {
-      redirect('/business')
+    const { data: profile } = await supabase
+      .from('users_profiles')
+      .select('account_type')
+      .eq('id', u.id)
+      .single()
+    
+    if (profile?.account_type === 'business') {
+      redirect('/business/me')
     }
   } catch {}
 

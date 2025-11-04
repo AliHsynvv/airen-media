@@ -35,7 +35,7 @@ export default async function PublicUserProfilePage(context: Props) {
   } catch {}
   const { data: profile } = await supabaseAdmin
     .from('users_profiles')
-    .select('id,full_name,username,avatar_url,bio,created_at')
+    .select('id,full_name,username,avatar_url,bio,created_at,account_type')
     .eq('id', id)
     .single()
 
@@ -45,6 +45,19 @@ export default async function PublicUserProfilePage(context: Props) {
         <div className="text-gray-700">{t('notFound')}</div>
       </div>
     )
+  }
+
+  // If this is a business profile, redirect to business page
+  if (profile.account_type === 'business') {
+    const { data: businessProfile } = await supabaseAdmin
+      .from('business_profiles')
+      .select('id')
+      .eq('owner_id', profile.id)
+      .single()
+    
+    if (businessProfile?.id) {
+      redirect(`/business/${businessProfile.id}`)
+    }
   }
 
   const storiesRes = await supabaseAdmin

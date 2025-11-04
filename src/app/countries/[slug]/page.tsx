@@ -47,10 +47,17 @@ export default async function CountryDetailPage(context: CountryPageProps) {
   const rating = 4.7
   // visitors_per_year is stored in thousands in DB
   const visitorsRaw = country.visitors_per_year ?? 0
-  const visitors = visitorsRaw >= 1000 
-    ? `${(visitorsRaw / 1000).toFixed(1).replace('.0', '')}M` // 89000 → 89M
+  // Format for display with M/K suffix
+  const visitorsDisplay = visitorsRaw >= 1000 
+    ? `${(visitorsRaw / 1000).toFixed(1).replace('.0', '')}M` // 89000 → "89M"
     : visitorsRaw > 0 
-      ? `${visitorsRaw}K` // 120 → 120K
+      ? `${visitorsRaw}K` // 120 → "120K"
+      : '0'
+  // Number only in millions for translation (without suffix)
+  const visitorsInMillions = visitorsRaw >= 1000 
+    ? (visitorsRaw / 1000).toFixed(1).replace('.0', '') // 89000 → "89"
+    : visitorsRaw > 0 
+      ? (visitorsRaw / 1000).toFixed(1) // 120 → "0.1"
       : '0'
   const reviews = '18.9K'
   const articles = 203
@@ -140,7 +147,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
               />
               <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 text-white font-medium">
                 <Users className="h-5 w-5" /> 
-                {t('detail.visitorsPerYear', { count: visitors })}
+                {t('detail.visitorsPerYear', { count: visitorsInMillions })}
               </span>
           </div>
           </div>
@@ -564,7 +571,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                 <div className="space-y-4">
                   {visitorsRaw > 0 && (
                     <div className="bg-white rounded-lg p-4 text-center">
-                      <div className="text-3xl font-bold text-blue-600">{visitors}</div>
+                      <div className="text-3xl font-bold text-blue-600">{visitorsDisplay}</div>
                       <div className="text-xs text-gray-600 mt-1">{t('detail.annualVisitors')}</div>
                     </div>
                   )}

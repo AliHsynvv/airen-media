@@ -17,6 +17,7 @@ export interface UserProfile extends BaseEntity {
   preferences: Record<string, unknown>
   email_verified: boolean
   last_seen: string | null
+  account_type?: 'user' | 'business'
 }
 
 export interface AuthUser {

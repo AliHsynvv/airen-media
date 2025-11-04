@@ -245,7 +245,7 @@ export function ArticleCard({
   return (
     <Card className={`${theme === 'light' ? 'bg-white border-2 border-gray-100 shadow-lg hover:shadow-2xl' : 'glass-card airen-shadow-hover hover:airen-glow'} transition-all duration-500 group ${className} flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden`}>
       {featured_image && (
-        <div className="relative h-60 sm:h-64 lg:h-72 overflow-hidden rounded-2xl sm:rounded-3xl">
+        <div className="relative h-80 sm:h-80 lg:h-96 overflow-hidden rounded-2xl sm:rounded-3xl">
           <Image
             src={featured_image}
             alt={title}

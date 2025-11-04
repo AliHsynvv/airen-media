@@ -72,6 +72,8 @@ export default function AdminCountryEditPage() {
   const [restaurants, setRestaurants] = useState<Array<{name: string, image: string, url: string}>>([])
   const [hotels, setHotels] = useState<Array<{name: string, image: string, url: string}>>([])
   const [uploadingVenue, setUploadingVenue] = useState(false)
+  const [fetchingRestaurants, setFetchingRestaurants] = useState(false)
+  const [fetchingHotels, setFetchingHotels] = useState(false)
 
   const upload = async (file: File, bucket: string = 'Countries', folder: string = 'countries') => {
     const form = new FormData()
@@ -219,6 +221,72 @@ export default function AdminCountryEditPage() {
     }
     if (id) load()
   }, [id])
+
+  const autoFetchRestaurants = async () => {
+    if (!isoCode && (!latitude || !longitude)) {
+      setMessage('❌ Lütfen ISO kodu veya enlem/boylam bilgilerini girin')
+      return
+    }
+    setFetchingRestaurants(true)
+    setMessage(null)
+    try {
+      const res = await fetch(`/api/admin/countries/${id}/fetch-venues`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'restaurants' }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        setMessage(`❌ ${json.error || 'Restoranlar çekilemedi'}`)
+      } else {
+        // Update restaurants state with fetched data
+        const fetchedRestaurants = json.data.venues.map((v: any) => ({
+          name: v.name || '',
+          image: v.image || '',
+          url: v.url || '',
+        }))
+        setRestaurants(fetchedRestaurants)
+        setMessage(`✅ ${json.data.count} restoran OpenStreetMap'ten başarıyla çekildi!`)
+      }
+    } catch (err: any) {
+      setMessage(`❌ Hata: ${err.message}`)
+    } finally {
+      setFetchingRestaurants(false)
+    }
+  }
+
+  const autoFetchHotels = async () => {
+    if (!isoCode && (!latitude || !longitude)) {
+      setMessage('❌ Lütfen ISO kodu veya enlem/boylam bilgilerini girin')
+      return
+    }
+    setFetchingHotels(true)
+    setMessage(null)
+    try {
+      const res = await fetch(`/api/admin/countries/${id}/fetch-venues`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'hotels' }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        setMessage(`❌ ${json.error || 'Oteller çekilemedi'}`)
+      } else {
+        // Update hotels state with fetched data
+        const fetchedHotels = json.data.venues.map((v: any) => ({
+          name: v.name || '',
+          image: v.image || '',
+          url: v.url || '',
+        }))
+        setHotels(fetchedHotels)
+        setMessage(`✅ ${json.data.count} otel OpenStreetMap'ten başarıyla çekildi!`)
+      }
+    } catch (err: any) {
+      setMessage(`❌ Hata: ${err.message}`)
+    } finally {
+      setFetchingHotels(false)
+    }
+  }
 
   const fetchCurrencyFromAPI = async () => {
     if (!name) {
@@ -826,12 +894,26 @@ export default function AdminCountryEditPage() {
                 <span className="text-2xl">🍽️</span>
                 Popüler Restoranlar
               </label>
-              <button 
-                onClick={addRestaurant}
-                className="neon-button neon-button-success px-4 py-2 rounded-lg text-sm font-semibold"
-              >
-                + Restoran Ekle
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={autoFetchRestaurants}
+                  disabled={fetchingRestaurants || (!isoCode && (!latitude || !longitude))}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                >
+                  {fetchingRestaurants ? '⏳ Çekiliyor...' : '🌍 Auto Fetch'}
+                </button>
+                <button 
+                  onClick={addRestaurant}
+                  className="neon-button neon-button-success px-4 py-2 rounded-lg text-sm font-semibold"
+                >
+                  + Manuel Ekle
+                </button>
+              </div>
+            </div>
+            <div className="text-xs text-blue-300 bg-blue-900/20 border border-blue-500/30 rounded-md p-2 mb-3">
+              🌍 <strong>Auto Fetch:</strong> OpenStreetMap'ten otomatik restoran listesi çeker (ISO kodu veya koordinatlar gerekli)
+              <br />
+              📝 <strong>Manuel Ekle:</strong> Kendiniz manuel olarak restoran ekleyebilirsiniz
             </div>
             <div className="space-y-3">
               {restaurants.map((restaurant, index) => (
@@ -922,12 +1004,26 @@ export default function AdminCountryEditPage() {
                 <span className="text-2xl">🏨</span>
                 Popüler Oteller
               </label>
-              <button 
-                onClick={addHotel}
-                className="neon-button neon-button-success px-4 py-2 rounded-lg text-sm font-semibold"
-              >
-                + Otel Ekle
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={autoFetchHotels}
+                  disabled={fetchingHotels || (!isoCode && (!latitude || !longitude))}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                >
+                  {fetchingHotels ? '⏳ Çekiliyor...' : '🌍 Auto Fetch'}
+                </button>
+                <button 
+                  onClick={addHotel}
+                  className="neon-button neon-button-success px-4 py-2 rounded-lg text-sm font-semibold"
+                >
+                  + Manuel Ekle
+                </button>
+              </div>
+            </div>
+            <div className="text-xs text-blue-300 bg-blue-900/20 border border-blue-500/30 rounded-md p-2 mb-3">
+              🌍 <strong>Auto Fetch:</strong> OpenStreetMap'ten otomatik otel listesi çeker (ISO kodu veya koordinatlar gerekli)
+              <br />
+              📝 <strong>Manuel Ekle:</strong> Kendiniz manuel olarak otel ekleyebilirsiniz
             </div>
             <div className="space-y-3">
               {hotels.map((hotel, index) => (

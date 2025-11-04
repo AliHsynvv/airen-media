@@ -46,13 +46,8 @@ export default async function BusinessDashboardPage() {
     supabase.from('business_analytics_events').select('*', { count: 'exact', head: true }).eq('business_id', business.id).eq('event_type', 'view'),
     supabase.from('business_analytics_events').select('*', { count: 'exact', head: true }).eq('business_id', business.id).eq('event_type', 'post_engagement'),
   ])
-  const { data: ratingAgg } = await supabase
-    .from('business_reviews')
-    .select('rating_avg:rating.avg()')
-    .eq('business_id', business.id)
-    .eq('status', 'approved')
-    .limit(1)
-  const averageRating = Number((ratingAgg?.[0] as any)?.rating_avg || 0)
+  // Use database average_rating if available, otherwise calculate from reviews
+  const averageRating = business.average_rating || 0
 
   // Lists
   const [{ data: recentPosts }, { data: recentReviews }] = await Promise.all([
