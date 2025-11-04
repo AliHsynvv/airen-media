@@ -35,6 +35,7 @@ interface OverpassElement {
     'addr:city'?: string
     'addr:postcode'?: string
     phone?: string
+    'phone:mobile'?: string
     website?: string
     url?: string
     'contact:website'?: string
@@ -47,6 +48,7 @@ interface OverpassElement {
     wikipedia?: string
     wikidata?: string
     image?: string
+    'image:url'?: string
   }
   center?: {
     lat: number
