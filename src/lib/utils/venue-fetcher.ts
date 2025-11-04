@@ -36,8 +36,10 @@ interface OverpassElement {
     'addr:postcode'?: string
     phone?: string
     website?: string
+    url?: string
     'contact:website'?: string
     'contact:phone'?: string
+    'contact:url'?: string
     cuisine?: string
     stars?: string
     rooms?: string
