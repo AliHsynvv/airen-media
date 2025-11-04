@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect('/?error=forbidden')
   }
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Modern Left Sidebar */}
       <AdminSidebar />
 

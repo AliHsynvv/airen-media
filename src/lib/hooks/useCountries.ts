@@ -24,7 +24,7 @@ export function useCountries(): UseCountriesResult {
         setError(null)
         const { data, error } = await supabase
           .from('countries')
-          .select('id,slug,name,capital,featured_image,iso_code,average_budget,popular_activities,top_places,featured,best_time_to_visit,climate_info,trending_score')
+          .select('id,slug,name,capital,featured_image,iso_code,average_budget,popular_activities,top_places,featured,best_time_to_visit,climate_info,trending_score,culture_description,culture_description_i18n,best_time_to_visit_i18n,climate_info_i18n')
           .order('name', { ascending: true })
           .limit(60)
         if (error) throw error

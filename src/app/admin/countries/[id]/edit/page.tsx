@@ -49,6 +49,15 @@ export default function AdminCountryEditPage() {
   const [bestTimeToVisitRu, setBestTimeToVisitRu] = useState('')
   const [climateInfoTr, setClimateInfoTr] = useState('')
   const [climateInfoRu, setClimateInfoRu] = useState('')
+  const [historicalInfo, setHistoricalInfo] = useState('')
+  const [historicalInfoTr, setHistoricalInfoTr] = useState('')
+  const [historicalInfoRu, setHistoricalInfoRu] = useState('')
+  const [foodDescription, setFoodDescription] = useState('')
+  const [foodDescriptionTr, setFoodDescriptionTr] = useState('')
+  const [foodDescriptionRu, setFoodDescriptionRu] = useState('')
+  const [localCustoms, setLocalCustoms] = useState('')
+  const [localCustomsTr, setLocalCustomsTr] = useState('')
+  const [localCustomsRu, setLocalCustomsRu] = useState('')
   const [topPlaces, setTopPlaces] = useState('')
   const [popularCities, setPopularCities] = useState('')
   const [visitorsPerYear, setVisitorsPerYear] = useState<number | ''>('')
@@ -155,6 +164,21 @@ export default function AdminCountryEditPage() {
         setAirenAdviceRu(c.airen_advice_i18n?.ru || '')
         setBestTimeToVisitRu(c.best_time_to_visit_i18n?.ru || '')
         setClimateInfoRu(c.climate_info_i18n?.ru || '')
+        
+        // Historical Info
+        setHistoricalInfo(c.historical_info_i18n?.en || c.historical_info || '')
+        setHistoricalInfoTr(c.historical_info_i18n?.tr || '')
+        setHistoricalInfoRu(c.historical_info_i18n?.ru || '')
+        
+        // Food Description
+        setFoodDescription(c.food_description_i18n?.en || c.food_description || '')
+        setFoodDescriptionTr(c.food_description_i18n?.tr || '')
+        setFoodDescriptionRu(c.food_description_i18n?.ru || '')
+        
+        // Local Customs
+        setLocalCustoms(c.local_customs_i18n?.en || c.local_customs || '')
+        setLocalCustomsTr(c.local_customs_i18n?.tr || '')
+        setLocalCustomsRu(c.local_customs_i18n?.ru || '')
         
         setVisaRequired(c.visa_required === null ? null : c.visa_required)
         setPopularActivities(Array.isArray(c.popular_activities) ? c.popular_activities.join(', ') : '')
@@ -388,6 +412,24 @@ export default function AdminCountryEditPage() {
           tr: climateInfoTr || null,
           ru: climateInfoRu || null
         },
+        historical_info_i18n: {
+          en: historicalInfo || null,
+          tr: historicalInfoTr || null,
+          ru: historicalInfoRu || null
+        },
+        food_description_i18n: {
+          en: foodDescription || null,
+          tr: foodDescriptionTr || null,
+          ru: foodDescriptionRu || null
+        },
+        local_customs_i18n: {
+          en: localCustoms || null,
+          tr: localCustomsTr || null,
+          ru: localCustomsRu || null
+        },
+        historical_info: historicalInfo || null,
+        food_description: foodDescription || null,
+        local_customs: localCustoms || null,
         popular_activities: popularActivities ? popularActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
         popular_cities: popularCities ? popularCities.split(',').map(s => s.trim()).filter(Boolean) : [],
         visitors_per_year: visitorsValue,
@@ -632,6 +674,90 @@ export default function AdminCountryEditPage() {
               <div>
                 <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
                 <Textarea value={airenAdviceRu} onChange={e => setAirenAdviceRu(e.target.value)} rows={2} placeholder="Совет от Airen..." />
+              </div>
+            </div>
+          </div>
+          <div className="glass-card border border-amber-500/30 rounded-xl p-4 bg-gradient-to-br from-amber-900/10 to-yellow-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-amber-300 font-bold">🏛️ Tarih & Miras / Historical Info</label>
+              <TranslateButton 
+                text={historicalInfo}
+                field="historical_info"
+                onTranslated={(translations) => {
+                  setHistoricalInfoTr(translations.tr)
+                  setHistoricalInfoRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+                <Textarea value={historicalInfo} onChange={e => setHistoricalInfo(e.target.value)} rows={3} placeholder="Historical information in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={historicalInfoTr} onChange={e => setHistoricalInfoTr(e.target.value)} rows={3} placeholder="Tarihsel bilgi Türkçe..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={historicalInfoRu} onChange={e => setHistoricalInfoRu(e.target.value)} rows={3} placeholder="Историческая информация..." />
+              </div>
+            </div>
+          </div>
+          <div className="glass-card border border-orange-500/30 rounded-xl p-4 bg-gradient-to-br from-orange-900/10 to-red-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-orange-300 font-bold">🍲 Yemek & Mutfak / Food Description</label>
+              <TranslateButton 
+                text={foodDescription}
+                field="food_description"
+                onTranslated={(translations) => {
+                  setFoodDescriptionTr(translations.tr)
+                  setFoodDescriptionRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+                <Textarea value={foodDescription} onChange={e => setFoodDescription(e.target.value)} rows={3} placeholder="Food & cuisine description in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={foodDescriptionTr} onChange={e => setFoodDescriptionTr(e.target.value)} rows={3} placeholder="Yemek ve mutfak bilgisi Türkçe..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={foodDescriptionRu} onChange={e => setFoodDescriptionRu(e.target.value)} rows={3} placeholder="Описание еды и кухни..." />
+              </div>
+            </div>
+          </div>
+          <div className="glass-card border border-pink-500/30 rounded-xl p-4 bg-gradient-to-br from-pink-900/10 to-rose-900/10">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base text-pink-300 font-bold">🎭 Yerel Gelenekler / Local Customs</label>
+              <TranslateButton 
+                text={localCustoms}
+                field="local_customs"
+                onTranslated={(translations) => {
+                  setLocalCustomsTr(translations.tr)
+                  setLocalCustomsRu(translations.ru)
+                }}
+                className="text-xs px-3 py-1"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇬🇧 English</label>
+                <Textarea value={localCustoms} onChange={e => setLocalCustoms(e.target.value)} rows={3} placeholder="Local customs & culture in English..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇹🇷 Türkçe</label>
+                <Textarea value={localCustomsTr} onChange={e => setLocalCustomsTr(e.target.value)} rows={3} placeholder="Yerel gelenekler Türkçe..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">🇷🇺 Русский</label>
+                <Textarea value={localCustomsRu} onChange={e => setLocalCustomsRu(e.target.value)} rows={3} placeholder="Местные обычаи..." />
               </div>
             </div>
           </div>

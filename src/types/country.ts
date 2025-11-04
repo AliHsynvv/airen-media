@@ -58,6 +58,16 @@ export interface Country extends BaseEntity {
   airen_advice: string | null
   airen_video_url: string | null
   airen_audio_url: string | null
+  // i18n JSON fields
+  culture_description_i18n?: Record<string, string | null> | null
+  visa_info_i18n?: Record<string, string | null> | null
+  entry_requirements_i18n?: Record<string, string | null> | null
+  airen_advice_i18n?: Record<string, string | null> | null
+  best_time_to_visit_i18n?: Record<string, string | null> | null
+  climate_info_i18n?: Record<string, string | null> | null
+  historical_info_i18n?: Record<string, string | null> | null
+  food_description_i18n?: Record<string, string | null> | null
+  local_customs_i18n?: Record<string, string | null> | null
   
   // SEO
   meta_title: string | null

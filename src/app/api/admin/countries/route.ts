@@ -57,6 +57,9 @@ const schema = z.object({
   airen_advice_i18n: z.record(z.string(), z.string()).nullable().optional(),
   best_time_to_visit_i18n: z.record(z.string(), z.string()).nullable().optional(),
   climate_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  historical_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  food_description_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  local_customs_i18n: z.record(z.string(), z.string()).nullable().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -113,6 +116,9 @@ export async function POST(req: NextRequest) {
         airen_advice_i18n: p.airen_advice_i18n ?? null,
         best_time_to_visit_i18n: p.best_time_to_visit_i18n ?? null,
         climate_info_i18n: p.climate_info_i18n ?? null,
+        historical_info_i18n: p.historical_info_i18n ?? null,
+        food_description_i18n: p.food_description_i18n ?? null,
+        local_customs_i18n: p.local_customs_i18n ?? null,
       })
       .select('*')
       .single()

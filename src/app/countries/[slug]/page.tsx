@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 const CountryActions = dynamic(() => import('@/components/countries/CountryActions'))
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 const CountryReviews = dynamic(() => import('@/components/countries/CountryReviews'))
 const CountryTabs = dynamic(() => import('@/components/countries/CountryTabs'))
 const CountryCardReview = dynamic(() => import('@/components/countries/CountryCardReview'))
@@ -22,12 +22,13 @@ const CurrencyExchange = dynamic(() => import('@/components/countries/CurrencyEx
 const WeatherWidget = dynamic(() => import('@/components/countries/WeatherWidget'))
 
 interface CountryPageProps {
-  params: Promise<{ slug: string; locale: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function CountryDetailPage(context: CountryPageProps) {
   const t = await getTranslations('countries')
-  const { slug, locale } = await context.params
+  const { slug } = await context.params
+  const locale = await getLocale()
   
   // Helper function to get localized content
   const getLocalizedContent = (i18nField: any, fallbackField: string | null) => {
@@ -197,7 +198,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">About {country.name}</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                     {getLocalizedContent(country.culture_description_i18n, country.culture_description)}
                   </p>
                 </Card>
@@ -248,7 +249,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                       <Calendar className="h-5 w-5 text-gray-600 mt-0.5" />
                       <div>
                         <div className="text-xs text-gray-500 font-medium">{t('detail.facts.bestTime')}</div>
-                        <div className="text-sm font-semibold text-gray-900">
+                        <div className="text-sm font-semibold text-gray-900 whitespace-pre-line">
                           {getLocalizedContent(country.best_time_to_visit_i18n, country.best_time_to_visit)}
                         </div>
                       </div>
@@ -259,7 +260,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                       <Thermometer className="h-5 w-5 text-gray-600 mt-0.5" />
                       <div>
                         <div className="text-xs text-gray-500 font-medium">{t('detail.facts.climate')}</div>
-                        <div className="text-sm font-semibold text-gray-900">
+                        <div className="text-sm font-semibold text-gray-900 whitespace-pre-line">
                           {getLocalizedContent(country.climate_info_i18n, country.climate_info)}
                         </div>
                       </div>
@@ -289,7 +290,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                   {(country.visa_info || country.visa_info_i18n) && (
                     <div className="mb-3">
                       <div className="text-sm font-medium text-gray-700 mb-1">Visa Information</div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 whitespace-pre-line">
                         {getLocalizedContent(country.visa_info_i18n, country.visa_info)}
                       </p>
                     </div>
@@ -297,7 +298,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                   {(country.entry_requirements || country.entry_requirements_i18n) && (
                     <div>
                       <div className="text-sm font-medium text-gray-700 mb-1">Entry Requirements</div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 whitespace-pre-line">
                         {getLocalizedContent(country.entry_requirements_i18n, country.entry_requirements)}
                       </p>
                     </div>
@@ -306,7 +307,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
               )}
 
               {/* Historical Information */}
-              {country.historical_info && (
+              {(country.historical_info || country.historical_info_i18n) && (
                 <Card className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-amber-100 rounded-lg">
@@ -314,12 +315,14 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">History & Heritage</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{country.historical_info}</p>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {getLocalizedContent(country.historical_info_i18n, country.historical_info)}
+                  </p>
                 </Card>
               )}
 
               {/* Food & Cuisine */}
-              {country.food_description && (
+              {(country.food_description || country.food_description_i18n) && (
                 <Card className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-orange-100 rounded-lg">
@@ -327,12 +330,14 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Food & Cuisine</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{country.food_description}</p>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {getLocalizedContent(country.food_description_i18n, country.food_description)}
+                  </p>
                 </Card>
               )}
 
               {/* Local Customs */}
-              {country.local_customs && (
+              {(country.local_customs || country.local_customs_i18n) && (
                 <Card className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-purple-100 rounded-lg">
@@ -340,7 +345,9 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Local Customs & Culture</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{country.local_customs}</p>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {getLocalizedContent(country.local_customs_i18n, country.local_customs)}
+                  </p>
                 </Card>
               )}
 
@@ -581,7 +588,7 @@ export default async function CountryDetailPage(context: CountryPageProps) {
                     </div>
                     <h3 className="text-lg font-bold text-gray-900">Airen's Advice</h3>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                     {getLocalizedContent(country.airen_advice_i18n, country.airen_advice)}
                   </p>
                 </Card>

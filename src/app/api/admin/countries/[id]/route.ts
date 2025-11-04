@@ -63,6 +63,9 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       airen_advice_i18n: body.airen_advice_i18n ?? null,
       best_time_to_visit_i18n: body.best_time_to_visit_i18n ?? null,
       climate_info_i18n: body.climate_info_i18n ?? null,
+      historical_info_i18n: body.historical_info_i18n ?? null,
+      food_description_i18n: body.food_description_i18n ?? null,
+      local_customs_i18n: body.local_customs_i18n ?? null,
     }
     const { data, error } = await supabaseAdmin.from('countries').update(update).eq('id', id).select('*').single()
     if (error) throw error
