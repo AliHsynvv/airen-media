@@ -338,7 +338,7 @@ export async function fetchRestaurantsFromGoogle(
       const maxPages = 3
       
       do {
-        const nearbyUrl = nextPageToken
+        const nearbyUrl: string = nextPageToken
           ? `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${nextPageToken}&key=${apiKey}`
           : `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${point.lat},${point.lng}&radius=${searchRadius}&type=restaurant&key=${apiKey}`
         
@@ -638,7 +638,7 @@ export async function fetchHotelsFromGoogle(
       const maxPages = 3
       
       do {
-        const nearbyUrl = nextPageToken
+        const nearbyUrl: string = nextPageToken
           ? `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${nextPageToken}&key=${apiKey}`
           : `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${point.lat},${point.lng}&radius=${searchRadius}&type=lodging&key=${apiKey}`
         
