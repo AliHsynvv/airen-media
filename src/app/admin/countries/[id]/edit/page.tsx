@@ -212,8 +212,9 @@ export default function AdminCountryEditPage() {
         setNegativesText(Array.isArray(c.negatives) ? c.negatives.join('\n') : '')
         setRestaurantsText(Array.isArray(c.popular_restaurants) ? c.popular_restaurants.map((v: any) => `${v.name || ''}|${v.image || ''}|${v.url || ''}`).join('\n') : '')
         setHotelsText(Array.isArray(c.popular_hotels) ? c.popular_hotels.map((v: any) => `${v.name || ''}|${v.image || ''}|${v.url || ''}`).join('\n') : '')
-        setRestaurants(Array.isArray(c.popular_restaurants) ? c.popular_restaurants.map((v: any) => ({name: v.name || '', image: v.image || '', url: v.url || ''})) : [])
-        setHotels(Array.isArray(c.popular_hotels) ? c.popular_hotels.map((v: any) => ({name: v.name || '', image: v.image || '', url: v.url || ''})) : [])
+        // ✅ Keep ALL 28 fields from database!
+        setRestaurants(Array.isArray(c.popular_restaurants) ? c.popular_restaurants : [])
+        setHotels(Array.isArray(c.popular_hotels) ? c.popular_hotels : [])
       } else {
         setMessage(json.error || 'Yüklenemedi')
       }
@@ -239,14 +240,9 @@ export default function AdminCountryEditPage() {
       if (!res.ok || !json.success) {
         setMessage(`❌ ${json.error || 'Restoranlar çekilemedi'}`)
       } else {
-        // Update restaurants state with fetched data
-        const fetchedRestaurants = json.data.venues.map((v: any) => ({
-          name: v.name || '',
-          image: v.image || '',
-          url: v.url || '',
-        }))
-        setRestaurants(fetchedRestaurants)
-        setMessage(`✅ ${json.data.count} restoran OpenStreetMap'ten başarıyla çekildi!`)
+        // Update restaurants state with fetched data - KEEP ALL FIELDS! 🎯
+        setRestaurants(json.data.venues)
+        setMessage(`✅ ${json.data.count} restoran ${json.data.source}'den başarıyla çekildi!`)
       }
     } catch (err: any) {
       setMessage(`❌ Hata: ${err.message}`)
@@ -272,14 +268,9 @@ export default function AdminCountryEditPage() {
       if (!res.ok || !json.success) {
         setMessage(`❌ ${json.error || 'Oteller çekilemedi'}`)
       } else {
-        // Update hotels state with fetched data
-        const fetchedHotels = json.data.venues.map((v: any) => ({
-          name: v.name || '',
-          image: v.image || '',
-          url: v.url || '',
-        }))
-        setHotels(fetchedHotels)
-        setMessage(`✅ ${json.data.count} otel OpenStreetMap'ten başarıyla çekildi!`)
+        // Update hotels state with fetched data - KEEP ALL FIELDS! 🎯
+        setHotels(json.data.venues)
+        setMessage(`✅ ${json.data.count} otel ${json.data.source}'den başarıyla çekildi!`)
       }
     } catch (err: any) {
       setMessage(`❌ Hata: ${err.message}`)
@@ -916,7 +907,7 @@ export default function AdminCountryEditPage() {
               📝 <strong>Manuel Ekle:</strong> Kendiniz manuel olarak restoran ekleyebilirsiniz
             </div>
             <div className="space-y-3">
-              {restaurants.map((restaurant, index) => (
+              {restaurants.map((restaurant: any, index) => (
                 <div key={index} className="glass-card border border-purple-400/20 rounded-lg p-3 bg-black/20 hover:border-purple-400/40 transition-all">
                   <div className="flex items-start gap-3">
                     {/* Image Preview */}
@@ -929,16 +920,50 @@ export default function AdminCountryEditPage() {
                           <span>No Image</span>
                         </div>
                       )}
+                      {restaurant.rating && (
+                        <div className="absolute top-1 right-1 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
+                          ⭐{restaurant.rating}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Form Fields */}
                     <div className="flex-1 space-y-2">
-                      <Input 
-                        value={restaurant.name} 
-                        onChange={e => updateRestaurant(index, 'name', e.target.value)}
-                        placeholder="🏷️ Restoran Adı" 
-                        className="bg-black/30 border-purple-500/30 text-white placeholder:text-gray-500"
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          value={restaurant.name} 
+                          onChange={e => updateRestaurant(index, 'name', e.target.value)}
+                          placeholder="🏷️ Restoran Adı" 
+                          className="flex-1 bg-black/30 border-purple-500/30 text-white placeholder:text-gray-500"
+                        />
+                        {restaurant.price_level && (
+                          <span className="text-green-400 font-bold text-sm px-2">
+                            {'$'.repeat(restaurant.price_level)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Auto-fetched info badges */}
+                      {(restaurant.rating || restaurant.user_ratings_total || restaurant.opening_hours?.open_now !== undefined) && (
+                        <div className="flex flex-wrap gap-1">
+                          {restaurant.user_ratings_total && (
+                            <span className="text-xs bg-purple-900/50 text-purple-300 px-2 py-0.5 rounded">
+                              {restaurant.user_ratings_total} reviews
+                            </span>
+                          )}
+                          {restaurant.opening_hours?.open_now !== undefined && (
+                            <span className={`text-xs px-2 py-0.5 rounded ${restaurant.opening_hours.open_now ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'}`}>
+                              {restaurant.opening_hours.open_now ? '🟢 Open' : '🔴 Closed'}
+                            </span>
+                          )}
+                          {restaurant.phone && (
+                            <span className="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">
+                              📞 {restaurant.phone}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex gap-2">
                         <Input 
                           value={restaurant.image} 
@@ -974,6 +999,18 @@ export default function AdminCountryEditPage() {
                         placeholder="🌐 Website URL (opsiyonel)" 
                         className="bg-black/30 border-purple-500/30 text-white text-xs placeholder:text-gray-500"
                       />
+                      
+                      {/* View all data button */}
+                      {Object.keys(restaurant).length > 3 && (
+                        <details className="mt-2">
+                          <summary className="text-xs text-purple-400 cursor-pointer hover:text-purple-300">
+                            📋 Tüm Bilgiler ({Object.keys(restaurant).length} field)
+                          </summary>
+                          <pre className="mt-2 text-xs bg-black/50 p-2 rounded border border-purple-500/20 overflow-auto max-h-48 text-gray-300">
+                            {JSON.stringify(restaurant, null, 2)}
+                          </pre>
+                        </details>
+                      )}
                     </div>
                     
                     {/* Remove Button */}
@@ -1026,7 +1063,7 @@ export default function AdminCountryEditPage() {
               📝 <strong>Manuel Ekle:</strong> Kendiniz manuel olarak otel ekleyebilirsiniz
             </div>
             <div className="space-y-3">
-              {hotels.map((hotel, index) => (
+              {hotels.map((hotel: any, index) => (
                 <div key={index} className="glass-card border border-teal-400/20 rounded-lg p-3 bg-black/20 hover:border-teal-400/40 transition-all">
                   <div className="flex items-start gap-3">
                     {/* Image Preview */}
@@ -1039,16 +1076,50 @@ export default function AdminCountryEditPage() {
                           <span>No Image</span>
                         </div>
                       )}
+                      {hotel.rating && (
+                        <div className="absolute top-1 right-1 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
+                          ⭐{hotel.rating}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Form Fields */}
                     <div className="flex-1 space-y-2">
-                      <Input 
-                        value={hotel.name} 
-                        onChange={e => updateHotel(index, 'name', e.target.value)}
-                        placeholder="🏷️ Otel Adı" 
-                        className="bg-black/30 border-teal-500/30 text-white placeholder:text-gray-500"
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          value={hotel.name} 
+                          onChange={e => updateHotel(index, 'name', e.target.value)}
+                          placeholder="🏷️ Otel Adı" 
+                          className="flex-1 bg-black/30 border-teal-500/30 text-white placeholder:text-gray-500"
+                        />
+                        {hotel.price_level && (
+                          <span className="text-green-400 font-bold text-sm px-2">
+                            {'$'.repeat(hotel.price_level)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Auto-fetched info badges */}
+                      {(hotel.rating || hotel.user_ratings_total || hotel.opening_hours?.open_now !== undefined) && (
+                        <div className="flex flex-wrap gap-1">
+                          {hotel.user_ratings_total && (
+                            <span className="text-xs bg-teal-900/50 text-teal-300 px-2 py-0.5 rounded">
+                              {hotel.user_ratings_total} reviews
+                            </span>
+                          )}
+                          {hotel.opening_hours?.open_now !== undefined && (
+                            <span className={`text-xs px-2 py-0.5 rounded ${hotel.opening_hours.open_now ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'}`}>
+                              {hotel.opening_hours.open_now ? '🟢 Open' : '🔴 Closed'}
+                            </span>
+                          )}
+                          {hotel.phone && (
+                            <span className="text-xs bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">
+                              📞 {hotel.phone}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex gap-2">
                         <Input 
                           value={hotel.image} 
@@ -1084,6 +1155,18 @@ export default function AdminCountryEditPage() {
                         placeholder="🌐 Website URL (opsiyonel)" 
                         className="bg-black/30 border-teal-500/30 text-white text-xs placeholder:text-gray-500"
                       />
+                      
+                      {/* View all data button */}
+                      {Object.keys(hotel).length > 3 && (
+                        <details className="mt-2">
+                          <summary className="text-xs text-teal-400 cursor-pointer hover:text-teal-300">
+                            📋 Tüm Bilgiler ({Object.keys(hotel).length} field)
+                          </summary>
+                          <pre className="mt-2 text-xs bg-black/50 p-2 rounded border border-teal-500/20 overflow-auto max-h-48 text-gray-300">
+                            {JSON.stringify(hotel, null, 2)}
+                          </pre>
+                        </details>
+                      )}
                     </div>
                     
                     {/* Remove Button */}

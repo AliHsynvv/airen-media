@@ -41,6 +41,12 @@ const remotePatterns: RemotePattern[] = [
   { protocol: "https", hostname: "**.supabase.co" },
   // Precise storage remote pattern from env host
   ...(SUPABASE_HOST ? [{ protocol: "https", hostname: SUPABASE_HOST, pathname: "/storage/v1/object/public/**" } as RemotePattern] : []),
+  // Google Places API images
+  { protocol: "https", hostname: "maps.googleapis.com" },
+  { protocol: "https", hostname: "maps.gstatic.com" },
+  // Wikimedia Commons images (for Wikidata)
+  { protocol: "https", hostname: "upload.wikimedia.org" },
+  { protocol: "https", hostname: "commons.wikimedia.org" },
 ]
 
 const nextConfig: NextConfig = {

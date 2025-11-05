@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import {
-  fetchRestaurantsFromOSM,
-  fetchHotelsFromOSM,
-  fetchRestaurantsByCoordinates,
-  fetchHotelsByCoordinates,
-} from '@/lib/utils/venue-fetcher'
-import {
   fetchRestaurantsFromGoogle,
   fetchHotelsFromGoogle,
   isGooglePlacesAvailable,
@@ -36,7 +30,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Fetch country data
     const { data: country, error: countryError } = await supabaseAdmin
       .from('countries')
-      .select('id, name, iso_code, latitude, longitude')
+      .select('id, name, iso_code, latitude, longitude, popular_cities')
       .eq('id', id)
       .single()
 
@@ -48,102 +42,139 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     let venues: any[] = []
-    let dataSource = 'Unknown'
 
     try {
-      // Strategy 1: Try Google Places first (best quality) - requires coordinates
-      if (isGooglePlacesAvailable() && country.latitude && country.longitude) {
-        console.log(`🔍 Attempting to fetch ${type} from Google Places for ${country.name}...`)
-        
-        try {
-          if (type === 'restaurants') {
-            venues = await fetchRestaurantsFromGoogle(
-              country.latitude,
-              country.longitude,
-              50000, // 50km radius
-              20
-            )
-          } else {
-            venues = await fetchHotelsFromGoogle(
-              country.latitude,
-              country.longitude,
-              50000, // 50km radius
-              20
-            )
+      // Check if Google Places API is available
+      if (!isGooglePlacesAvailable()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Google Places API key is not configured. Please add GOOGLE_PLACES_API_KEY to your .env.local file.',
+          },
+          { status: 400 }
+        )
+      }
+
+      // Check if coordinates are available
+      if (!country.latitude || !country.longitude) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Country ${country.name} does not have coordinates. Please add latitude and longitude.`,
+          },
+          { status: 400 }
+        )
+      }
+
+      console.log(`🌟 Fetching ${type} from Google Places for ${country.name}...`)
+      
+      // Extract city names from popular_cities (supports both text[] and JSONB formats)
+      let cities: string[] = []
+      if (country.popular_cities && Array.isArray(country.popular_cities)) {
+        cities = country.popular_cities.map((city: any) => {
+          // If JSONB format: {name: "Sydney", ...} → extract name
+          if (typeof city === 'object' && city.name) {
+            return city.name
           }
-          
-          if (venues.length > 0) {
-            dataSource = 'Google Places API'
-            console.log(`✅ Successfully fetched ${venues.length} ${type} from Google Places`)
+          // If text[] format: "Sydney" → use directly
+          if (typeof city === 'string') {
+            return city
           }
-        } catch (googleError: any) {
-          console.error('Google Places API error:', googleError.message)
-          console.log('⚠️ Falling back to OpenStreetMap...')
-        }
-      } else if (isGooglePlacesAvailable()) {
-        console.log('⚠️ Google Places requires coordinates, falling back to OpenStreetMap...')
+          return null
+        }).filter(Boolean) as string[]
+      }
+      
+      console.log(cities.length > 0 
+        ? `🏙️ Will search ${cities.length} cities: ${cities.join(', ')}` 
+        : '🗺️ No cities found, using country coordinates only'
+      )
+      
+      // Fetch from Google Places
+      if (type === 'restaurants') {
+        venues = await fetchRestaurantsFromGoogle(
+          country.latitude,
+          country.longitude,
+          50000, // 50km radius
+          60, // Max per location
+          cities // City-by-city search for unlimited results
+        )
       } else {
-        console.log('⚠️ Google Places API key not found, using OpenStreetMap...')
+        venues = await fetchHotelsFromGoogle(
+          country.latitude,
+          country.longitude,
+          50000, // 50km radius
+          60, // Max per location
+          cities // City-by-city search for unlimited results
+        )
       }
-
-      // Strategy 2: Fallback to OpenStreetMap if Google Places failed or unavailable
-      if (venues.length === 0 && country.iso_code) {
-        console.log(`Fetching ${type} for ${country.name} (${country.iso_code}) from OpenStreetMap using ISO code...`)
-        
-        if (type === 'restaurants') {
-          venues = await fetchRestaurantsFromOSM(country.iso_code, 20)
-        } else {
-          venues = await fetchHotelsFromOSM(country.iso_code, 20)
-        }
-        
-        if (venues.length > 0) {
-          dataSource = 'OpenStreetMap (ISO code)'
-        }
-      }
-
-      // Strategy 3: Last resort - try by coordinates
-      if (venues.length === 0 && country.latitude && country.longitude) {
-        console.log(`Fetching ${type} for ${country.name} from OpenStreetMap using coordinates...`)
-        
-        if (type === 'restaurants') {
-          venues = await fetchRestaurantsByCoordinates(
-            country.latitude,
-            country.longitude,
-            100, // 100km radius
-            20
-          )
-        } else {
-          venues = await fetchHotelsByCoordinates(
-            country.latitude,
-            country.longitude,
-            100, // 100km radius
-            20
-          )
-        }
-        
-        if (venues.length > 0) {
-          dataSource = 'OpenStreetMap (coordinates)'
-        }
-      }
-
+      
       if (venues.length === 0) {
         return NextResponse.json(
           {
             success: false,
-            error: `No ${type} found for this country. Please make sure the country has an ISO code or coordinates set.`,
+            error: `No quality ${type} (4.0+ rating) found for ${country.name}. The area may not have enough highly-rated venues.`,
           },
           { status: 404 }
         )
       }
 
-      // Format venues for database
+      console.log(`✅ Successfully fetched ${venues.length} quality ${type} (4.0+ rating) from Google Places`)
+      
+      // 🧪 TEST: Log first raw venue from Google
+      if (venues.length > 0) {
+        console.log('🧪 FIRST RAW VENUE FROM GOOGLE:', JSON.stringify(venues[0], null, 2))
+      }
+
+      // Format venues for database - SAVE ALL FIELDS! 🎯
       const formattedVenues = venues.map((venue) => ({
+        // Basic Info
         name: venue.name,
+        place_id: venue.place_id,
         image: venue.image || '',
-        url: venue.website || '',
+        url: venue.website || venue.url || '',
         description: venue.description || '',
+        
+        // Location
         location: venue.location || {},
+        
+        // Ratings & Reviews
+        rating: venue.rating,
+        user_ratings_total: venue.user_ratings_total,
+        reviews: venue.reviews,
+        
+        // Contact
+        phone: venue.phone,
+        international_phone: venue.international_phone,
+        website: venue.website,
+        
+        // Pricing
+        price_level: venue.price_level,
+        
+        // Business Hours
+        opening_hours: venue.opening_hours,
+        
+        // Status
+        business_status: venue.business_status,
+        
+        // Categories
+        types: venue.types,
+        
+        // Photos (all 5)
+        photos: venue.photos,
+        
+        // Amenities
+        amenities: venue.amenities,
+        
+        // Additional
+        editorial_summary: venue.editorial_summary,
+        icon: venue.icon,
+        google_maps_url: venue.google_maps_url,
       }))
+      
+      // 🧪 TEST: Log first formatted venue before saving
+      if (formattedVenues.length > 0) {
+        console.log('🧪 FIRST FORMATTED VENUE (to be saved):', JSON.stringify(formattedVenues[0], null, 2))
+      }
 
       // Update the country with the fetched venues
       const updateField = type === 'restaurants' ? 'popular_restaurants' : 'popular_hotels'
@@ -168,9 +199,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         data: {
           count: formattedVenues.length,
           venues: formattedVenues,
-          source: dataSource,
+          source: 'Google Places API',
         },
-        message: `Successfully fetched ${formattedVenues.length} ${type} from ${dataSource}`,
+        message: `Successfully fetched ${formattedVenues.length} quality ${type} (4.0+) from Google Places`,
       })
     } catch (apiError: any) {
       console.error('Error fetching venues from APIs:', apiError)

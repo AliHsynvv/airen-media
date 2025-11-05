@@ -55,6 +55,7 @@ Google Cloud yeni istifadəçilərə **hər ay $200 pulsuz kredit** verir.
 ### 3️⃣ API Key Yaradın
 
 1. **APIs & Services** → **Credentials** seçin
+AIzaSyBrnFPkNzuOBCj056873x9ep4hql7FQaCI
 2. **+ CREATE CREDENTIALS** → **API Key** seçin
 3. API key yaradılacaq (məs: `AIzaSyC-xxxxxxxxxxxxxxxxxxxxxxxxxxx`)
 4. **COPY** edin və saxlayın
@@ -84,7 +85,7 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 # Google Places API
-GOOGLE_PLACES_API_KEY=AIzaSyC-xxxxxxxxxxxxxxxxxxxxxxxxxxx
+GOOGLE_PLACES_API_KEY=AIzaSyBrnFPkNzuOBCj056873x9ep4hql7FQaCI
 ```
 
 ### 6️⃣ Development Server-i Yenidən Başladın

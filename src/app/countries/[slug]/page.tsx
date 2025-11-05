@@ -20,6 +20,7 @@ const CountryReviewKPI = dynamic(() => import('@/components/countries/CountryRev
 const BusinessLocationMap = dynamic(() => import('@/components/business/BusinessLocationMap'))
 const CurrencyExchange = dynamic(() => import('@/components/countries/CurrencyExchange'))
 const WeatherWidget = dynamic(() => import('@/components/countries/WeatherWidget'))
+const VenueList = dynamic(() => import('@/components/countries/VenueList'))
 
 interface CountryPageProps {
   params: Promise<{ slug: string }>
@@ -426,116 +427,36 @@ export default async function CountryDetailPage(context: CountryPageProps) {
               {/* Popular Restaurants */}
               {!!country.popular_restaurants?.length && (
                 <Card className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <Utensils className="h-5 w-5 text-red-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Popular Restaurants</h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {country.popular_restaurants.slice(0, 6).map((v: any) => (
-                      <div key={v.name} className="group rounded-xl border border-gray-200 hover:shadow-lg hover:border-red-300 transition-all bg-gradient-to-br from-white to-red-50/30 overflow-hidden">
-                        {/* Image Section - Full Width */}
-                        <div className="relative h-48 w-full bg-gradient-to-br from-gray-100 to-gray-200">
-                          {v.image ? (
-                            <Image src={v.image} alt={v.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 640px) 100vw, 50vw" />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center">
-                              <Utensils className="h-16 w-16 text-gray-400" />
-                            </div>
-                          )}
-                          {/* Overlay Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                        </div>
-                        
-                        {/* Content Section */}
-                        <div className="p-4 space-y-2">
-                          <div className="font-bold text-lg text-gray-900 line-clamp-1">{v.name}</div>
-                          {v.description && (
-                            <div className="text-sm text-gray-600 line-clamp-2">{v.description}</div>
-                          )}
-                          {v.location?.address && (
-                            <div className="flex items-start gap-1.5 text-xs text-gray-500">
-                              <MapPin className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-                              <span className="line-clamp-1">{v.location.address}</span>
-                            </div>
-                          )}
-                          {v.url && (
-                            <a 
-                              href={v.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium group/link mt-3"
-                            >
-                              <Globe className="h-4 w-4" />
-                              <span className="group-hover/link:underline">Visit Website</span>
-                              <svg className="h-3 w-3 group-hover/link:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </a>
-                          )}
-                        </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <Utensils className="h-5 w-5 text-red-600" />
                       </div>
-                    ))}
+                      <h3 className="text-xl font-bold text-gray-900">Popular Restaurants</h3>
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium">
+                      {country.popular_restaurants.length} {country.popular_restaurants.length === 1 ? 'restaurant' : 'restaurants'}
+                    </div>
                   </div>
+                  <VenueList venues={country.popular_restaurants} type="restaurants" initialDisplay={4} countrySlug={slug} />
                 </Card>
               )}
 
               {/* Popular Hotels */}
               {!!country.popular_hotels?.length && (
                 <Card className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-teal-100 rounded-lg">
-                      <Hotel className="h-5 w-5 text-teal-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Popular Hotels</h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {country.popular_hotels.slice(0, 6).map((v: any) => (
-                      <div key={v.name} className="group rounded-xl border border-gray-200 hover:shadow-lg hover:border-teal-300 transition-all bg-gradient-to-br from-white to-teal-50/30 overflow-hidden">
-                        {/* Image Section - Full Width */}
-                        <div className="relative h-48 w-full bg-gradient-to-br from-gray-100 to-gray-200">
-                          {v.image ? (
-                            <Image src={v.image} alt={v.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 640px) 100vw, 50vw" />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center">
-                              <Hotel className="h-16 w-16 text-gray-400" />
-                            </div>
-                          )}
-                          {/* Overlay Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                        </div>
-                        
-                        {/* Content Section */}
-                        <div className="p-4 space-y-2">
-                          <div className="font-bold text-lg text-gray-900 line-clamp-1">{v.name}</div>
-                          {v.description && (
-                            <div className="text-sm text-gray-600 line-clamp-2">{v.description}</div>
-                          )}
-                          {v.location?.address && (
-                            <div className="flex items-start gap-1.5 text-xs text-gray-500">
-                              <MapPin className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-                              <span className="line-clamp-1">{v.location.address}</span>
-                            </div>
-                          )}
-                          {v.url && (
-                            <a 
-                              href={v.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 font-medium group/link mt-3"
-                            >
-                              <Globe className="h-4 w-4" />
-                              <span className="group-hover/link:underline">Visit Website</span>
-                              <svg className="h-3 w-3 group-hover/link:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </a>
-                          )}
-                        </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-teal-100 rounded-lg">
+                        <Hotel className="h-5 w-5 text-teal-600" />
                       </div>
-                    ))}
+                      <h3 className="text-xl font-bold text-gray-900">Popular Hotels</h3>
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium">
+                      {country.popular_hotels.length} {country.popular_hotels.length === 1 ? 'hotel' : 'hotels'}
+                    </div>
                   </div>
+                  <VenueList venues={country.popular_hotels} type="hotels" initialDisplay={4} countrySlug={slug} />
                 </Card>
               )}
             </div>
