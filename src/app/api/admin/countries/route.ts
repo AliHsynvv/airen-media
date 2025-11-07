@@ -3,6 +3,30 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import slugify from 'slugify'
 
+async function generateUniqueSlug(base: string) {
+  const baseSlug = slugify(base, { lower: true, strict: true })
+  // Fetch existing slugs that start with the base slug
+  const { data, error } = await supabaseAdmin
+    .from('countries')
+    .select('slug')
+    .ilike('slug', `${baseSlug}%`)
+    .limit(1000)
+  if (error || !data || data.length === 0) {
+    return baseSlug
+  }
+  const existing = new Set<string>(data.map((r: any) => r.slug))
+  if (!existing.has(baseSlug)) return baseSlug
+  let maxSuffix = 1
+  for (const s of existing) {
+    const match = s.match(new RegExp(`^${baseSlug}-(\\d+)$`))
+    if (match) {
+      const n = parseInt(match[1], 10)
+      if (!Number.isNaN(n) && n > maxSuffix) maxSuffix = n
+    }
+  }
+  return `${baseSlug}-${maxSuffix + 1}`
+}
+
 const schema = z.object({
   name: z.string().min(2),
   slug: z.string().optional(),
@@ -50,16 +74,16 @@ const schema = z.object({
   trending_score: z.number().nullable().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
-  // Multi-language fields
-  culture_description_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  visa_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  entry_requirements_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  airen_advice_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  best_time_to_visit_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  climate_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  historical_info_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  food_description_i18n: z.record(z.string(), z.string()).nullable().optional(),
-  local_customs_i18n: z.record(z.string(), z.string()).nullable().optional(),
+  // Multi-language fields (values may be null when untranslated)
+  culture_description_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  visa_info_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  entry_requirements_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  airen_advice_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  best_time_to_visit_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  climate_info_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  historical_info_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  food_description_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
+  local_customs_i18n: z.record(z.string(), z.string().nullable()).nullable().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -70,10 +94,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: parsed.error.message }, { status: 400 })
     }
     const p = parsed.data
-    // Ensure slug is always lowercase and properly formatted
-    const slug = p.slug && p.slug.length 
-      ? slugify(p.slug, { lower: true, strict: true })
-      : slugify(p.name, { lower: true, strict: true })
+    
+    // Check if ISO code already exists (if provided)
+    if (p.iso_code) {
+      const { data: existing } = await supabaseAdmin
+        .from('countries')
+        .select('id, name')
+        .eq('iso_code', p.iso_code)
+        .single()
+      if (existing) {
+        return NextResponse.json({ 
+          success: false, 
+          error: `ISO code '${p.iso_code}' is already used by ${existing.name}` 
+        }, { status: 400 })
+      }
+    }
+    
+    // Ensure slug is always lowercase, properly formatted and unique
+    const baseForSlug = p.slug && p.slug.length
+      ? p.slug
+      : p.name
+    const slug = await generateUniqueSlug(baseForSlug)
     const { data, error } = await supabaseAdmin
       .from('countries')
       .insert({
