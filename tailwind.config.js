@@ -124,6 +124,20 @@ const config = {
           "50%": { 
             boxShadow: "0 0 30px rgba(0, 212, 255, 0.4)" 
           },
+        },
+        "blob": {
+          "0%": {
+            transform: "translate(0px, 0px) scale(1)",
+          },
+          "33%": {
+            transform: "translate(30px, -50px) scale(1.1)",
+          },
+          "66%": {
+            transform: "translate(-20px, 20px) scale(0.9)",
+          },
+          "100%": {
+            transform: "translate(0px, 0px) scale(1)",
+          },
         }
       },
       animation: {
@@ -136,6 +150,7 @@ const config = {
         "neon-pulse": "neon-pulse 2s infinite",
         "float": "float 3s ease-in-out infinite",
         "glow": "glow 2s infinite",
+        "blob": "blob 7s infinite",
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

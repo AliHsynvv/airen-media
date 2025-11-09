@@ -649,6 +649,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={cultureDescription}
                 field="culture_description"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setCultureDescriptionTr(translations.tr)
                   setCultureDescriptionRu(translations.ru)
@@ -677,6 +679,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={visaInfo}
                 field="visa_info"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setVisaInfoTr(translations.tr)
                   setVisaInfoRu(translations.ru)
@@ -714,6 +718,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={airenAdvice}
                 field="airen_advice"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setAirenAdviceTr(translations.tr)
                   setAirenAdviceRu(translations.ru)
@@ -742,6 +748,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={historicalInfo}
                 field="historical_info"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setHistoricalInfoTr(translations.tr)
                   setHistoricalInfoRu(translations.ru)
@@ -770,6 +778,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={foodDescription}
                 field="food_description"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setFoodDescriptionTr(translations.tr)
                   setFoodDescriptionRu(translations.ru)
@@ -798,6 +808,8 @@ export default function AdminCountryEditPage() {
               <TranslateButton 
                 text={localCustoms}
                 field="local_customs"
+                sourceLang="en"
+                targetLangs={['tr', 'ru']}
                 onTranslated={(translations) => {
                   setLocalCustomsTr(translations.tr)
                   setLocalCustomsRu(translations.ru)

@@ -9,6 +9,18 @@ export const supabase = createBrowserClient(
       autoRefreshToken: true,
       detectSessionInUrl: true,
     },
+    global: {
+      // Suppress refresh token errors in console (they're expected when session expires)
+      fetch: async (url, options) => {
+        const response = await fetch(url, options)
+        // Don't log expected auth errors
+        if (!response.ok && url.includes('/token?grant_type=refresh_token')) {
+          // Silently handle refresh token errors - this is expected behavior
+          return response
+        }
+        return response
+      }
+    }
   }
 )
 

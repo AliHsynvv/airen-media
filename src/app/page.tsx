@@ -4,7 +4,8 @@ import { Globe, MapPin, Users, Video, BookOpen, MessageCircle, Play, ArrowRight,
 import { supabaseAdmin } from "@/lib/supabase/server"
 import Link from "next/link"
 import nextDynamic from "next/dynamic"
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
+import { translateArticles, type ArticleLocale } from '@/lib/utils/article-translation'
 const ArticleCard = nextDynamic(() => import("@/components/articles/ArticleCard"))
 const MeetAirenButton = nextDynamic(() => import("@/components/home/MeetAirenButton").then(mod => mod.default))
 const HeroSearch = nextDynamic(() => import("@/components/home/HeroSearch").then(mod => mod.default))
@@ -21,6 +22,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const t = await getTranslations('home')
+  const locale = (await getLocale()) as ArticleLocale
   const [countriesRes, usersRes, storiesRes, newsCountRes, businessCountRes] = await Promise.all([
     supabaseAdmin.from('countries').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('users_profiles').select('id', { count: 'exact', head: true }),
@@ -38,7 +40,7 @@ export default async function Home() {
   const [newsRes, storiesListRes, businessRes, countriesListRes] = await Promise.all([
     supabaseAdmin
       .from('articles')
-      .select('id,title,slug,excerpt,featured_image,image_alt,category_id,view_count,reading_time,published_at,featured,type, article_tags:article_tags(tags(id,name,slug,color)), article_likes(count), article_comments(count)')
+      .select('id,title,slug,excerpt,featured_image,image_alt,category_id,view_count,reading_time,published_at,featured,type,translations,default_language, article_tags:article_tags(tags(id,name,slug,color)), article_likes(count), article_comments(count)')
       .eq('type', 'news')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
@@ -63,7 +65,7 @@ export default async function Home() {
       .order('name', { ascending: true })
       .limit(20)
   ])
-  const latestNews = newsRes.data ?? []
+  const latestNews = translateArticles(newsRes.data ?? [], locale)
   const latestStories = storiesListRes.data ?? []
   const featuredBusinesses = businessRes.data ?? []
   const featuredCountries = countriesListRes.data ?? []

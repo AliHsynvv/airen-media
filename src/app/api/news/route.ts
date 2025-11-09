@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
           'reading_time',
           'featured',
           'type',
+          // Translation fields
+          'translations',
+          'default_language',
           // Tags displayed as chips
           'article_tags:article_tags(tags(id,name,slug))',
           // Aggregate counts displayed in cards

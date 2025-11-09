@@ -11,7 +11,8 @@ import { useArticles } from '@/lib/hooks/useArticles'
 import { supabase } from '@/lib/supabase/client'
 const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { translateArticles, type ArticleLocale } from '@/lib/utils/article-translation'
 
 type SortKey = 'latest' | 'popular'
 type ViewKey = 'grid' | 'list'
@@ -20,14 +21,40 @@ type UiCategory = { key: string; label: string }
 
 export default function NewsPage() {
   const t = useTranslations('news')
+  const localeFromHook = useLocale() as ArticleLocale
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('all')
   const [categories, setCategories] = useState<UiCategory[]>([{ key: 'all', label: t('categories.all') }])
   const [sortBy, setSortBy] = useState<SortKey>('latest')
   const [view, setView] = useState<ViewKey>('grid')
+  
+  // Get locale from cookie directly on mount
+  const [locale, setLocale] = useState<ArticleLocale>(() => {
+    if (typeof window !== 'undefined') {
+      const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('NEXT_LOCALE='))
+        ?.split('=')[1]
+      return (cookieValue || localeFromHook) as ArticleLocale
+    }
+    return localeFromHook
+  })
+  
+  useEffect(() => {
+    // Update locale when component mounts or hook changes
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('NEXT_LOCALE='))
+      ?.split('=')[1]
+    const newLocale = (cookieValue || localeFromHook) as ArticleLocale
+    setLocale(newLocale)
+  }, [localeFromHook])
 
   const { data: liveArticles, loading } = useArticles({ type: 'news', status: 'published', limit: 100 })
-  const news = (liveArticles || []).filter(a => a.type === 'news')
+  const news = useMemo(() => {
+    const articles = (liveArticles || []).filter(a => a.type === 'news')
+    return translateArticles(articles, locale)
+  }, [liveArticles, locale])
 
   useEffect(() => {
     let mounted = true

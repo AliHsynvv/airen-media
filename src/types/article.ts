@@ -39,6 +39,10 @@ export interface Article extends BaseEntity {
   meta_description: string | null
   published_at: string | null
   
+  // Multi-language support
+  translations?: any | null
+  default_language?: 'tr' | 'en' | 'ru'
+  
   // Relations
   category?: Category
   author?: UserProfile

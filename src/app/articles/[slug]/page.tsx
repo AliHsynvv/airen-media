@@ -14,6 +14,8 @@ import type { Metadata } from 'next'
 const ArticleComments = dynamic(() => import('@/components/articles/ArticleComments.lazy'))
 import ArticleViews from '@/components/articles/ArticleViews'
 import ArticleBookmarkButton from '@/components/articles/ArticleBookmarkButton'
+import { getLocale } from 'next-intl/server'
+import { translateArticle, translateArticles, type ArticleLocale } from '@/lib/utils/article-translation'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -24,12 +26,14 @@ interface ArticlePageProps {
 // Generate metadata for SEO
 export async function generateMetadata(context: ArticlePageProps): Promise<Metadata> {
   const { slug } = await context.params
+  const locale = (await getLocale()) as ArticleLocale
+  
   const { data: liveArticle } = await supabaseAdmin
     .from('articles')
     .select('*')
     .eq('slug', slug)
     .single()
-  const article = liveArticle || null
+  let article = liveArticle || null
   
   if (!article) {
     return {
@@ -37,6 +41,9 @@ export async function generateMetadata(context: ArticlePageProps): Promise<Metad
       description: 'Aradığınız makale bulunamadı.'
     }
   }
+
+  // Translate article for metadata
+  article = translateArticle(article, locale)
 
   return {
     title: article.meta_title || article.title,
@@ -59,16 +66,21 @@ export async function generateMetadata(context: ArticlePageProps): Promise<Metad
 
 export default async function ArticlePage(context: ArticlePageProps) {
   const { slug } = await context.params
+  const locale = (await getLocale()) as ArticleLocale
+  
   const articleRes = await supabaseAdmin
     .from('articles')
     .select('*')
     .eq('slug', slug)
     .single()
-  const article: any = articleRes.data || null
+  let article: any = articleRes.data || null
 
   if (!article) {
     notFound()
   }
+
+  // Translate article to current locale
+  article = translateArticle(article, locale)
 
   // Related articles (live only)
   let relatedArticles: any[] = []
@@ -81,7 +93,7 @@ export default async function ArticlePage(context: ArticlePageProps) {
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(3)
-    relatedArticles = relRes.data || []
+    relatedArticles = translateArticles(relRes.data || [], locale)
   }
 
   return (

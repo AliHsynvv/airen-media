@@ -422,6 +422,8 @@ export default function AdminCountryCreatePage() {
             <TranslateButton 
               text={cultureDescription}
               field="culture_description"
+              sourceLang="en"
+              targetLangs={['tr', 'ru']}
               onTranslated={(translations) => {
                 setCultureDescriptionTr(translations.tr)
                 setCultureDescriptionRu(translations.ru)
@@ -460,6 +462,8 @@ export default function AdminCountryCreatePage() {
             <TranslateButton 
               text={visaInfo}
               field="visa_info"
+              sourceLang="en"
+              targetLangs={['tr', 'ru']}
               onTranslated={(translations) => {
                 setVisaInfoTr(translations.tr)
                 setVisaInfoRu(translations.ru)
@@ -563,6 +567,8 @@ export default function AdminCountryCreatePage() {
             <TranslateButton 
               text={airenAdvice}
               field="airen_advice"
+              sourceLang="en"
+              targetLangs={['tr', 'ru']}
               onTranslated={(translations) => {
                 setAirenAdviceTr(translations.tr)
                 setAirenAdviceRu(translations.ru)

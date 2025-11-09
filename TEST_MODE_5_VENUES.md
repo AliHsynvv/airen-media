@@ -1,8 +1,16 @@
 # 🧪 TEST MODE - 5 Venues Only
 
-## 🎯 Test Məqsədi
+## ⚠️ DEPRECATED - Version 4.4.0
 
-Bütün field-lərin düzgün çəkildiyini və database-ə yazıldığını yoxlamaq üçün **5 nəticə ilə test** edirik.
+**This feature is DEPRECATED and removed in Version 4.4.0**
+
+Test mode söndürüldü və **UNLIMITED MODE** aktivləşdirildi. Bax: `UNLIMITED_MODE.md`
+
+---
+
+## 🎯 Test Məqsədi (Keçmiş)
+
+Bütün field-lərin düzgün çəkildiyini və database-ə yazıldığını yoxlamaq üçün **5 nəticə ilə test** edirdik.
 
 ---
 

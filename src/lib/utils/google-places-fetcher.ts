@@ -423,10 +423,9 @@ export async function fetchRestaurantsFromGoogle(
     
     console.log(`✅ Filtered ${allPlaces.length} restaurants → ${filteredPlaces.length} quality (4.0+) restaurants`)
     
-    // 🧪 TEST MODE: Limit to 5 for testing (remove this later)
-    const TEST_LIMIT = 5
-    const places: GooglePlace[] = filteredPlaces.slice(0, TEST_LIMIT)
-    console.log(`🧪 TEST MODE: Limited to ${places.length} restaurants for testing`)
+    // Use all filtered places (no limit!)
+    const places: GooglePlace[] = filteredPlaces
+    console.log(`🚀 UNLIMITED MODE: Processing ${places.length} restaurants`)
     
     // Step 2: Fetch details for each place (in batches to avoid overwhelming API)
     const venues: VenueResult[] = []
@@ -723,10 +722,9 @@ export async function fetchHotelsFromGoogle(
     
     console.log(`✅ Filtered ${allPlaces.length} hotels → ${filteredPlaces.length} quality (4.0+) hotels`)
     
-    // 🧪 TEST MODE: Limit to 5 for testing (remove this later)
-    const TEST_LIMIT = 5
-    const places: GooglePlace[] = filteredPlaces.slice(0, TEST_LIMIT)
-    console.log(`🧪 TEST MODE: Limited to ${places.length} hotels for testing`)
+    // Use all filtered places (no limit!)
+    const places: GooglePlace[] = filteredPlaces
+    console.log(`🚀 UNLIMITED MODE: Processing ${places.length} hotels`)
     
     // Step 2: Fetch details for each place (in batches)
     const venues: VenueResult[] = []

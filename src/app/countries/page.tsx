@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 const CountryCard = dynamic(() => import('@/components/countries/CountryCard').then(m => m.CountryCard))
+const ProfessionalWorldMap = dynamic(() => import('@/components/maps/ProfessionalWorldMap'), { ssr: false })
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 const MeetAirenButton = dynamic(() => import('@/components/home/MeetAirenButton'))
@@ -12,9 +13,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCountries } from '@/lib/hooks/useCountries'
 import { Search, TrendingUp, LayoutGrid, List, Star, Globe2, MapPin, DollarSign, CreditCard, Gem, ArrowUpDown, Flame, TrendingUp as TrendingUpIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
+const GlobalSearch = dynamic(() => import('@/components/search/GlobalSearch'), { ssr: false })
 
 export default function CountriesPage() {
   const t = useTranslations('countries')
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const { data, loading } = useCountries()
   const list = useMemo(() => data || [], [data])
@@ -25,6 +29,9 @@ export default function CountriesPage() {
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [trendingOnly, setTrendingOnly] = useState(false)
   const [sortBy, setSortBy] = useState<'name' | 'popular' | 'trending'>('name')
+  
+  // Map location state
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; zoom?: number; name: string } | null>(null)
 
   // Helpers - Complete ISO to Continent mapping
   const isoToContinent: Record<string, string> = {
@@ -162,37 +169,37 @@ export default function CountriesPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-10">
-        <h1 className="text-4xl font-bold text-gray-900">{t('list.title')}</h1>
-        <p className="text-gray-600 mt-3">{t('list.subtitle')}</p>
+      {/* Global Search - Professional */}
+      <div className="mb-8">
+        <GlobalSearch 
+          onLocationSelect={(location) => {
+            setSelectedLocation(location)
+          }}
+        />
+      </div>
 
-        {/* Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-6">
-          <div>
-            <div className="text-xl font-semibold text-gray-900">{availableCount}</div>
-            <div className="text-xs text-gray-500">{t('list.stats.available')}</div>
-          </div>
-          <div>
-            <div className="text-xl font-semibold text-gray-900">{featuredCount}</div>
-            <div className="text-xs text-gray-500">{t('list.stats.featured')}</div>
-          </div>
-          <div>
-            <div className="text-xl font-semibold text-gray-900">{trendingCount}</div>
-            <div className="text-xs text-gray-500">{t('list.stats.trending')}</div>
-          </div>
+      {/* Professional Interactive Map */}
+      <div className="mb-8">
+        <ProfessionalWorldMap 
+          countries={list}
+          selectedLocation={selectedLocation}
+          onCountryClick={(country) => {
+            if (country?.slug) {
+              router.push(`/countries/${country.slug}`)
+            }
+          }}
+        />
+      </div>
+
+      {/* CTAs - Compact */}
+      <div className="mb-8 flex flex-row gap-3 items-center max-w-4xl mx-auto">
+        <div className="flex-1">
+          <Button asChild size="lg" className="h-11 w-full rounded-lg text-white font-semibold px-6 shadow-md bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-sm">
+            <Link href="/profile">{t('list.socialMediaButton')}</Link>
+          </Button>
         </div>
-
-        {/* CTAs */}
-        <div className="mt-6 flex flex-row gap-2 items-center w-full">
-          <div className="w-1/2 min-w-0">
-            <Button asChild size="lg" className="h-12 w-full rounded-full text-white font-semibold uppercase tracking-wide px-5 sm:px-6 shadow-lg bg-gradient-to-r from-[#141432] via-[#5b21b6] to-[#a21caf] hover:from-[#1a1a44] hover:via-[#6d28d9] hover:to-[#db2777] border-0 text-xs sm:text-sm">
-              <Link href="/profile">{t('list.socialMediaButton')}</Link>
-            </Button>
-          </div>
-          <div className="w-1/2 min-w-0">
-            <MeetAirenButton fullWidth className="text-xs sm:text-sm" />
-          </div>
+        <div className="flex-1">
+          <MeetAirenButton fullWidth className="text-sm h-11" />
         </div>
       </div>
 

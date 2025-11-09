@@ -159,6 +159,9 @@ CREATE TABLE public.business_profiles (
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  services jsonb DEFAULT '[]'::jsonb CHECK (jsonb_typeof(services) = 'array'::text),
+  average_rating numeric DEFAULT NULL::numeric CHECK (average_rating IS NULL OR average_rating >= 0::numeric AND average_rating <= 5::numeric),
+  total_reviews integer DEFAULT 0 CHECK (total_reviews >= 0),
   CONSTRAINT business_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT business_profiles_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users_profiles(id)
 );
@@ -176,6 +179,59 @@ CREATE TABLE public.business_reviews (
   CONSTRAINT business_reviews_pkey PRIMARY KEY (id),
   CONSTRAINT business_reviews_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.business_profiles(id),
   CONSTRAINT business_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users_profiles(id)
+);
+CREATE TABLE public.business_service_bookings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  service_id uuid NOT NULL,
+  business_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  start_date date NOT NULL,
+  end_date date,
+  guests_count integer DEFAULT 1 CHECK (guests_count > 0),
+  price_per_unit numeric NOT NULL,
+  total_price numeric NOT NULL,
+  currency text DEFAULT 'AZN'::text,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'cancelled'::text, 'completed'::text, 'no_show'::text])),
+  customer_name text NOT NULL,
+  customer_email text NOT NULL,
+  customer_phone text NOT NULL,
+  special_requests text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  confirmed_at timestamp with time zone,
+  cancelled_at timestamp with time zone,
+  CONSTRAINT business_service_bookings_pkey PRIMARY KEY (id),
+  CONSTRAINT business_service_bookings_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.business_services(id),
+  CONSTRAINT business_service_bookings_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.business_profiles(id),
+  CONSTRAINT business_service_bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users_profiles(id)
+);
+CREATE TABLE public.business_services (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL,
+  name text NOT NULL,
+  description text,
+  category text NOT NULL CHECK (category = ANY (ARRAY['rentecar'::text, 'turizm'::text, 'hotel'::text, 'apartment'::text, 'restoran'::text, 'xestexana'::text, 'sigorta'::text, 'aviacompany'::text, 'attraction'::text, 'guides'::text])),
+  price numeric NOT NULL CHECK (price >= 0::numeric),
+  currency text DEFAULT 'AZN'::text,
+  discount_percentage numeric DEFAULT 0 CHECK (discount_percentage >= 0::numeric AND discount_percentage <= 100::numeric),
+  discounted_price numeric DEFAULT 
+CASE
+    WHEN (discount_percentage > (0)::numeric) THEN (price - ((price * discount_percentage) / (100)::numeric))
+    ELSE price
+END,
+  is_bookable boolean DEFAULT true,
+  is_available boolean DEFAULT true,
+  max_capacity integer,
+  min_booking_days integer DEFAULT 1,
+  image_urls jsonb DEFAULT '[]'::jsonb,
+  category_data jsonb DEFAULT '{}'::jsonb,
+  created_by uuid NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  search_vector tsvector DEFAULT to_tsvector('simple'::regconfig, ((COALESCE(name, ''::text) || ' '::text) || COALESCE(description, ''::text))),
+  CONSTRAINT business_services_pkey PRIMARY KEY (id),
+  CONSTRAINT business_services_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.business_profiles(id),
+  CONSTRAINT business_services_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users_profiles(id)
 );
 CREATE TABLE public.categories (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

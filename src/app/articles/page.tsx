@@ -1,20 +1,48 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useLocale } from 'next-intl'
 import { Search, Filter, Grid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ArticleCard } from '@/components/articles/ArticleCard'
 import { useArticles } from '@/lib/hooks/useArticles'
+import { translateArticles, type ArticleLocale } from '@/lib/utils/article-translation'
 
 export default function ArticlesPage() {
+  const localeFromHook = useLocale() as ArticleLocale
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  
+  // Get locale from cookie directly on mount
+  const [locale, setLocale] = useState<ArticleLocale>(() => {
+    if (typeof window !== 'undefined') {
+      const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('NEXT_LOCALE='))
+        ?.split('=')[1]
+      return (cookieValue || localeFromHook) as ArticleLocale
+    }
+    return localeFromHook
+  })
+  
+  useEffect(() => {
+    // Update locale when component mounts or hook changes
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('NEXT_LOCALE='))
+      ?.split('=')[1]
+    const newLocale = (cookieValue || localeFromHook) as ArticleLocale
+    setLocale(newLocale)
+  }, [localeFromHook])
 
   const { data: liveArticles } = useArticles({ type: 'article', status: 'published', limit: 100 })
-  const articles = liveArticles.filter(article => article.type === 'article')
+  const articles = useMemo(() => {
+    const filtered = liveArticles.filter(article => article.type === 'article')
+    return translateArticles(filtered, locale)
+  }, [liveArticles, locale])
   
   const categories = useMemo(() => {
     const map = new Map<string, { id: string; name: string; count: number }>()
