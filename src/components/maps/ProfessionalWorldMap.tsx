@@ -185,7 +185,7 @@ function MapController({ center, zoom }: { center: [number, number], zoom: numbe
 }
 
 // Location updater component with animated marker
-function LocationUpdater({ location, country }: { location: { lat: number; lng: number; zoom?: number; name: string } | null, country?: any }) {
+function LocationUpdater({ location, country }: { location: { lat: number; lng: number; zoom?: number; name: string } | null | undefined, country?: any }) {
   const map = useMap()
   const markerRef = useRef<L.Marker | null>(null)
   const [reviewsCount, setReviewsCount] = useState<number>(0)
@@ -390,7 +390,7 @@ export default function ProfessionalWorldMap({ countries = [], onCountryClick, s
   const [mapCenter, setMapCenter] = useState<[number, number]>([20, 0])
   const [mapZoom, setMapZoom] = useState(2)
   const [showControls, setShowControls] = useState(true)
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -400,6 +400,16 @@ export default function ProfessionalWorldMap({ countries = [], onCountryClick, s
       require('leaflet.markercluster')
     }
   }, [])
+
+  // Setup map bounds when map ref is available
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = mapRef.current
+      map.setMaxBounds(WORLD_BOUNDS)
+      const worldZoom = map.getBoundsZoom(WORLD_BOUNDS, false)
+      map.setMinZoom(worldZoom)
+    }
+  }, [mapRef.current])
 
   const processedCountries = useMemo(() => {
     return (countries || []).map(country => {
@@ -536,6 +546,7 @@ export default function ProfessionalWorldMap({ countries = [], onCountryClick, s
       {/* Map Container */}
       <div className="relative h-[52vh] bg-slate-100">
         <MapContainer
+          ref={mapRef}
           center={mapCenter}
           zoom={mapZoom}
           style={{ height: '100%', width: '100%' }}
@@ -544,12 +555,6 @@ export default function ProfessionalWorldMap({ countries = [], onCountryClick, s
           zoomControl={false}
           maxBounds={WORLD_BOUNDS}
           maxBoundsViscosity={1}
-          whenCreated={(map) => {
-            mapRef.current = map
-            map.setMaxBounds(WORLD_BOUNDS)
-            const worldZoom = map.getBoundsZoom(WORLD_BOUNDS, false)
-            map.setMinZoom(worldZoom)
-          }}
         >
           <MapController center={mapCenter} zoom={mapZoom} />
           <LocationUpdater location={selectedLocation} country={selectedCountryData} />

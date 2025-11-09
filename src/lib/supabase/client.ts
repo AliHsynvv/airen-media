@@ -14,7 +14,8 @@ export const supabase = createBrowserClient(
       fetch: async (url, options) => {
         const response = await fetch(url, options)
         // Don't log expected auth errors
-        if (!response.ok && url.includes('/token?grant_type=refresh_token')) {
+        const urlString = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url instanceof Request ? url.url : ''
+        if (!response.ok && urlString.includes('/token?grant_type=refresh_token')) {
           // Silently handle refresh token errors - this is expected behavior
           return response
         }
